@@ -1,5 +1,5 @@
-const CACHE = 'setlog-cache-v3';
-const ASSETS = ['./', './index.html', './style.css', './app.js', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+const CACHE = 'setlog-cache-v5';
+const ASSETS = ['./', './index.html', './style.css', './app.js', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './exercise-w1-1.svg', './exercise-w1-2.svg', './exercise-w1-3.svg', './exercise-w1-4.svg', './exercise-w1-5.svg', './exercise-w1-6.svg', './exercise-w1-7.svg', './exercise-w2-1.svg', './exercise-w2-2.svg', './exercise-w2-3.svg', './exercise-w2-4.svg', './exercise-w2-5.svg', './exercise-w2-6.svg', './exercise-w3-1.svg', './exercise-w3-2.svg', './exercise-w3-3.svg', './exercise-w3-4.svg', './exercise-w3-5.svg', './exercise-w3-6.svg', './exercise-w3-7.svg', './exercise-w3-8.svg'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
