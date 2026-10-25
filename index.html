@@ -39,6 +39,7 @@
           <input id="workoutDate" type="date">
           <span class="date-note">Сохраняется на этом устройстве</span>
         </div>
+        <div class="storage-status" id="storageStatus" data-state="saved" aria-live="polite"><span class="storage-status-dot">●</span><span id="storageStatusText">Проверяем сохранение…</span></div>
 
         <div class="program-picker">
           <label for="programSelect">ПРОГРАММА</label>
@@ -51,7 +52,7 @@
           <span class="exercise-count" id="exerciseCount">7 УПР.</span>
         </div>
         <div id="exerciseList" class="exercise-list"></div>
-        <button class="add-exercise-button" type="button" id="addExerciseBtn"><span>＋</span> Добавить своё упражнение</button>
+        <button class="add-exercise-button" type="button" id="addExerciseBtn"><span>＋</span> Добавить упражнение из библиотеки или своё</button>
         <div class="save-dock">
           <div class="save-info"><strong id="filledCount">0 упражнений</strong><span>с данными для записи</span></div>
           <button class="primary-button" type="button" id="saveWorkoutBtn">Сохранить тренировку <span>↗</span></button>
@@ -72,7 +73,8 @@
         <div class="empty-state hidden" id="historyEmpty"><div class="empty-mark">↘</div><h3>Пока пусто</h3><p>Сохрани первую тренировку — здесь появится твоя история весов и повторений.</p><button type="button" class="text-button" data-go="training">Перейти к тренировке →</button></div>
         <div class="backup-panel">
           <div><span class="section-index">ТВОИ ДАННЫЕ</span><h3>Резервная копия</h3><p>Экспортируй журнал в файл и храни его отдельно. При смене телефона файл можно импортировать обратно.</p></div>
-          <div class="backup-actions"><button class="secondary-button" type="button" id="exportBtn">↓ Экспорт JSON</button><button class="secondary-button" type="button" id="importBtn">↑ Импорт JSON</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
+          <div class="backup-actions"><button class="secondary-button" type="button" id="exportBtn">↓ Экспорт JSON</button><button class="secondary-button" type="button" id="importBtn">↑ Импорт JSON</button><button class="secondary-button" type="button" id="createSnapshotBtn">＋ Создать контрольную точку</button><button class="secondary-button" type="button" id="manageSnapshotsBtn">↶ Восстановление</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
+          <p class="auto-backup-status" id="autoBackupStatus">Локальные контрольные точки загружаются… Они хранятся на этом устройстве и не заменяют JSON-файл.</p>
         </div>
       </section>
 
@@ -109,13 +111,26 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <dialog id="addExerciseDialog" class="dialog-card">
-    <form method="dialog" id="addExerciseForm">
-      <div class="dialog-top"><span class="section-index">СВОЁ УПРАЖНЕНИЕ</span><button class="dialog-close" value="cancel" aria-label="Закрыть">×</button></div>
-      <h2>Добавить в день</h2>
-      <label class="field-label" for="customExerciseName">Название</label><input id="customExerciseName" class="text-input" required maxlength="90" placeholder="Например, подъёмы на носки">
-      <label class="field-label" for="customExerciseTarget">Диапазон повторений</label><input id="customExerciseTarget" class="text-input" maxlength="30" placeholder="8–12">
+    <div class="dialog-top"><span class="section-index">БИБЛИОТЕКА УПРАЖНЕНИЙ</span><button class="dialog-close" type="button" onclick="document.getElementById('addExerciseDialog').close()" aria-label="Закрыть">×</button></div>
+    <h2>Добавить в день</h2>
+    <div class="editor-section library-picker">
+      <label class="field-label" for="exerciseLibrarySearch">ПОИСК ПО НАЗВАНИЮ, МЫШЦАМ ИЛИ СИНОНИМАМ</label>
+      <input id="exerciseLibrarySearch" class="text-input" type="search" placeholder="Например, тяга, ягодицы, грудь">
+      <label class="field-label" for="exerciseLibraryGroupFilter">ФИЛЬТР ПО МЫШЕЧНОЙ ГРУППЕ</label>
+      <select id="exerciseLibraryGroupFilter" class="text-input" aria-label="Фильтр по мышечной группе"><option value="">Загрузка групп…</option></select>
+      <p id="exerciseLibraryCount" class="dialog-copy muted" aria-live="polite">Загружаем библиотеку упражнений…</p>
+      <label class="field-label" for="exerciseLibrarySelect">УПРАЖНЕНИЕ ИЗ КАТАЛОГА</label>
+      <select id="exerciseLibrarySelect" class="text-input" size="6" aria-label="Выбрать упражнение из библиотеки"></select>
+      <p id="exerciseLibraryEmpty" class="dialog-copy muted hidden">Ничего не найдено. Создай новое упражнение ниже.</p>
+      <button id="addLibraryExerciseBtn" type="button" class="primary-button wide-button">Добавить выбранное упражнение</button>
+      <p class="dialog-copy muted">Каталог общий для всех программ. Подходы, повторы и порядок хранятся отдельно в каждом тренировочном дне.</p>
+    </div>
+    <form id="addExerciseForm" class="editor-section">
+      <span class="field-label">СОЗДАТЬ СВОЁ УПРАЖНЕНИЕ</span>
+      <label class="field-label" for="customExerciseName">НАЗВАНИЕ</label><input id="customExerciseName" class="text-input" required maxlength="90" placeholder="Например, подъёмы на носки">
+      <label class="field-label" for="customExerciseTarget">Диапазон повторений по умолчанию</label><input id="customExerciseTarget" class="text-input" maxlength="30" placeholder="8–12">
       <label class="field-label" for="customExerciseMuscle">Мышечная группа (необязательно)</label><input id="customExerciseMuscle" class="text-input" maxlength="60" placeholder="Спина">
-      <button type="submit" class="primary-button wide-button">Добавить упражнение <span>↗</span></button>
+      <button type="submit" class="secondary-button wide-button">＋ Создать и добавить</button>
     </form>
   </dialog>
 
@@ -130,6 +145,10 @@
       <button id="createProgramBtn" type="button" class="primary-button wide-button">＋ Создать программу</button>
     </div>
     <div class="editor-section">
+      <label class="field-label">ПОРЯДОК ПРОГРАММ</label>
+      <div class="dialog-button-row"><button id="moveProgramEarlierBtn" type="button" class="secondary-button">↑ Программу выше</button><button id="moveProgramLaterBtn" type="button" class="secondary-button">↓ Программу ниже</button></div>
+    </div>
+    <div class="editor-section">
       <label class="field-label" for="renameProgramName">ПЕРЕИМЕНОВАТЬ ТЕКУЩУЮ ПРОГРАММУ</label>
       <input id="renameProgramName" class="text-input" maxlength="70" placeholder="Название программы">
       <button id="renameProgramBtn" type="button" class="secondary-button">Сохранить название</button>
@@ -138,6 +157,7 @@
       <label class="field-label" for="renameWorkoutName">ТЕКУЩИЙ ДЕНЬ</label>
       <input id="renameWorkoutName" class="text-input" maxlength="70" placeholder="Название тренировочного дня">
       <div class="dialog-button-row"><button id="renameWorkoutBtn" type="button" class="secondary-button">Переименовать день</button><button id="addWorkoutDayBtn" type="button" class="secondary-button">＋ Добавить день</button></div>
+      <div class="dialog-button-row"><button id="moveWorkoutEarlierBtn" type="button" class="secondary-button">↑ День раньше</button><button id="moveWorkoutLaterBtn" type="button" class="secondary-button">↓ День позже</button></div>
     </div>
     <button id="deleteProgramBtn" type="button" class="danger-button">Удалить текущую программу</button>
     <p class="dialog-copy muted">Изменения сохраняются на этом телефоне. Для переноса программ и картинок на другое устройство используй экспорт JSON в разделе «История».</p>
@@ -174,6 +194,16 @@
       <p class="dialog-copy muted">Для установки нужен защищённый HTTPS-адрес. Если открыть файлы просто из архива, приложение будет работать как страница, но установка и офлайн-кэш могут не включиться.</p>
       <button type="submit" class="primary-button wide-button">Понятно</button>
     </form>
+  </dialog>
+
+
+  <dialog id="snapshotDialog" class="dialog-card">
+    <div class="dialog-top"><span class="section-index">ЛОКАЛЬНЫЕ КОНТРОЛЬНЫЕ ТОЧКИ</span><button class="dialog-close" type="button" onclick="document.getElementById('snapshotDialog').close()" aria-label="Закрыть">×</button></div>
+    <h2>Восстановление данных</h2>
+    <p class="dialog-copy">Выбери локальную копию, созданную приложением до миграции или крупного изменения. Перед восстановлением текущие данные тоже будут сохранены. Контрольные точки остаются на этом устройстве; регулярно сохраняй JSON отдельно.</p>
+    <label class="field-label" for="snapshotSelect">КОНТРОЛЬНАЯ ТОЧКА</label><select id="snapshotSelect" class="text-input" size="6"></select>
+    <p id="snapshotEmpty" class="dialog-copy muted hidden">Пока нет контрольных точек. Создай копию или экспортируй JSON.</p>
+    <button id="restoreSelectedSnapshotBtn" type="button" class="primary-button wide-button">Восстановить выбранную копию</button>
   </dialog>
 
   <script src="./app.js"></script>
