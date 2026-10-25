@@ -1,6 +1,12 @@
 (() => {
   'use strict';
   const STORAGE_KEY = 'setlog-pwa-v1';
+  const LOCAL_OWNER_KEY = 'setlog-pwa-local-owner-v1';
+  function initialStorageScope(){
+    try{const owner=localStorage.getItem(LOCAL_OWNER_KEY);if(owner){const scoped=`${STORAGE_KEY}:user:${owner}`;if(localStorage.getItem(scoped))return scoped;}}catch(e){}
+    return STORAGE_KEY;
+  }
+  let activeStorageKey = initialStorageScope();
   const DEFAULT_PROGRAM_ID = 'program-main';
   const PROGRAM = [
     {id:'1', name:'Верх + ноги', desc:'Грудь, спина, ноги и плечи', exercises:[
@@ -84,9 +90,9 @@
       if(!e.imageData&&!e.imageUrl)e.imageUrl=defaults.imageUrl;
     }
   }
-  const DATA_SCHEMA_VERSION = 5;
-  const LEGACY_MIGRATION_BACKUP_KEY = 'setlog-pwa-v1-pre-schema-v5-backup';
-  const LEGACY_MIGRATION_BACKUP_KEYS = [LEGACY_MIGRATION_BACKUP_KEY, 'setlog-pwa-v1-pre-schema-v4-backup'];
+  const DATA_SCHEMA_VERSION = 6;
+  const LEGACY_MIGRATION_BACKUP_KEY = 'setlog-pwa-v1-pre-schema-v6-backup';
+  const LEGACY_MIGRATION_BACKUP_KEYS = [LEGACY_MIGRATION_BACKUP_KEY, 'setlog-pwa-v1-pre-schema-v5-backup', 'setlog-pwa-v1-pre-schema-v4-backup'];
   let importedExerciseLibrary = [];
   let importedExerciseLibraryGroups = [];
   let importedExerciseLibraryError = '';
@@ -279,7 +285,8 @@
             catalogId,
             target:String(e.target!==undefined?e.target:(cat.defaultTarget||'По плану')),
             sets:clampSets(e.sets!==undefined?e.sets:cat.defaultSets),
-            alt:String(e.alt||'')
+            alt:String(e.alt||''),
+            replacesCatalogId:String(e.replacesCatalogId||'')
           };
         })
       }))
@@ -321,15 +328,15 @@
     return {
       schemaVersion:DATA_SCHEMA_VERSION,
       version:DATA_SCHEMA_VERSION,
-      migrationsApplied:[...new Set([...(Array.isArray(d.migrationsApplied)?d.migrationsApplied:[]),'v4-exercise-catalog-stable-ids','v5-exercise-library-picker'])],
-      history,drafts,programs,exerciseCatalog:[...catalogMap.values()],activeProgramId,activeWorkoutId,
+      migrationsApplied:[...new Set([...(Array.isArray(d.migrationsApplied)?d.migrationsApplied:[]),'v4-exercise-catalog-stable-ids','v5-exercise-library-picker','v6-replacement-archive'])],
+      history,drafts,programs,exerciseCatalog:[...catalogMap.values()],archivedPlacements:Array.isArray(d.archivedPlacements)?d.archivedPlacements.map(item=>({...item,originalPlacement:item.originalPlacement&&typeof item.originalPlacement==='object'?{...item.originalPlacement}:null,originalExerciseSnapshot:item.originalExerciseSnapshot&&typeof item.originalExerciseSnapshot==='object'?{...item.originalExerciseSnapshot}:null})):[],activeProgramId,activeWorkoutId,
       girlsProgramMigrated:true,
-      createdAt:d.createdAt||Date.now(),updatedAt:Date.now()
+      createdAt:d.createdAt||Date.now(),updatedAt:Number(d.updatedAt)||Date.now()
     };
   }
   function loadData(){
     let raw=null;
-    try{raw=localStorage.getItem(STORAGE_KEY);}catch(error){storageReadFailure=error;return normalizeData({});}
+    try{raw=localStorage.getItem(activeStorageKey);}catch(error){storageReadFailure=error;return normalizeData({});}
     initialStorageRaw=raw;
     if(!raw)return normalizeData({});
     try{
@@ -354,7 +361,8 @@
     const workout=getWorkout(workoutId);if(!workout)return [];
     return (workout.exercises||[]).map(instance=>{
       const catalog=data.exerciseCatalog.find(item=>item.id===instance.catalogId)||normalizeCatalogItem({id:instance.catalogId||instance.id,name:'Упражнение'});
-      return {...catalog,...instance,id:instance.id,catalogId:catalog.id,target:instance.target!==undefined?instance.target:(catalog.defaultTarget||'По плану'),sets:clampSets(instance.sets!==undefined?instance.sets:catalog.defaultSets),alt:instance.alt!==undefined?instance.alt:''};
+      const replacedCatalog=instance.replacesCatalogId?data.exerciseCatalog.find(item=>item.id===instance.replacesCatalogId):null;
+      return {...catalog,...instance,id:instance.id,catalogId:catalog.id,target:instance.target!==undefined?instance.target:(catalog.defaultTarget||'По плану'),sets:clampSets(instance.sets!==undefined?instance.sets:catalog.defaultSets),alt:instance.alt!==undefined?instance.alt:'',replacesFromName:replacedCatalog?.name||''};
     });
   }
   const draftKey=(date=currentDate(),workout=activeWorkout,programId=activeProgramId)=>`${date}::${programId}::${workout}`;
@@ -401,9 +409,10 @@
     if(storageWriteBlocked){setStorageStatus('Запись заблокирована: сначала восстанови данные или импортируй JSON','error');return false;}
     try{
       data.activeProgramId=activeProgramId;data.activeWorkoutId=activeWorkout;data.schemaVersion=DATA_SCHEMA_VERSION;data.version=DATA_SCHEMA_VERSION;data.updatedAt=Date.now();
-      localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
-      setStorageStatus(`Сохранено на устройстве · ${new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}`,'saved');
+      localStorage.setItem(activeStorageKey,JSON.stringify(data));
+      if(!cloudSession||!cloudReady) setStorageStatus(`Сохранено на устройстве · ${new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}`,'saved');
       if(options.snapshot) saveSafetySnapshot(options.label||'Контрольная точка'); else scheduleSafetySnapshot();
+      if(!cloudApplying) scheduleCloudSync();
       return true;
     }catch(error){
       setStorageStatus('ОШИБКА СОХРАНЕНИЯ · данные не подтверждены','error');
@@ -413,10 +422,11 @@
   }
   function defaultDraft(ex){return {weight:'',rir:'',notes:'',sets:Array.from({length:Math.max(1,Math.min(8,ex.sets||3))},()=>({reps:''}))};}
   function ensureDraft(date=currentDate(),workout=activeWorkout){
-    const key=draftKey(date,workout); if(!data.drafts[key])data.drafts[key]={};
-    for(const ex of getExercises(workout))if(!data.drafts[key][ex.id])data.drafts[key][ex.id]=defaultDraft(ex);
-    for(const ex of getExercises(workout)){const dr=data.drafts[key][ex.id];if(!Array.isArray(dr.sets))dr.sets=defaultDraft(ex).sets;if(!dr.sets.length)dr.sets.push({reps:''});}
-    persist();return data.drafts[key];
+    const key=draftKey(date,workout);let changed=false;
+    if(!data.drafts[key]){data.drafts[key]={};changed=true;}
+    for(const ex of getExercises(workout))if(!data.drafts[key][ex.id]){data.drafts[key][ex.id]=defaultDraft(ex);changed=true;}
+    for(const ex of getExercises(workout)){const dr=data.drafts[key][ex.id];if(!Array.isArray(dr.sets)){dr.sets=defaultDraft(ex).sets;changed=true;}if(!dr.sets.length){dr.sets.push({reps:''});changed=true;}}
+    if(changed)persist();return data.drafts[key];
   }
   function getLastEntry(ex){const all=[];const catalogId=typeof ex==='object'?(ex.catalogId||ex.id):String(ex||'');const instanceId=typeof ex==='object'?ex.id:'';const exName=typeof ex==='object'?ex.name:'';for(const session of data.history)for(const e of session.entries||[])if(e.exerciseCatalogId===catalogId||e.exerciseId===catalogId||e.exerciseId===instanceId||(!e.exerciseId&&e.exerciseName===exName))all.push({...e,date:session.date,workout:session.workout,savedAt:session.savedAt});all.sort((a,b)=>(b.date||'').localeCompare(a.date||'')||((b.savedAt||0)-(a.savedAt||0)));return all[0]||null;}
   function hasDraftData(d){return !!(num(d.weight)!==null||(d.sets||[]).some(s=>String(s.reps??'').trim()!==''));}
@@ -425,7 +435,7 @@
     const img=ex.imageData||validImageLink(ex.imageUrl);const video=validLink(ex.videoUrl,true);
     const media=(img||video)?`<div class="exercise-media">${img?`<img class="exercise-image" src="${safe(img)}" alt="Иллюстрация: ${safe(ex.name)}" loading="lazy">`:''}${video?`<a class="video-link" href="${safe(video)}" target="_blank" rel="noopener noreferrer">▶ Открыть видео техники ↗</a>`:''}</div>`:'';
     return `<article class="exercise-card ${hasDraftData(draft)?'has-data':''}" data-exercise-card="${safe(ex.id)}">
-      <div class="exercise-top"><span class="exercise-num">${String(index+1).padStart(2,'0')}</span><div class="exercise-main"><div class="exercise-name">${safe(ex.name)}</div><div class="exercise-meta"><span>${safe(ex.muscle||'Своя группа')}</span><span>${safe(ex.target||'Без диапазона')}</span><span>${(draft.sets||[]).length} подхода</span></div>${ex.alt?`<div class="alt-label">Замена: ${safe(ex.alt)}</div>`:''}</div><div class="exercise-card-actions"><div class="exercise-order-controls"><button type="button" class="order-button" data-action="move-exercise-up" data-exercise="${safe(ex.id)}" aria-label="Переместить выше" title="Выше" ${index===0?'disabled':''}>↑</button><button type="button" class="order-button" data-action="move-exercise-down" data-exercise="${safe(ex.id)}" aria-label="Переместить ниже" title="Ниже" ${index>=total-1?'disabled':''}>↓</button></div><button type="button" class="edit-exercise-button" data-action="edit-exercise" data-exercise="${safe(ex.id)}" aria-label="Изменить ${safe(ex.name)}" title="Изменить упражнение">✎</button></div></div>
+      <div class="exercise-top"><span class="exercise-num">${String(index+1).padStart(2,'0')}</span><div class="exercise-main"><div class="exercise-name">${safe(ex.name)}</div><div class="exercise-meta"><span>${safe(ex.muscle||'Своя группа')}</span><span>${safe(ex.target||'Без диапазона')}</span><span>${(draft.sets||[]).length} подхода</span></div>${ex.replacesFromName?`<div class="alt-label">Вместо: ${safe(ex.replacesFromName)}</div>`:''}${ex.alt?`<div class="alt-label">Вариант: ${safe(ex.alt)}</div>`:''}</div><div class="exercise-card-actions"><div class="exercise-order-controls"><button type="button" class="order-button" data-action="move-exercise-up" data-exercise="${safe(ex.id)}" aria-label="Переместить выше" title="Выше" ${index===0?'disabled':''}>↑</button><button type="button" class="order-button" data-action="move-exercise-down" data-exercise="${safe(ex.id)}" aria-label="Переместить ниже" title="Ниже" ${index>=total-1?'disabled':''}>↓</button></div><button type="button" class="edit-exercise-button" data-action="edit-exercise" data-exercise="${safe(ex.id)}" aria-label="Изменить ${safe(ex.name)}" title="Изменить упражнение">✎</button></div></div>
       ${media}
       <div class="last-result"><span class="last-label">ПРОШЛЫЙ РАЗ</span><strong>${safe(lastText)}</strong>${last?`<span>· ${safe(dateFmt(last.date))}</span>`:''}</div>
       <div class="exercise-fields"><div class="field-group"><label class="field-label" for="weight-${safe(ex.id)}">ВЕС, КГ</label><input class="field-input" id="weight-${safe(ex.id)}" type="number" inputmode="decimal" min="0" max="1000" step="0.25" placeholder="${ex.bodyweight?'Свой вес / 0':'0'}" data-field="weight" data-exercise="${safe(ex.id)}" value="${safe(draft.weight)}"></div>
@@ -569,7 +579,7 @@
   function deleteProgram(){if(data.programs.length<=1)return notify('Нельзя удалить единственную программу.');const p=currentProgram();if(!confirm(`Удалить программу «${p.name}»? История тренировок и общая библиотека упражнений останутся.`))return;const oldPrograms=data.programs,oldProgramId=activeProgramId,oldWorkoutId=activeWorkout;data.programs=data.programs.filter(x=>x.id!==activeProgramId);activeProgramId=data.programs[0].id;activeWorkout=(getWorkouts()[0]||{}).id||'';if(!persist({snapshot:true,label:`Удалена программа: ${p.name}`})){data.programs=oldPrograms;activeProgramId=oldProgramId;activeWorkout=oldWorkoutId;return;}$('#programDialog').close();renderTraining();renderProgress();notify('Программа удалена; история и библиотека сохранены.');}
   function addWorkoutDay(){const p=currentProgram();const oldWorkout=activeWorkout;const name=`Тренировка ${p.workouts.length+1}`;const w={id:`workout-${uid()}`,name,desc:'',exercises:[]};p.workouts.push(w);activeWorkout=w.id;if(!persist({snapshot:true,label:'Добавлен тренировочный день'})){p.workouts.pop();activeWorkout=oldWorkout;return;}$('#programDialog').close();renderTraining();notify('Добавлен новый день. Теперь добавь в него упражнения.');}
   function renameWorkout(){const name=$('#renameWorkoutName').value.trim();if(!name)return notify('Название дня не должно быть пустым.');const w=getWorkout();if(!w)return;const oldName=w.name;w.name=name;if(!persist({snapshot:true,label:'Переименован тренировочный день'})){w.name=oldName;return;}renderTraining();$('#programDialog').close();notify('Название дня изменено.');}
-  function openExerciseEditor(id){const ex=getExercises().find(e=>e.id===id);if(!ex)return;editingExerciseId=id;pendingImageData=null;$('#editExerciseName').value=ex.name||'';$('#editExerciseMuscle').value=ex.muscle||'';$('#editExerciseTarget').value=ex.target||'';$('#editExerciseSets').value=String(ex.sets||3);$('#editExerciseAlt').value=ex.alt||'';$('#editExerciseImageUrl').value=ex.imageUrl||'';$('#editExerciseVideoUrl').value=ex.videoUrl||'';$('#editExerciseImageFile').value='';$('#removeExerciseImage').checked=false;const src=ex.imageData||validImageLink(ex.imageUrl);$('#exerciseImagePreview').src=src||'';$('#exerciseImagePreview').classList.toggle('hidden',!src);$('#exerciseImagePlaceholder').classList.toggle('hidden',!!src);$('#exerciseDialog').showModal();}
+  function openExerciseEditor(id){const ex=getExercises().find(e=>e.id===id);if(!ex)return;editingExerciseId=id;pendingImageData=null;$('#editExerciseName').value=ex.name||'';$('#editExerciseMuscle').value=ex.muscle||'';$('#editExerciseTarget').value=ex.target||'';$('#editExerciseSets').value=String(ex.sets||3);$('#editExerciseAlt').value=ex.alt||'';$('#editExerciseImageUrl').value=ex.imageUrl||'';$('#editExerciseVideoUrl').value=ex.videoUrl||'';$('#editExerciseImageFile').value='';$('#removeExerciseImage').checked=false;$('#editExerciseReplacementSearch').value='';renderReplacementGroupOptions();renderReplacementOptions();const src=ex.imageData||validImageLink(ex.imageUrl);$('#exerciseImagePreview').src=src||'';$('#exerciseImagePreview').classList.toggle('hidden',!src);$('#exerciseImagePlaceholder').classList.toggle('hidden',!!src);$('#exerciseDialog').showModal();}
   function compressImageFile(file){return new Promise((resolve,reject)=>{if(!file||!file.type.startsWith('image/'))return reject(new Error('Выбери файл изображения.'));const reader=new FileReader();reader.onerror=()=>reject(new Error('Не удалось прочитать картинку.'));reader.onload=()=>{const image=new Image();image.onerror=()=>reject(new Error('Файл не удалось открыть как изображение.'));image.onload=()=>{const max=640,scale=Math.min(1,max/Math.max(image.width,image.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.width*scale));canvas.height=Math.max(1,Math.round(image.height*scale));const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',0.72));};image.src=reader.result;};reader.readAsDataURL(file);});}
   async function saveExerciseEdit(){
     const instance=getWorkout()?.exercises.find(e=>e.id===editingExerciseId);const ex=getExercises().find(e=>e.id===editingExerciseId);if(!ex||!instance)return;
@@ -588,6 +598,62 @@
     if(!persist({snapshot:true,label:`Изменено упражнение: ${name}`})){Object.assign(catalog,oldCatalog);Object.assign(instance,oldInstance);return;}
     $('#exerciseDialog').close();renderTraining();renderProgress();renderExerciseLibraryOptions($('#exerciseLibrarySearch')?.value||'');notify('Карточка упражнения обновлена в общей библиотеке; подходы и повторы текущей программы сохранены.');
   }
+  function renderReplacementGroupOptions(){
+    const select=$('#editExerciseReplacementGroup');if(!select)return;
+    const previous=select.value;const groups=new Set();
+    for(const item of getAvailableExerciseLibrary())for(const group of groupsForLibraryItem(item))groups.add(group);
+    const ordered=[...importedExerciseLibraryGroups.filter(group=>groups.has(group)),...([...groups].filter(group=>!importedExerciseLibraryGroups.includes(group)).sort((a,b)=>a.localeCompare(b,'ru')))];
+    select.innerHTML='<option value="">Все группы</option>'+ordered.map(group=>`<option value="${safe(group)}">${safe(group)}</option>`).join('');
+    select.value=ordered.includes(previous)?previous:'';
+  }
+  function renderReplacementOptions(){
+    const select=$('#editExerciseReplacementSelect');if(!select)return;
+    const previous=select.value;const query=normalizeLibraryText($('#editExerciseReplacementSearch')?.value||'');const group=normalizeLibraryText($('#editExerciseReplacementGroup')?.value||'');
+    const currentInstance=getWorkout()?.exercises.find(item=>item.id===editingExerciseId);
+    const currentCatalogId=currentInstance?.catalogId||'';
+    const items=getAvailableExerciseLibrary().filter(item=>{
+      if(item.id===currentCatalogId)return false;
+      const groups=groupsForLibraryItem(item);if(group&&!groups.some(value=>normalizeLibraryText(value)===group))return false;
+      const searchable=[item.name,item.muscle,item.id,item.sourceOriginalName,...(item.aliases||[]),...(item.sourceMuscleGroups||[]),...groups].join(' ');
+      return !query||normalizeLibraryText(searchable).includes(query);
+    }).sort((a,b)=>a.name.localeCompare(b.name,'ru'));
+    select.innerHTML='<option value="">— Не заменять —</option>'+items.map(item=>`<option value="${safe(item.id)}">${safe(item.name)}${item.muscle?` — ${safe(item.muscle)}`:''}</option>`).join('');
+    select.value=items.some(item=>item.id===previous)?previous:'';
+    $('#applyExerciseReplacementBtn').disabled=!select.value;
+    if(!items.length)select.innerHTML='<option value="">Нет подходящих упражнений</option>';
+  }
+  function replaceExerciseWithLibrary(){
+    const selectedId=$('#editExerciseReplacementSelect').value;
+    const candidate=getAvailableExerciseLibrary().find(item=>item.id===selectedId);
+    const workout=getWorkout();const index=workout?.exercises.findIndex(item=>item.id===editingExerciseId)??-1;
+    if(!candidate||!workout||index<0)return notify('Выбери упражнение из библиотеки для замены.');
+    const oldPlacement=workout.exercises[index];
+    if(oldPlacement.catalogId===candidate.id)return notify('Это уже выбранное упражнение.');
+    const oldCatalog=data.exerciseCatalog.find(item=>item.id===oldPlacement.catalogId);
+    if(!oldCatalog)return notify('Не удалось найти исходное упражнение. Данные не изменены.');
+    const oldExercises=workout.exercises.slice();const oldArchiveLength=(data.archivedPlacements||[]).length;
+    const oldCatalogIndex=data.exerciseCatalog.findIndex(item=>item.id===candidate.id);
+    const oldCatalogCopy=oldCatalogIndex>=0?JSON.parse(JSON.stringify(data.exerciseCatalog[oldCatalogIndex])):null;
+    const draftKeyNow=draftKey();const beforeDraft=data.drafts[draftKeyNow]?JSON.parse(JSON.stringify(data.drafts[draftKeyNow])):null;
+    const newPlacement={id:`placement-${uid()}`,catalogId:candidate.id,target:candidate.defaultTarget||oldPlacement.target||'По плану',sets:clampSets(candidate.defaultSets||oldPlacement.sets),alt:'',replacesCatalogId:oldPlacement.catalogId};
+    if(oldCatalogIndex<0)data.exerciseCatalog.push(normalizeCatalogItem(candidate));
+    else if(candidate.catalogSource==='tulupavel'&&!data.exerciseCatalog[oldCatalogIndex].sourceRecordId){
+      data.exerciseCatalog[oldCatalogIndex].sourceRecordId=candidate.sourceRecordId||'';
+      data.exerciseCatalog[oldCatalogIndex].catalogSource=candidate.catalogSource||'tulupavel';
+    }
+    data.archivedPlacements ||= [];
+    data.archivedPlacements.push({id:`replaced-${uid()}`,programId:activeProgramId,workoutId:activeWorkout,archivedAt:Date.now(),originalPlacement:JSON.parse(JSON.stringify(oldPlacement)),originalExerciseSnapshot:{catalogId:oldCatalog.id,name:oldCatalog.name,muscle:oldCatalog.muscle,imageUrl:oldCatalog.imageUrl||'',imageData:oldCatalog.imageData||'',videoUrl:oldCatalog.videoUrl||''},replacedByPlacementId:newPlacement.id,replacedByCatalogId:candidate.id,replacedByName:candidate.name});
+    workout.exercises.splice(index,1,newPlacement);
+    data.drafts[draftKeyNow] ||= {};data.drafts[draftKeyNow][newPlacement.id]=defaultDraft({...candidate,...newPlacement});
+    if(!persist({snapshot:true,label:`Упражнение заменено на: ${candidate.name}`})){
+      workout.exercises=oldExercises;data.archivedPlacements.length=oldArchiveLength;
+      if(oldCatalogIndex<0)data.exerciseCatalog=data.exerciseCatalog.filter(item=>item.id!==candidate.id);else if(oldCatalogCopy)data.exerciseCatalog[oldCatalogIndex]=oldCatalogCopy;
+      if(beforeDraft)data.drafts[draftKeyNow]=beforeDraft;else delete data.drafts[draftKeyNow];
+      return;
+    }
+    $('#exerciseDialog').close();renderTraining();renderProgress();notify(`Заменено на «${candidate.name}». Прогресс исходного упражнения остался в истории.`);
+  }
+
   async function fillSnapshotDialog(){const snapshots=await listSafetySnapshots();const select=$('#snapshotSelect');select.innerHTML=snapshots.map(item=>`<option value="${safe(item.id)}">${safe(new Date(item.createdAt).toLocaleString('ru-RU'))} — ${safe(item.label)} · v${safe(item.schemaVersion)}</option>`).join('');$('#snapshotEmpty')?.classList.toggle('hidden',snapshots.length>0);$('#restoreSelectedSnapshotBtn').disabled=snapshots.length===0;await updateBackupStatus();}
   async function restoreSelectedSnapshot(){const selected=$('#snapshotSelect').value;if(!selected)return;const list=await listSafetySnapshots();const snap=list.find(item=>item.id===selected);if(!snap)return notify('Контрольная точка не найдена.');if(!confirm(`Восстановить копию от ${new Date(snap.createdAt).toLocaleString('ru-RU')} («${snap.label}»)? Текущие данные сначала попадут в отдельную контрольную точку.`))return;
     const oldData=data,oldProgram=activeProgramId,oldWorkout=activeWorkout;await saveSafetySnapshot('Перед восстановлением контрольной точки');
@@ -596,12 +662,384 @@
       $('#snapshotDialog').close();renderTraining();renderHistory();renderProgress();notify('Контрольная точка восстановлена.');
     }catch(error){data=oldData;activeProgramId=oldProgram;activeWorkout=oldWorkout;notify('Не удалось восстановить контрольную точку. Текущие данные оставлены без изменений.');}
   }
+  // Supabase cloud storage: one revisioned JSON document per authenticated account.
+  const CLOUD_META_PREFIX = 'setlog-cloud-meta-v1:';
+  let cloudClient = null;
+  let cloudSession = null;
+  let cloudUserId = '';
+  let cloudReady = false;
+  let cloudPaused = false;
+  let cloudRevision = 0;
+  let cloudApplying = false;
+  let cloudRecoveryMode = false;
+  let cloudSyncTimer = null;
+  let cloudSyncInFlight = false;
+  let cloudSyncRequested = false;
+  let cloudHandlingPromise = null;
+  let cloudHandlingUserId = '';
+  let pendingCloudChoice = null;
+
+  function cloudConfigIsUsable(){
+    const cfg=window.SETLOG_SUPABASE_CONFIG||{};
+    return !!(window.supabase&&typeof window.supabase.createClient==='function'&&/^https:\/\//.test(String(cfg.url||''))&&String(cfg.anonKey||'').trim().length>20&&!/YOUR[_ -]|PLACEHOLDER|PASTE/i.test(String(cfg.anonKey||'')));
+  }
+  function cloudMetaKey(userId){return CLOUD_META_PREFIX+String(userId||'');}
+  function readCloudMeta(userId){try{return JSON.parse(localStorage.getItem(cloudMetaKey(userId))||'null');}catch(e){return null;}}
+  function writeCloudMeta(userId,revision,localUpdatedAt,cloudUpdatedAt){
+    try{localStorage.setItem(cloudMetaKey(userId),JSON.stringify({userId:String(userId),revision:Number(revision)||0,localUpdatedAt:Number(localUpdatedAt)||0,cloudUpdatedAt:cloudUpdatedAt||null}));}catch(e){console.warn('Could not persist cloud sync metadata',e);}
+  }
+  function setCloudMessage(message,state='info'){
+    const el=$('#cloudAccountStatus');if(el){el.textContent=message;el.dataset.state=state;}
+    if(cloudSession&&state==='error')setStorageStatus(message,'error');
+  }
+  function updateCloudUI(message=null,state='info'){
+    const cfg=window.SETLOG_SUPABASE_CONFIG||{};
+    const settingsPresent=/^https:\/\//.test(String(cfg.url||''))&&String(cfg.anonKey||'').trim().length>20&&!/YOUR[_ -]|PLACEHOLDER|PASTE/i.test(String(cfg.anonKey||''));
+    const configured=cloudConfigIsUsable();
+    const setup=$('#cloudSetupInstructions');const authPanel=$('#authFormPanel');const accountPanel=$('#cloudAccountPanel');
+    if(setup){setup.classList.toggle('hidden',configured);const text=setup.querySelector('.dialog-copy');if(text)text.textContent=settingsPresent?'Не удалось загрузить клиент Supabase из CDN. Проверь соединение с интернетом и перезагрузи приложение. Локальные данные доступны.':'В файле supabase-config.js укажи Project URL и публичный publishable/anon key своего проекта, затем выполни SQL из файла supabase-setup.sql. Секретный service_role key в сайт не вставляй.';}
+    if(authPanel)authPanel.classList.toggle('hidden',!configured||(!!cloudSession&&!cloudRecoveryMode));
+    if(accountPanel)accountPanel.classList.toggle('hidden',!cloudSession);
+    $('#authActionButtons')?.classList.toggle('hidden',cloudRecoveryMode);
+    $('#newPasswordLabel')?.classList.toggle('hidden',!cloudRecoveryMode);
+    $('#authNewPassword')?.classList.toggle('hidden',!cloudRecoveryMode);
+    $('#authSaveNewPasswordBtn')?.classList.toggle('hidden',!cloudRecoveryMode);
+    if(cloudSession){
+      $('#cloudUserEmail').textContent=cloudSession.user?.email||'Аккаунт подключён';
+      $('#accountButtonText').textContent='Облако';
+    }else $('#accountButtonText').textContent='Войти';
+    const status=$('#storageStatusText');
+    if(message)setCloudMessage(message,state);
+    else if(!configured)setCloudMessage(settingsPresent?'Supabase SDK недоступен. Проверь интернет и обнови страницу.':'Локальный режим. Для облачной синхронизации настрой Supabase.', 'local');
+    else if(!cloudSession)setCloudMessage('Войди по email и паролю, чтобы подключить облако.', 'local');
+    else if(cloudPaused)setCloudMessage('Нужно выбрать, какие данные оставить: на этом устройстве или в облаке.', 'warning');
+    else if(cloudReady)setCloudMessage(`Облако подключено · версия ${cloudRevision}`, 'saved');
+    else setCloudMessage('Аккаунт подключён; проверяем и загружаем данные…','pending');
+    if(status&&!cloudSession&&!storageWriteBlocked)status.textContent='Сохранено на этом устройстве';
+  }
+  function hasMeaningfulLocalData(source=data){
+    if(!source||!Array.isArray(source.programs))return false;
+    if((source.history||[]).length>0)return true;
+    if((source.archivedPlacements||[]).length>0)return true;
+    if(source.activeProgramId&&source.activeProgramId!==DEFAULT_PROGRAM_ID)return true;
+    const drafts=source.drafts||{};
+    for(const draftMap of Object.values(drafts))for(const draft of Object.values(draftMap||{}))if(hasDraftData(draft))return true;
+    const baseline=new Map([[DEFAULT_PROGRAM_ID,{name:'Full Body',workouts:PROGRAM}],[GIRLS_PROGRAM_ID,GIRLS_PROGRAM]]);
+    if(source.programs.length!==2)return true;
+    const defaultCatalogDetails=new Map();
+    for(const workout of PROGRAM)for(const exercise of workout.exercises){
+      const media=DEFAULT_MEDIA[exercise.id]||{};
+      defaultCatalogDetails.set(catalogIdFromLegacy(exercise.id),{name:exercise.name,muscle:exercise.muscle||'Своя группа',imageUrl:media.imageUrl||'',videoUrl:media.videoUrl||'',target:exercise.target||'По плану',sets:clampSets(exercise.sets)});
+    }
+    for(const workout of GIRLS_PROGRAM.workouts)for(const exercise of workout.exercises){
+      defaultCatalogDetails.set(catalogIdFromLegacy(exercise.id),{name:exercise.name,muscle:exercise.muscle||'Своя группа',imageUrl:exercise.imageUrl||'',videoUrl:exercise.videoUrl||'',target:exercise.target||'По плану',sets:clampSets(exercise.sets)});
+    }
+    for(const program of source.programs){
+      const base=baseline.get(program.id);if(!base||program.name!==base.name)return true;
+      const baseWorkouts=program.id===DEFAULT_PROGRAM_ID?PROGRAM:GIRLS_PROGRAM.workouts;
+      if((program.workouts||[]).length!==baseWorkouts.length)return true;
+      for(let wi=0;wi<baseWorkouts.length;wi++){
+        const a=program.workouts[wi],b=baseWorkouts[wi];
+        if(!a||a.id!==b.id||a.name!==b.name||(a.exercises||[]).length!==b.exercises.length)return true;
+        for(let ei=0;ei<b.exercises.length;ei++){
+          const instance=a.exercises[ei],original=b.exercises[ei];
+          const catalog=(source.exerciseCatalog||[]).find(item=>item.id===instance.catalogId);
+          if(!instance||instance.id!==original.id||!catalog||catalog.name!==original.name||String(instance.target)!==String(original.target||'По плану')||clampSets(instance.sets)!==clampSets(original.sets)||String(instance.alt||'')!==String(original.alt||''))return true;
+          if(instance.replacesCatalogId)return true;
+        }
+      }
+    }
+    for(const item of source.exerciseCatalog||[]){
+      const expected=defaultCatalogDetails.get(item.id);
+      if(item.custom||!expected)return true;
+      if(String(item.name||'')!==expected.name||String(item.muscle||'')!==expected.muscle||String(item.imageUrl||'')!==expected.imageUrl||String(item.videoUrl||'')!==expected.videoUrl||String(item.defaultTarget||'')!==expected.target||clampSets(item.defaultSets)!==expected.sets||!!item.imageData)return true;
+    }
+    return false;
+  }
+  async function fetchCloudRow(userId){
+    if(!cloudClient)throw new Error('Supabase ещё не настроен.');
+    const {data:row,error}=await cloudClient.from('setlog_user_data').select('user_id,payload,revision,updated_at').eq('user_id',userId).maybeSingle();
+    if(error)throw error;
+    return row||null;
+  }
+  function showCloudChoice(row,reason){
+    pendingCloudChoice={row:row||null,reason:String(reason||'first-login'),userId:cloudSession?.user?.id||''};
+    cloudReady=false;cloudPaused=true;
+    const panel=$('#cloudChoicePanel');panel?.classList.remove('hidden');
+    const description=$('#cloudChoiceDescription');
+    const useCloud=$('#useCloudDataBtn');const useLocal=$('#useLocalDataBtn');
+    if(row){
+      useCloud.textContent='Использовать данные из облака';useCloud.disabled=false;
+      useLocal.textContent='Перенести данные устройства в облако';useLocal.disabled=false;
+      description.textContent=reason==='revision-conflict'
+        ? `Обнаружены параллельные изменения. Облако имеет версию ${row.revision}; локальные изменения не перезаписаны. Выбери источник. Перед заменой текущие данные будут сохранены в локальную контрольную точку.`
+        : `В облаке уже есть данные (версия ${row.revision}), и на этом устройстве тоже есть записи или настройки. Автоматически объединять их небезопасно. Выбери, какой набор станет основным; текущий локальный набор можно будет восстановить из контрольной точки.`;
+    }else{
+      useCloud.textContent='В облаке пока нет данных';useCloud.disabled=true;
+      useLocal.textContent='Перенести данные устройства в облако';useLocal.disabled=false;
+      description.textContent='В облаке пока нет сохранённого дневника. На этом устройстве есть программы, настройки или записи. После создания локальной контрольной точки можно перенести этот набор в новый облачный аккаунт.';
+    }
+    updateCloudUI(reason==='revision-conflict'?'Обнаружен конфликт версий. Локальные данные сохранены; облако не перезаписано.':'Нужно выбрать источник данных перед синхронизацией.','warning');
+    const dialog=$('#accountDialog');if(dialog&&!dialog.open)dialog.showModal();
+  }
+  async function applyCloudPayload(payload,row,label='Загружено из облака'){
+    if(!payload||typeof payload!=='object'||!Array.isArray(payload.programs)||!Array.isArray(payload.history))throw new Error('В облаке сохранён файл неизвестного формата. Локальные данные не изменены.');
+    if(hasMeaningfulLocalData(data)){
+      const backedUp=await saveSafetySnapshot('Перед загрузкой состояния из облака',JSON.stringify(data));
+      if(!backedUp)throw new Error('Не удалось создать локальную контрольную точку. Сначала экспортируй JSON; облачные данные пока не применены.');
+    }
+    const oldData=data,oldProgram=activeProgramId,oldWorkout=activeWorkout;
+    try{
+      cloudApplying=true;
+      data=normalizeData(payload);activeProgramId=data.activeProgramId;activeWorkout=data.activeWorkoutId||getWorkouts(activeProgramId)[0]?.id||'';
+      if(!persist({snapshot:false,label})){throw new Error('Не удалось записать данные из облака на устройство.');}
+      cloudRevision=Number(row?.revision)||0;cloudUserId=cloudSession.user.id;cloudReady=true;cloudPaused=false;pendingCloudChoice=null;
+      writeCloudMeta(cloudUserId,cloudRevision,data.updatedAt,row?.updated_at||null);
+      try{localStorage.setItem(LOCAL_OWNER_KEY,String(cloudUserId));}catch(e){}
+      removeLegacyGuestCopyAfterCloudReady(cloudUserId);
+    }catch(error){data=oldData;activeProgramId=oldProgram;activeWorkout=oldWorkout;throw error;}
+    finally{cloudApplying=false;}
+    $('#cloudChoicePanel')?.classList.add('hidden');
+    $('#workoutDate').value=todayISO();$('#todayLabel').textContent=dateFmt(todayISO()).toUpperCase();
+    renderTraining();renderHistory();renderProgress();
+    setCloudMessage(`${label}. Облако подключено · версия ${cloudRevision}`,'saved');
+    setStorageStatus(`Синхронизировано с облаком · версия ${cloudRevision}`,'saved');
+  }
+  function accountStorageKey(userId){return `${STORAGE_KEY}:user:${String(userId||'')}`;}
+  function renderAfterStorageScopeChange(){
+    activeProgramId=data.activeProgramId||DEFAULT_PROGRAM_ID;
+    activeWorkout=data.activeWorkoutId||getWorkouts(activeProgramId)[0]?.id||'';
+    $('#workoutDate').value=todayISO();$('#todayLabel').textContent=dateFmt(todayISO()).toUpperCase();
+    renderProgramSelector();renderTraining();renderHistory();renderProgress();
+  }
+  async function activateAccountStorage(userId){
+    const uid=String(userId||'');const nextKey=accountStorageKey(uid);
+    if(!uid)throw new Error('Не удалось определить ID пользователя облачного аккаунта.');
+    if(activeStorageKey===nextKey){try{localStorage.setItem(LOCAL_OWNER_KEY,uid);}catch(e){}return false;}
+    let previousOwner='';let nextRaw=null;
+    try{previousOwner=localStorage.getItem(LOCAL_OWNER_KEY)||'';nextRaw=localStorage.getItem(nextKey);}catch(error){throw new Error(`Не удалось прочитать локальное хранилище аккаунта: ${error.message||error}`);}
+    const accountCacheWasNew=!nextRaw;
+    // The first authenticated user may explicitly import the existing guest diary.
+    // A different account never inherits the previous account's local cache.
+    if(!nextRaw&&(!previousOwner||previousOwner===uid)){
+      if(hasMeaningfulLocalData(data)){
+        const backedUp=await saveSafetySnapshot('Перед переносом локальных данных в хранилище аккаунта',JSON.stringify(data));
+        if(!backedUp)throw new Error('Не удалось создать контрольную точку перед разделением хранилища аккаунтов. Экспортируй JSON и повтори.');
+      }
+      try{localStorage.setItem(nextKey,JSON.stringify(data));nextRaw=localStorage.getItem(nextKey);}catch(error){throw new Error(`Не удалось создать локальное хранилище аккаунта: ${error.message||error}`);}
+    }
+    activeStorageKey=nextKey;
+    if(nextRaw){
+      try{const parsed=JSON.parse(nextRaw);if(!parsed||!Array.isArray(parsed.programs)||!Array.isArray(parsed.history))throw new Error('неверная структура');data=normalizeData(parsed);}
+      catch(error){activeStorageKey=STORAGE_KEY;throw new Error('Локальная копия этого аккаунта повреждена. Она не перезаписана; восстанови JSON или контрольную точку.');}
+    }else{
+      data=normalizeData({});
+      try{localStorage.setItem(nextKey,JSON.stringify(data));}catch(error){activeStorageKey=STORAGE_KEY;throw new Error(`Не удалось подготовить локальное хранилище аккаунта: ${error.message||error}`);}
+    }
+    try{localStorage.setItem(LOCAL_OWNER_KEY,uid);}catch(e){console.warn('Не удалось записать метку локального аккаунта',e);}
+    renderAfterStorageScopeChange();
+    return accountCacheWasNew;
+  }
+  function activateGuestStorage(){
+    const leavingAccount=activeStorageKey!==STORAGE_KEY;
+    activeStorageKey=STORAGE_KEY;
+    try{
+      // The account-specific cache remains intact. Never surface its legacy duplicate in guest mode.
+      if(leavingAccount&&localStorage.getItem(LOCAL_OWNER_KEY)){localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(LOCAL_OWNER_KEY);}
+      const raw=localStorage.getItem(STORAGE_KEY);
+      if(raw){const parsed=JSON.parse(raw);if(parsed&&Array.isArray(parsed.programs)&&Array.isArray(parsed.history))data=normalizeData(parsed);else data=normalizeData({});}
+      else{data=normalizeData({});localStorage.setItem(STORAGE_KEY,JSON.stringify(data));}
+    }catch(error){console.warn('Не удалось переключиться на локальное хранилище после выхода:',error);data=normalizeData({});}
+    renderAfterStorageScopeChange();
+  }
+  function removeLegacyGuestCopyAfterCloudReady(userId){
+    if(activeStorageKey===STORAGE_KEY||!cloudReady||String(userId||'')!==String(cloudSession?.user?.id||''))return;
+    try{localStorage.removeItem(STORAGE_KEY);}catch(error){console.warn('Не удалось убрать старую гостевую копию:',error);}
+  }
+  async function handleCloudSession(session){
+    if(!cloudClient||!session?.user?.id)return;
+    const userId=session.user.id;
+    if(cloudHandlingPromise&&cloudHandlingUserId===userId)return cloudHandlingPromise;
+    if(cloudReady&&cloudUserId===userId)return;
+    cloudHandlingUserId=userId;
+    cloudHandlingPromise=(async()=>{
+      cloudSession=session;cloudReady=false;cloudPaused=false;pendingCloudChoice=null;updateCloudUI('Проверяем облачный дневник…','pending');
+      try{
+        const accountCacheWasNew=await activateAccountStorage(userId);
+        const row=await fetchCloudRow(userId);const meta=readCloudMeta(userId);const localImportant=hasMeaningfulLocalData(data);
+        if(accountCacheWasNew){
+          if(row){if(localImportant){showCloudChoice(row,'first-login-with-local-data');return;}await applyCloudPayload(row.payload,row,'Данные из облака загружены');return;}
+          if(localImportant){showCloudChoice(null,'first-login-empty-cloud');return;}
+          cloudRevision=0;cloudUserId=userId;cloudReady=true;cloudPaused=false;setCloudMessage('Создаём первую облачную копию…','pending');await syncCloudState();return;
+        }
+        if(row){
+          if(meta&&meta.userId===userId){
+            const localDirty=Number(data.updatedAt||0)>Number(meta.localUpdatedAt||0);
+            if(localDirty&&Number(row.revision)===Number(meta.revision||0)){
+              cloudRevision=Number(row.revision)||0;cloudUserId=userId;cloudReady=true;cloudPaused=false;
+              setCloudMessage('Есть локальные изменения, ожидающие отправки. Синхронизируем…','pending');scheduleCloudSync(80);
+              return;
+            }
+            if(!localDirty&&Number(row.revision)===Number(meta.revision||0)){
+              cloudRevision=Number(row.revision)||0;cloudUserId=userId;cloudReady=true;cloudPaused=false;
+              writeCloudMeta(userId,cloudRevision,data.updatedAt,row.updated_at||null);
+              setCloudMessage(`Облако синхронизировано · версия ${cloudRevision}`,'saved');setStorageStatus(`Синхронизировано с облаком · версия ${cloudRevision}`,'saved');return;
+            }
+            if(localDirty&&Number(row.revision)>Number(meta.revision||0)){
+              showCloudChoice(row,'revision-conflict');return;
+            }
+            await applyCloudPayload(row.payload,row,'Данные из облака загружены');return;
+          }
+          if(localImportant){showCloudChoice(row,'first-login-with-local-data');return;}
+          await applyCloudPayload(row.payload,row,'Данные из облака загружены');return;
+        }
+        if(localImportant){showCloudChoice(null,'first-login-empty-cloud');return;}
+        cloudRevision=0;cloudUserId=userId;cloudReady=true;cloudPaused=false;
+        setCloudMessage('Создаём первую облачную копию…','pending');await syncCloudState();
+      }catch(error){
+        cloudReady=false;cloudPaused=false;
+        setCloudMessage(`Не удалось подключить облачный дневник: ${error.message||error}. Локальные данные сохранены.`,'error');
+      }
+    })();
+    try{return await cloudHandlingPromise;}finally{cloudHandlingPromise=null;cloudHandlingUserId='';}
+  }
+  function scheduleCloudSync(delay=900){
+    if(!cloudClient||!cloudSession||!cloudReady||cloudPaused||cloudApplying)return;
+    clearTimeout(cloudSyncTimer);
+    if(!navigator.onLine){setStorageStatus('Сохранено на устройстве · нет сети, ожидает облака','pending');setCloudMessage('Нет соединения. Изменения сохранены на устройстве и будут отправлены после восстановления сети.','pending');return;}
+    setStorageStatus('Сохранено на устройстве · синхронизация…','pending');
+    cloudSyncTimer=setTimeout(()=>syncCloudState(),delay);
+  }
+  async function syncCloudState(){
+    if(!cloudClient||!cloudSession||!cloudReady||cloudPaused)return;
+    if(cloudSyncInFlight){cloudSyncRequested=true;return;}
+    if(!navigator.onLine){setStorageStatus('Сохранено на устройстве · нет сети, ожидает облака','pending');return;}
+    cloudSyncInFlight=true;cloudSyncRequested=false;
+    const userId=cloudSession.user.id;const expectedRevision=cloudRevision;
+    const payload=JSON.parse(JSON.stringify(data));payload.schemaVersion=DATA_SCHEMA_VERSION;payload.version=DATA_SCHEMA_VERSION;
+    try{
+      const {data:result,error}=await cloudClient.rpc('save_setlog_state',{p_payload:payload,p_expected_revision:expectedRevision});
+      if(error){
+        const message=String(error.message||error.details||error);
+        if(/revision_conflict|revision conflict|not_authenticated/i.test(message)){
+          const row=await fetchCloudRow(userId).catch(()=>null);
+          if(row)showCloudChoice(row,'revision-conflict');
+          else{cloudReady=false;cloudPaused=true;setCloudMessage('Версия облака изменилась. Локальные данные сохранены; проверь подключение и загрузи облако вручную.','warning');}
+          setStorageStatus('Конфликт синхронизации · локальные данные сохранены','error');
+        }else{
+          setStorageStatus('Ошибка облака · локально сохранено, синхронизация не подтверждена','error');
+          setCloudMessage(`Не удалось синхронизировать данные: ${message}. Локальная копия сохранена.`,'error');
+        }
+        return;
+      }
+      const row=Array.isArray(result)?result[0]:result;
+      cloudRevision=Number(row?.revision)||expectedRevision+1;cloudUserId=userId;cloudReady=true;cloudPaused=false;
+      writeCloudMeta(userId,cloudRevision,payload.updatedAt,row?.updated_at||new Date().toISOString());
+      try{localStorage.setItem(LOCAL_OWNER_KEY,String(userId));}catch(e){}
+      removeLegacyGuestCopyAfterCloudReady(userId);
+      setStorageStatus(`Синхронизировано с облаком · версия ${cloudRevision}`,'saved');
+      setCloudMessage(`Синхронизировано с облаком · версия ${cloudRevision}`,'saved');
+    }catch(error){
+      setStorageStatus('Ошибка облака · локально сохранено, ожидает повтора','error');
+      setCloudMessage(`Синхронизация не удалась: ${error.message||error}. Повтори после восстановления соединения.`,'error');
+    }finally{
+      cloudSyncInFlight=false;
+      if(cloudSyncRequested&&!cloudPaused) scheduleCloudSync(150);
+    }
+  }
+  async function chooseCloudData(){
+    const choice=pendingCloudChoice;if(!choice?.row||!cloudSession)return;
+    try{await applyCloudPayload(choice.row.payload,choice.row,'Данные из облака загружены');notify('Теперь используется версия из облака.');}
+    catch(error){notify(error.message||'Не удалось загрузить данные из облака.');}
+  }
+  async function chooseLocalDataForCloud(){
+    if(!cloudSession||!pendingCloudChoice)return;
+    const row=pendingCloudChoice.row;
+    if(row&&!confirm(`Перенести данные этого устройства и заменить облачную версию ${row.revision}? Перед заменой облачная версия будет сохранена в локальную контрольную точку. Это действие может перезаписать более свежие изменения на другом устройстве.`))return;
+    const localBackup=await saveSafetySnapshot('Перед переносом локальных данных в облако');
+    if(!localBackup){notify('Не удалось создать контрольную точку. Экспортируй JSON и повтори.');return;}
+    if(row){const cloudBackup=await saveSafetySnapshot('Облачная версия перед заменой',JSON.stringify(row.payload));if(!cloudBackup){notify('Не удалось сохранить копию текущих облачных данных. Перезапись отменена.');return;}}
+    cloudRevision=Number(row?.revision)||0;cloudUserId=cloudSession.user.id;cloudReady=true;cloudPaused=false;pendingCloudChoice=null;
+    $('#cloudChoicePanel')?.classList.add('hidden');
+    setCloudMessage('Переносим данные этого устройства в облако…','pending');
+    await syncCloudState();
+  }
+  async function uploadLocalDataToCloud(force=false){
+    if(!cloudClient||!cloudSession)return;
+    let row;
+    try{row=await fetchCloudRow(cloudSession.user.id);}catch(error){return notify(`Не удалось проверить облако: ${error.message||error}`);}
+    if(row&&!force&&!confirm(`В облаке уже есть данные версии ${row.revision}. Записать вместо них текущие данные этого устройства? Сначала будет сохранена копия облачной версии.`))return;
+    if(row){const ok=await saveSafetySnapshot('Облачная версия перед ручной перезаписью',JSON.stringify(row.payload));if(!ok)return notify('Не удалось сохранить облачную версию локально. Перезапись отменена.');}
+    const localBackup=await saveSafetySnapshot('Перед ручным переносом локальных данных в облако');
+    if(!localBackup)return notify('Не удалось создать локальную контрольную точку. Экспортируй JSON и повтори.');
+    cloudRevision=Number(row?.revision)||0;cloudUserId=cloudSession.user.id;cloudReady=true;cloudPaused=false;pendingCloudChoice=null;
+    $('#cloudChoicePanel')?.classList.add('hidden');await syncCloudState();
+  }
+  async function reloadCloudData(){
+    if(!cloudClient||!cloudSession)return;
+    try{const row=await fetchCloudRow(cloudSession.user.id);if(!row)return notify('В облаке пока нет сохранённых данных.');
+      if(hasMeaningfulLocalData(data)&&!confirm('Загрузить облачную версию на это устройство? Текущие локальные данные сначала попадут в контрольную точку.'))return;
+      await applyCloudPayload(row.payload,row,'Данные из облака загружены');pendingCloudChoice=null;notify('Облачные данные загружены.');
+    }catch(error){notify(error.message||'Не удалось загрузить облачные данные.');}
+  }
+  async function initializeSupabaseCloud(){
+    if(!cloudConfigIsUsable()){updateCloudUI();return;}
+    const cfg=window.SETLOG_SUPABASE_CONFIG;
+    cloudClient=window.supabase.createClient(cfg.url.trim(),cfg.anonKey.trim(),{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
+    cloudClient.auth.onAuthStateChange((event,session)=>{
+      cloudSession=session||null;updateCloudUI();
+      if(event==='PASSWORD_RECOVERY'){
+        cloudRecoveryMode=true;updateCloudUI('Открой письмо восстановления и задай новый пароль.','pending');
+        const dialog=$('#accountDialog');if(dialog&&!dialog.open)dialog.showModal();return;
+      }
+      if(event==='SIGNED_OUT'){
+        cloudReady=false;cloudPaused=false;cloudRevision=0;cloudUserId='';pendingCloudChoice=null;cloudRecoveryMode=false;$('#cloudChoicePanel')?.classList.add('hidden');
+        activateGuestStorage();
+        setCloudMessage('Ты вышел из аккаунта. Данные аккаунта сохранены отдельно на устройстве и в облаке.','local');
+        if(!storageWriteBlocked)setStorageStatus('Локальный режим · войди, чтобы открыть облачный дневник','saved');return;
+      }
+      if(session&&['SIGNED_IN','INITIAL_SESSION','TOKEN_REFRESHED','USER_UPDATED'].includes(event))setTimeout(()=>handleCloudSession(session),0);
+    });
+    const {data:sessionData,error}=await cloudClient.auth.getSession();
+    if(error){setCloudMessage(`Не удалось проверить сессию: ${error.message}`,'error');return;}
+    if(sessionData?.session){cloudSession=sessionData.session;updateCloudUI();await handleCloudSession(sessionData.session);}else updateCloudUI();
+  }
+  async function submitAuthAction(action){
+    if(!cloudClient)return notify('Сначала настрой Supabase в supabase-config.js.');
+    const email=$('#authEmail').value.trim();const password=$('#authPassword').value;
+    if(!email)return notify('Введи электронную почту.');
+    setCloudMessage('Обращаемся к Supabase…','pending');
+    try{
+      let result;
+      if(action==='signup'){
+        if(password.length<8)return notify('Для пароля нужно не менее 8 символов.');
+        result=await cloudClient.auth.signUp({email,password,options:{emailRedirectTo:window.location.href.split('#')[0].split('?')[0]}});
+        if(result.error)throw result.error;
+        if(result.data?.session){setCloudMessage('Аккаунт создан. Загружаем облачные данные…','pending');await handleCloudSession(result.data.session);}
+        else setCloudMessage('Аккаунт создан. Проверь почту и подтверди адрес, затем войди в приложение.','pending');
+      }else if(action==='signin'){
+        if(!password)return notify('Введи пароль.');
+        result=await cloudClient.auth.signInWithPassword({email,password});if(result.error)throw result.error;
+        if(result.data?.session)await handleCloudSession(result.data.session);
+      }else if(action==='reset'){
+        result=await cloudClient.auth.resetPasswordForEmail(email,{redirectTo:window.location.href.split('#')[0].split('?')[0]});if(result.error)throw result.error;
+        setCloudMessage('Если аккаунт с таким адресом существует, письмо для сброса пароля отправлено.','pending');
+      }
+    }catch(error){setCloudMessage(`Не удалось выполнить действие: ${error.message||error}`,'error');}
+  }
+  async function saveRecoveredPassword(){
+    if(!cloudClient||!cloudSession)return notify('Сначала открой ссылку восстановления из письма.');
+    const password=$('#authNewPassword').value;if(password.length<8)return notify('Для пароля нужно не менее 8 символов.');
+    const {error}=await cloudClient.auth.updateUser({password});if(error)return setCloudMessage(`Не удалось изменить пароль: ${error.message}`,'error');
+    cloudRecoveryMode=false;$('#authNewPassword').value='';updateCloudUI('Пароль успешно изменён.','saved');await handleCloudSession(cloudSession);notify('Пароль изменён.');
+  }
+
   async function initializeApp(){
     if(storageReadFailure){
       const snapshots=await listSafetySnapshots();let restored=null;
       for(const snap of snapshots){try{const candidate=JSON.parse(snap.payload);if(candidate&&Array.isArray(candidate.history)){restored=candidate;break;}}catch(e){}}
       if(!restored){for(const backupKey of LEGACY_MIGRATION_BACKUP_KEYS){try{const localBackup=localStorage.getItem(backupKey);if(localBackup){const candidate=JSON.parse(localBackup);if(candidate&&Array.isArray(candidate.history)){restored=candidate;break;}}}catch(e){}}}
-      if(restored){data=normalizeData(restored);activeProgramId=data.activeProgramId;activeWorkout=data.activeWorkoutId||getWorkouts(activeProgramId)[0]?.id||'';storageReadFailure=null;storageWriteBlocked=false;try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));}catch(e){storageWriteBlocked=true;}}
+      if(restored){data=normalizeData(restored);activeProgramId=data.activeProgramId;activeWorkout=data.activeWorkoutId||getWorkouts(activeProgramId)[0]?.id||'';storageReadFailure=null;storageWriteBlocked=false;try{localStorage.setItem(activeStorageKey,JSON.stringify(data));}catch(e){storageWriteBlocked=true;}}
       else storageWriteBlocked=true;
     }
     if(initialStorageRaw&&startupNeedsMigration&&!storageReadFailure){
@@ -624,8 +1062,13 @@
   $('#exerciseList').addEventListener('input',e=>{const input=e.target.closest('[data-field]');if(input)updateDraftFromInput(input);});$('#exerciseList').addEventListener('change',e=>{const input=e.target.closest('[data-field]');if(input)updateDraftFromInput(input);});
   $('#saveWorkoutBtn').addEventListener('click',saveWorkout);$('#addExerciseBtn').addEventListener('click',()=>{renderExerciseLibraryGroupOptions();renderExerciseLibraryOptions();$('#addExerciseDialog').showModal();});$('#addLibraryExerciseBtn').addEventListener('click',addLibraryExercise);$('#exerciseLibrarySearch').addEventListener('input',e=>renderExerciseLibraryOptions(e.target.value));$('#exerciseLibraryGroupFilter').addEventListener('change',()=>renderExerciseLibraryOptions());$('#addExerciseForm').addEventListener('submit',e=>{e.preventDefault();addCustomExercise();});
   $('#createProgramBtn').addEventListener('click',createProgram);$('#renameProgramBtn').addEventListener('click',renameProgram);$('#deleteProgramBtn').addEventListener('click',deleteProgram);$('#addWorkoutDayBtn').addEventListener('click',addWorkoutDay);$('#renameWorkoutBtn').addEventListener('click',renameWorkout);
-  $('#editExerciseForm').addEventListener('submit',e=>{e.preventDefault();saveExerciseEdit();});$('#editExerciseImageFile').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{pendingImageData=await compressImageFile(file);const img=$('#exerciseImagePreview');img.src=pendingImageData;img.classList.remove('hidden');$('#exerciseImagePlaceholder').classList.add('hidden');$('#editExerciseImageUrl').value='';$('#removeExerciseImage').checked=false;}catch(err){notify(err.message||'Не удалось загрузить картинку.');}});$('#editExerciseImageUrl').addEventListener('input',()=>{if($('#editExerciseImageUrl').value.trim()){$('#exerciseImagePreview').classList.add('hidden');$('#exerciseImagePlaceholder').classList.remove('hidden');}});
+  $('#editExerciseForm').addEventListener('submit',e=>{e.preventDefault();saveExerciseEdit();});$('#editExerciseReplacementSearch').addEventListener('input',renderReplacementOptions);$('#editExerciseReplacementGroup').addEventListener('change',renderReplacementOptions);$('#editExerciseReplacementSelect').addEventListener('change',()=>{$('#applyExerciseReplacementBtn').disabled=!$('#editExerciseReplacementSelect').value;});$('#applyExerciseReplacementBtn').addEventListener('click',replaceExerciseWithLibrary);$('#editExerciseImageFile').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{pendingImageData=await compressImageFile(file);const img=$('#exerciseImagePreview');img.src=pendingImageData;img.classList.remove('hidden');$('#exerciseImagePlaceholder').classList.add('hidden');$('#editExerciseImageUrl').value='';$('#removeExerciseImage').checked=false;}catch(err){notify(err.message||'Не удалось загрузить картинку.');}});$('#editExerciseImageUrl').addEventListener('input',()=>{if($('#editExerciseImageUrl').value.trim()){$('#exerciseImagePreview').classList.add('hidden');$('#exerciseImagePlaceholder').classList.remove('hidden');}});
   $('#exportBtn').addEventListener('click',exportData);$('#importBtn').addEventListener('click',()=>$('#importFile').click());$('#createSnapshotBtn').addEventListener('click',async()=>{const ok=await saveSafetySnapshot('Ручная контрольная точка');if(ok)notify('Контрольная точка создана на этом устройстве. Для защиты от потери телефона сохрани ещё и JSON-файл.');else notify('Не удалось создать локальную контрольную точку. Экспортируй JSON.');});$('#manageSnapshotsBtn').addEventListener('click',async()=>{await fillSnapshotDialog();$('#snapshotDialog').showModal();});$('#restoreSelectedSnapshotBtn').addEventListener('click',restoreSelectedSnapshot);$('#importFile').addEventListener('change',e=>{if(e.target.files?.[0])importData(e.target.files[0]);e.target.value='';});$('#progressExercise').addEventListener('change',updateProgressForSelection);
   let installPrompt=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});$('#installBtn').addEventListener('click',async()=>{if(installPrompt){installPrompt.prompt();try{await installPrompt.userChoice;}catch(e){}installPrompt=null;}else $('#installDialog').showModal();});
-  initializeApp();
+  $('#accountBtn').addEventListener('click',()=>{updateCloudUI();const dialog=$('#accountDialog');if(dialog&&!dialog.open)dialog.showModal();});$('#closeAccountDialogBtn').addEventListener('click',()=>$('#accountDialog').close());
+  $('#authSignInBtn').addEventListener('click',()=>submitAuthAction('signin'));$('#authSignUpBtn').addEventListener('click',()=>submitAuthAction('signup'));$('#authResetBtn').addEventListener('click',()=>submitAuthAction('reset'));$('#authForm').addEventListener('submit',e=>{e.preventDefault();submitAuthAction('signin');});$('#authSaveNewPasswordBtn').addEventListener('click',saveRecoveredPassword);
+  $('#signOutBtn').addEventListener('click',async()=>{if(!cloudClient)return;if(!confirm('Выйти из облачного аккаунта? Локальные данные останутся на этом устройстве.'))return;const {error}=await cloudClient.auth.signOut();if(error)notify(`Не удалось выйти: ${error.message}`);else notify('Ты вышел из облака.');});
+  $('#cloudSyncNowBtn').addEventListener('click',async()=>{if(!cloudClient||!cloudSession)return;await syncCloudState();});$('#cloudReloadBtn').addEventListener('click',reloadCloudData);$('#cloudUploadLocalBtn').addEventListener('click',()=>uploadLocalDataToCloud(false));$('#useCloudDataBtn').addEventListener('click',chooseCloudData);$('#useLocalDataBtn').addEventListener('click',chooseLocalDataForCloud);
+  window.addEventListener('online',()=>{if(cloudSession&&cloudReady&&!cloudPaused)scheduleCloudSync(300);});
+  initializeApp().then(initializeSupabaseCloud).catch(error=>{console.error('SetLog initialization failed',error);updateCloudUI('Не удалось инициализировать приложение. Локальные данные не очищены.','error');});
 })();

@@ -18,6 +18,7 @@
         <span class="brand-mark">С<span>Е</span>Т</span>
         <span class="brand-sub">ДНЕВНИК ТРЕНИРОВОК</span>
       </a>
+      <button class="account-button" id="accountBtn" type="button" aria-label="Аккаунт и облачная синхронизация" title="Аккаунт и облачная синхронизация"><span class="account-button-dot"></span><span id="accountButtonText">Войти</span></button>
       <button class="icon-button" id="installBtn" type="button" aria-label="Установить приложение" title="Установить приложение">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m-4-4 4 4 4-4M5 16v3h14v-3"/></svg>
       </button>
@@ -37,7 +38,7 @@
         <div class="date-control">
           <label for="workoutDate">ДАТА</label>
           <input id="workoutDate" type="date">
-          <span class="date-note">Сохраняется на этом устройстве</span>
+          <span class="date-note">Локальное сохранение + облачная синхронизация при входе</span>
         </div>
         <div class="storage-status" id="storageStatus" data-state="saved" aria-live="polite"><span class="storage-status-dot">●</span><span id="storageStatusText">Проверяем сохранение…</span></div>
 
@@ -170,7 +171,18 @@
       <label class="field-label" for="editExerciseName">НАЗВАНИЕ</label><input id="editExerciseName" class="text-input" required maxlength="100" placeholder="Название упражнения">
       <label class="field-label" for="editExerciseMuscle">МЫШЕЧНАЯ ГРУППА</label><input id="editExerciseMuscle" class="text-input" maxlength="70" placeholder="Например, грудь">
       <div class="editor-two-col"><div><label class="field-label" for="editExerciseTarget">ПОВТОРЕНИЯ</label><input id="editExerciseTarget" class="text-input" maxlength="30" placeholder="8–12"></div><div><label class="field-label" for="editExerciseSets">ПОДХОДЫ ПО УМОЛЧАНИЮ</label><input id="editExerciseSets" class="text-input" type="number" min="1" max="8" step="1" value="3"></div></div>
-      <label class="field-label" for="editExerciseAlt">ЗАМЕНА (НЕОБЯЗАТЕЛЬНО)</label><input id="editExerciseAlt" class="text-input" maxlength="100" placeholder="Альтернативное упражнение">
+      <label class="field-label" for="editExerciseAlt">ТЕКСТОВАЯ ПОДСКАЗКА / ВАРИАНТ (НЕОБЯЗАТЕЛЬНО)</label><input id="editExerciseAlt" class="text-input" maxlength="100" placeholder="Например, вариант с гантелями">
+      <div class="editor-section replacement-picker">
+        <span class="field-label">ЗАМЕНИТЬ УПРАЖНЕНИЕ В ЭТОЙ ПРОГРАММЕ</span>
+        <label class="field-label" for="editExerciseReplacementSearch">ПОИСК УПРАЖНЕНИЯ ДЛЯ ЗАМЕНЫ</label>
+        <input id="editExerciseReplacementSearch" class="text-input" type="search" placeholder="По названию или мышечной группе">
+        <label class="field-label" for="editExerciseReplacementGroup">МЫШЕЧНАЯ ГРУППА</label>
+        <select id="editExerciseReplacementGroup" class="text-input"><option value="">Все группы</option></select>
+        <label class="field-label" for="editExerciseReplacementSelect">ВЫБРАТЬ ЗАМЕНУ</label>
+        <select id="editExerciseReplacementSelect" class="text-input" size="5"><option value="">Выбери упражнение</option></select>
+        <button id="applyExerciseReplacementBtn" type="button" class="secondary-button wide-button" disabled>Заменить в программе</button>
+        <p class="dialog-copy muted">Старое упражнение уйдёт из активного плана, но останется в архиве и аналитике со всеми прежними весами и повторами. Новая замена начнёт отдельную историю прогресса. Незавершённый черновик старого упражнения сохраняется.</p>
+      </div>
       <div class="editor-section">
         <label class="field-label" for="editExerciseImageUrl">ССЫЛКА НА КАРТИНКУ</label><input id="editExerciseImageUrl" class="text-input" type="url" placeholder="https://…">
         <label class="field-label" for="editExerciseImageFile">ИЛИ ЗАГРУЗИТЬ КАРТИНКУ С ТЕЛЕФОНА</label><input id="editExerciseImageFile" class="file-input" type="file" accept="image/*">
@@ -184,6 +196,48 @@
       </div>
       <button type="submit" class="primary-button wide-button">Сохранить упражнение <span>↗</span></button>
     </form>
+  </dialog>
+
+  <dialog id="accountDialog" class="dialog-card account-dialog">
+    <div class="dialog-top"><span class="section-index">АККАУНТ И ОБЛАКО</span><button class="dialog-close" type="button" id="closeAccountDialogBtn" aria-label="Закрыть">×</button></div>
+    <h2>Твои данные — с тобой.</h2>
+    <p class="dialog-copy">Войди в аккаунт, чтобы хранить программы, историю и личные упражнения в облаке и открывать их на разных устройствах.</p>
+    <div id="cloudAccountStatus" class="cloud-account-status" data-state="local" aria-live="polite">Пока используется локальное хранилище браузера.</div>
+    <div id="cloudSetupInstructions" class="editor-section hidden">
+      <span class="field-label">НУЖНА НАСТРОЙКА SUPABASE</span>
+      <p class="dialog-copy">В файле <code>supabase-config.js</code> укажи Project URL и публичный publishable/anon key своего проекта, затем выполни SQL из файла <code>supabase-setup.sql</code>. Секретный service_role key в сайт не вставляй.</p>
+    </div>
+    <div id="authFormPanel">
+      <form id="authForm" class="editor-section">
+        <label class="field-label" for="authEmail">ЭЛЕКТРОННАЯ ПОЧТА</label>
+        <input id="authEmail" class="text-input" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com">
+        <label class="field-label" for="authPassword">ПАРОЛЬ</label>
+        <input id="authPassword" class="text-input" type="password" autocomplete="current-password" minlength="8" maxlength="128" placeholder="Минимум 8 символов">
+        <label id="newPasswordLabel" class="field-label hidden" for="authNewPassword">НОВЫЙ ПАРОЛЬ</label>
+        <input id="authNewPassword" class="text-input hidden" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="Новый пароль">
+        <div id="authActionButtons" class="auth-action-grid">
+          <button id="authSignInBtn" class="primary-button" type="button">Войти</button>
+          <button id="authSignUpBtn" class="secondary-button" type="button">Создать аккаунт</button>
+          <button id="authResetBtn" class="text-button" type="button">Забыли пароль?</button>
+        </div>
+        <button id="authSaveNewPasswordBtn" class="primary-button wide-button hidden" type="button">Сохранить новый пароль</button>
+      </form>
+    </div>
+    <div id="cloudAccountPanel" class="editor-section hidden">
+      <div class="cloud-user-line"><span class="cloud-user-icon">✓</span><div><strong id="cloudUserEmail"></strong><small>Облачный аккаунт</small></div></div>
+      <div class="cloud-action-grid">
+        <button id="cloudSyncNowBtn" type="button" class="primary-button">Синхронизировать сейчас</button>
+        <button id="cloudReloadBtn" type="button" class="secondary-button">Загрузить из облака</button>
+        <button id="cloudUploadLocalBtn" type="button" class="secondary-button">Записать данные этого устройства в облако</button>
+        <button id="signOutBtn" type="button" class="text-button">Выйти из аккаунта</button>
+      </div>
+      <div id="cloudChoicePanel" class="cloud-choice-panel hidden">
+        <span class="field-label">ВЫБОР ИСТОЧНИКА ДАННЫХ</span>
+        <p id="cloudChoiceDescription" class="dialog-copy"></p>
+        <div class="cloud-action-grid"><button id="useCloudDataBtn" type="button" class="primary-button">Использовать данные из облака</button><button id="useLocalDataBtn" type="button" class="secondary-button">Перенести данные этого устройства</button></div>
+      </div>
+    </div>
+    <p class="dialog-copy muted">Резервные копии по-прежнему нужны. Локальный JSON можно экспортировать в разделе «История»; облако и экспорт — разные уровни защиты.</p>
   </dialog>
 
   <dialog id="installDialog" class="dialog-card">
@@ -206,6 +260,8 @@
     <button id="restoreSelectedSnapshotBtn" type="button" class="primary-button wide-button">Восстановить выбранную копию</button>
   </dialog>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
+  <script src="./supabase-config.js"></script>
   <script src="./app.js"></script>
   <script>
     if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
