@@ -1,0 +1,7 @@
+SetLog 0.9.2
+Date: 2026-10-25
+Release focus: offline sync retry, cloud restore history, plain-language UX
+Data schema: 6 (no data migration required)
+Service worker cache: setlog-cache-v13
+Supabase project: xikwzwqorwdhwhurzmlx
+Planned tag: v0.9.2-offline-recovery (create after manual checks)

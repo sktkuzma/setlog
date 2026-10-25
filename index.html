@@ -38,7 +38,7 @@
         <div class="date-control">
           <label for="workoutDate">ДАТА</label>
           <input id="workoutDate" type="date">
-          <span class="date-note">Локальное сохранение + облачная синхронизация при входе</span>
+          <span class="date-note">Автосохранение · облако после входа в аккаунт</span>
         </div>
         <div class="storage-status" id="storageStatus" data-state="saved" aria-live="polite"><span class="storage-status-dot">●</span><span id="storageStatusText">Проверяем сохранение…</span></div>
 
@@ -73,9 +73,9 @@
         <div id="historyList" class="history-list"></div>
         <div class="empty-state hidden" id="historyEmpty"><div class="empty-mark">↘</div><h3>Пока пусто</h3><p>Сохрани первую тренировку — здесь появится твоя история весов и повторений.</p><button type="button" class="text-button" data-go="training">Перейти к тренировке →</button></div>
         <div class="backup-panel">
-          <div><span class="section-index">ТВОИ ДАННЫЕ</span><h3>Резервная копия</h3><p>Экспортируй журнал в файл и храни его отдельно. При смене телефона файл можно импортировать обратно.</p></div>
-          <div class="backup-actions"><button class="secondary-button" type="button" id="exportBtn">↓ Экспорт JSON</button><button class="secondary-button" type="button" id="importBtn">↑ Импорт JSON</button><button class="secondary-button" type="button" id="createSnapshotBtn">＋ Создать контрольную точку</button><button class="secondary-button" type="button" id="manageSnapshotsBtn">↶ Восстановление</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
-          <p class="auto-backup-status" id="autoBackupStatus">Локальные контрольные точки загружаются… Они хранятся на этом устройстве и не заменяют JSON-файл.</p>
+          <div><span class="section-index">ТВОИ ДАННЫЕ</span><h3>Резервная копия</h3><p>Скачай копию дневника и храни её отдельно. Она поможет восстановить программы и результаты при смене телефона или неполадке.</p></div>
+          <div class="backup-actions"><button class="secondary-button" type="button" id="exportBtn">↓ Скачать резервную копию</button><button class="secondary-button" type="button" id="importBtn">↑ Восстановить копию</button><button class="secondary-button" type="button" id="createSnapshotBtn">＋ Создать копию сейчас</button><button class="secondary-button" type="button" id="manageSnapshotsBtn">↶ История копий</button><input id="importFile" type="file" accept=".setlog,.json,application/json" hidden></div>
+          <p class="auto-backup-status" id="autoBackupStatus">Автоматические копии хранятся на этом устройстве. Для защиты при потере телефона скачивай резервную копию отдельно.</p>
         </div>
       </section>
 
@@ -86,7 +86,7 @@
         <div class="progress-pick"><label for="progressExercise">УПРАЖНЕНИЕ</label><select id="progressExercise"></select></div>
         <div class="metric-grid">
           <div class="metric-card"><span>ПОСЛЕДНИЙ ВЕС</span><strong id="metricWeight">—</strong><small id="metricWeightDelta">Нет записей</small></div>
-          <div class="metric-card"><span>РАСЧЁТНЫЙ МАКС.</span><strong id="metricE1rm">—</strong><small>e1RM · оценка</small></div>
+          <div class="metric-card"><span>РАСЧЁТНЫЙ МАКС.</span><strong id="metricE1rm">—</strong><small>оценка по весу и повторениям</small></div>
           <div class="metric-card"><span>ОБЪЁМ СЕССИИ</span><strong id="metricVolume">—</strong><small>кг × повторения</small></div>
           <div class="metric-card"><span>ЛУЧШИЙ ВЕС</span><strong id="metricBest">—</strong><small>за всю историю</small></div>
         </div>
@@ -99,7 +99,7 @@
           <div class="panel-heading"><div><span class="section-index">ТРЕНД / 02</span><h3>Повторения</h3></div><span class="chart-unit">ПОВТ.</span></div>
           <div id="repsChart" class="chart-wrap"><div class="chart-empty">Недостаточно данных для графика.</div></div>
         </div>
-        <p class="small-print">e1RM — приблизительная оценка силы по весу и повторам, а не результат реального максимального подхода. Сравнивай значения только в рамках одного упражнения и похожей техники.</p>
+        <p class="small-print">Расчётный максимум — приблизительная оценка силы по рабочему весу и повторам, а не фактический максимум. Сравнивай значения только в рамках одного упражнения и похожей техники.</p>
       </section>
     </main>
 
@@ -161,7 +161,7 @@
       <div class="dialog-button-row"><button id="moveWorkoutEarlierBtn" type="button" class="secondary-button">↑ День раньше</button><button id="moveWorkoutLaterBtn" type="button" class="secondary-button">↓ День позже</button></div>
     </div>
     <button id="deleteProgramBtn" type="button" class="danger-button">Удалить текущую программу</button>
-    <p class="dialog-copy muted">Изменения сохраняются на этом телефоне. Для переноса программ и картинок на другое устройство используй экспорт JSON в разделе «История».</p>
+    <p class="dialog-copy muted">Изменения сохраняются автоматически. Войди в аккаунт, чтобы видеть свои программы и результаты на других устройствах.</p>
   </dialog>
 
   <dialog id="exerciseDialog" class="dialog-card">
@@ -188,7 +188,7 @@
         <label class="field-label" for="editExerciseImageFile">ИЛИ ЗАГРУЗИТЬ КАРТИНКУ С ТЕЛЕФОНА</label><input id="editExerciseImageFile" class="file-input" type="file" accept="image/*">
         <div class="image-preview-wrap"><img id="exerciseImagePreview" class="exercise-image-preview hidden" alt="Предпросмотр упражнения"><span id="exerciseImagePlaceholder" class="image-placeholder">Здесь будет картинка упражнения</span></div>
         <label class="check-row"><input id="removeExerciseImage" type="checkbox"> Удалить текущую картинку</label>
-        <p class="dialog-copy muted">Загруженная картинка сжимается и хранится на этом устройстве. Для переноса на другое устройство экспортируй JSON-резервную копию.</p>
+        <p class="dialog-copy muted">Картинка сохраняется вместе с дневником. После синхронизации она будет доступна на других устройствах.</p>
       </div>
       <div class="editor-section">
         <label class="field-label" for="editExerciseVideoUrl">ССЫЛКА НА ВИДЕО С ТЕХНИКОЙ</label><input id="editExerciseVideoUrl" class="text-input" type="url" placeholder="https://t.me/c/… или другая ссылка">
@@ -202,10 +202,10 @@
     <div class="dialog-top"><span class="section-index">АККАУНТ И ОБЛАКО</span><button class="dialog-close" type="button" id="closeAccountDialogBtn" aria-label="Закрыть">×</button></div>
     <h2>Твои данные — с тобой.</h2>
     <p class="dialog-copy">Войди в аккаунт, чтобы хранить программы, историю и личные упражнения в облаке и открывать их на разных устройствах.</p>
-    <div id="cloudAccountStatus" class="cloud-account-status" data-state="local" aria-live="polite">Пока используется локальное хранилище браузера.</div>
+    <div id="cloudAccountStatus" class="cloud-account-status" data-state="local" aria-live="polite">Данные пока хранятся на этом устройстве. Войди в аккаунт, чтобы сохранять их в облаке.</div>
     <div id="cloudSetupInstructions" class="editor-section hidden">
-      <span class="field-label">НУЖНА НАСТРОЙКА SUPABASE</span>
-      <p class="dialog-copy">В файле <code>supabase-config.js</code> укажи Project URL и публичный publishable/anon key своего проекта, затем выполни SQL из файла <code>supabase-setup.sql</code>. Секретный service_role key в сайт не вставляй.</p>
+      <span class="field-label">ОБЛАКО ПОКА НЕ ПОДКЛЮЧЕНО</span>
+      <p class="dialog-copy">Облачное сохранение пока недоступно. Личные записи останутся на этом устройстве. Обнови страницу при наличии интернета или обратись к тому, кто настраивал приложение.</p>
     </div>
     <div id="authFormPanel">
       <form id="authForm" class="editor-section">
@@ -226,18 +226,29 @@
     <div id="cloudAccountPanel" class="editor-section hidden">
       <div class="cloud-user-line"><span class="cloud-user-icon">✓</span><div><strong id="cloudUserEmail"></strong><small>Облачный аккаунт</small></div></div>
       <div class="cloud-action-grid">
-        <button id="cloudSyncNowBtn" type="button" class="primary-button">Синхронизировать сейчас</button>
-        <button id="cloudReloadBtn" type="button" class="secondary-button">Загрузить из облака</button>
-        <button id="cloudUploadLocalBtn" type="button" class="secondary-button">Записать данные этого устройства в облако</button>
-        <button id="signOutBtn" type="button" class="text-button">Выйти из аккаунта</button>
+        <button id="cloudSyncNowBtn" type="button" class="primary-button">Сохранить изменения в облаке</button>
+        <button id="cloudReloadBtn" type="button" class="secondary-button">Обновить с облака</button>
+        <button id="cloudUploadLocalBtn" type="button" class="secondary-button">Перенести копию с этого устройства</button>
+        <button id="cloudHistoryBtn" type="button" class="secondary-button">Предыдущие сохранения</button><button id="signOutBtn" type="button" class="text-button">Выйти из аккаунта</button>
       </div>
       <div id="cloudChoicePanel" class="cloud-choice-panel hidden">
-        <span class="field-label">ВЫБОР ИСТОЧНИКА ДАННЫХ</span>
+        <span class="field-label">КАКУЮ КОПИЮ ОСТАВИТЬ</span>
         <p id="cloudChoiceDescription" class="dialog-copy"></p>
-        <div class="cloud-action-grid"><button id="useCloudDataBtn" type="button" class="primary-button">Использовать данные из облака</button><button id="useLocalDataBtn" type="button" class="secondary-button">Перенести данные этого устройства</button></div>
+        <div class="cloud-action-grid"><button id="useCloudDataBtn" type="button" class="primary-button">Использовать облачную копию</button><button id="useLocalDataBtn" type="button" class="secondary-button">Сохранить копию с устройства</button></div>
       </div>
     </div>
-    <p class="dialog-copy muted">Резервные копии по-прежнему нужны. Локальный JSON можно экспортировать в разделе «История»; облако и экспорт — разные уровни защиты.</p>
+    <p class="dialog-copy muted">Облачная история помогает восстановиться после случайных изменений. Для дополнительной защиты иногда скачивай отдельную резервную копию.</p>
+  </dialog>
+
+  <dialog id="cloudHistoryDialog" class="dialog-card">
+    <div class="dialog-top"><span class="section-index">СОХРАНЁННЫЕ КОПИИ</span><button class="dialog-close" type="button" onclick="document.getElementById('cloudHistoryDialog').close()" aria-label="Закрыть">×</button></div>
+    <h2>Вернуть прежнее состояние</h2>
+    <p class="dialog-copy">Когда меняется программа или история тренировок, мы сохраняем предыдущую копию. Храним до 50 последних копий. Выбери дату, к которой хочешь вернуться; текущее состояние тоже сохранится.</p>
+    <div id="cloudHistoryStatus" class="cloud-account-status" aria-live="polite">Загружаем сохранения…</div>
+    <label class="field-label" for="cloudHistorySelect">ДАТА СОХРАНЕНИЯ</label>
+    <select id="cloudHistorySelect" class="text-input" size="6"></select>
+    <p id="cloudHistoryEmpty" class="dialog-copy muted hidden">Предыдущих облачных копий пока нет. Они начнут появляться после следующих изменений.</p>
+    <button id="restoreCloudHistoryBtn" type="button" class="primary-button wide-button" disabled>Восстановить выбранную версию</button>
   </dialog>
 
   <dialog id="installDialog" class="dialog-card">
@@ -245,19 +256,19 @@
       <div class="dialog-top"><span class="section-index">УСТАНОВКА</span><button class="dialog-close" value="cancel" aria-label="Закрыть">×</button></div>
       <h2>Приложение на телефоне</h2>
       <p class="dialog-copy">Открой эту страницу в браузере телефона. На Android обычно доступно меню «Установить приложение» или «Добавить на главный экран». На iPhone открой в Safari → «Поделиться» → «На экран Домой».</p>
-      <p class="dialog-copy muted">Для установки нужен защищённый HTTPS-адрес. Если открыть файлы просто из архива, приложение будет работать как страница, но установка и офлайн-кэш могут не включиться.</p>
+      <p class="dialog-copy muted">Для установки открой опубликованный сайт по защищённой ссылке в браузере телефона и добавь его на главный экран.</p>
       <button type="submit" class="primary-button wide-button">Понятно</button>
     </form>
   </dialog>
 
 
   <dialog id="snapshotDialog" class="dialog-card">
-    <div class="dialog-top"><span class="section-index">ЛОКАЛЬНЫЕ КОНТРОЛЬНЫЕ ТОЧКИ</span><button class="dialog-close" type="button" onclick="document.getElementById('snapshotDialog').close()" aria-label="Закрыть">×</button></div>
-    <h2>Восстановление данных</h2>
-    <p class="dialog-copy">Выбери локальную копию, созданную приложением до миграции или крупного изменения. Перед восстановлением текущие данные тоже будут сохранены. Контрольные точки остаются на этом устройстве; регулярно сохраняй JSON отдельно.</p>
-    <label class="field-label" for="snapshotSelect">КОНТРОЛЬНАЯ ТОЧКА</label><select id="snapshotSelect" class="text-input" size="6"></select>
-    <p id="snapshotEmpty" class="dialog-copy muted hidden">Пока нет контрольных точек. Создай копию или экспортируй JSON.</p>
-    <button id="restoreSelectedSnapshotBtn" type="button" class="primary-button wide-button">Восстановить выбранную копию</button>
+    <div class="dialog-top"><span class="section-index">КОПИИ НА ЭТОМ УСТРОЙСТВЕ</span><button class="dialog-close" type="button" onclick="document.getElementById('snapshotDialog').close()" aria-label="Закрыть">×</button></div>
+    <h2>Восстановить сохранённую копию</h2>
+    <p class="dialog-copy">Выбери сохранение, чтобы вернуть дневник к прежнему состоянию. Перед восстановлением мы сохраним текущую копию, чтобы ты мог вернуться обратно. Эти копии доступны только на этом устройстве.</p>
+    <label class="field-label" for="snapshotSelect">ВЫБЕРИ КОПИЮ</label><select id="snapshotSelect" class="text-input" size="6"></select>
+    <p id="snapshotEmpty" class="dialog-copy muted hidden">Пока нет сохранённых копий. Они появятся автоматически после изменений.</p>
+    <button id="restoreSelectedSnapshotBtn" type="button" class="primary-button wide-button">Восстановить дневник</button>
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
