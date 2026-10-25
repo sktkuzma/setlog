@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#151713">
+  <meta name="description" content="Дневник тренировок и прогрессии рабочих весов.">
+  <title>СЕТ — дневник тренировок</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#training" aria-label="СЕТ — главная">
+        <span class="brand-mark">С<span>Е</span>Т</span>
+        <span class="brand-sub">ДНЕВНИК ТРЕНИРОВОК</span>
+      </a>
+      <button class="icon-button" id="installBtn" type="button" aria-label="Установить приложение" title="Установить приложение">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m-4-4 4 4 4-4M5 16v3h14v-3"/></svg>
+      </button>
+    </header>
+
+    <main id="appMain">
+      <section class="view active" id="view-training" aria-labelledby="pageTitle">
+        <div class="eyebrow"><span class="live-dot"></span> ТЕКУЩАЯ СЕССИЯ <span class="eyebrow-line"></span> <span id="todayLabel"></span></div>
+        <div class="hero-row">
+          <div>
+            <h1 id="pageTitle">Тренировка<span class="lime-dot">.</span></h1>
+            <p class="subhead">Записывай подходы. Остальное посчитается.</p>
+          </div>
+          <div class="session-number" aria-hidden="true">LOG<br><strong id="sessionNumber">001</strong></div>
+        </div>
+
+        <div class="date-control">
+          <label for="workoutDate">ДАТА</label>
+          <input id="workoutDate" type="date">
+          <span class="date-note">Сохраняется на этом устройстве</span>
+        </div>
+
+        <div class="workout-switch" role="tablist" aria-label="Выбор тренировки">
+          <button class="workout-tab selected" type="button" data-workout="1" role="tab" aria-selected="true"><span>01</span><small>ДЕНЬ</small></button>
+          <button class="workout-tab" type="button" data-workout="2" role="tab" aria-selected="false"><span>02</span><small>ДЕНЬ</small></button>
+          <button class="workout-tab" type="button" data-workout="3" role="tab" aria-selected="false"><span>03</span><small>ДЕНЬ</small></button>
+        </div>
+        <div class="workout-heading">
+          <div><span class="section-index" id="workoutKicker">ПЛАН / 01</span><h2 id="workoutTitle">Верх + ноги</h2></div>
+          <span class="exercise-count" id="exerciseCount">7 УПР.</span>
+        </div>
+        <div id="exerciseList" class="exercise-list"></div>
+        <button class="add-exercise-button" type="button" id="addExerciseBtn"><span>＋</span> Добавить своё упражнение</button>
+        <div class="save-dock">
+          <div class="save-info"><strong id="filledCount">0 упражнений</strong><span>с данными для записи</span></div>
+          <button class="primary-button" type="button" id="saveWorkoutBtn">Сохранить тренировку <span>↗</span></button>
+        </div>
+        <p class="small-print">Подсказка: повторы вводятся отдельно для каждого подхода. Вес указывается общий для упражнения; если вес менялся между подходами, сохрани их отдельными упражнениями или запиши разницу в заметке.</p>
+      </section>
+
+      <section class="view" id="view-history" aria-labelledby="historyTitle">
+        <div class="eyebrow">АРХИВ <span class="eyebrow-line"></span> <span id="historyCounter">0 СЕССИЙ</span></div>
+        <h1 id="historyTitle">История<span class="lime-dot">.</span></h1>
+        <p class="subhead">Каждая тренировка — ещё одна точка отсчёта.</p>
+        <div class="stats-strip">
+          <div><span>ТРЕНИРОВОК</span><strong id="historyStatSessions">0</strong></div>
+          <div><span>УПРАЖНЕНИЙ</span><strong id="historyStatExercises">0</strong></div>
+          <div><span>ПОСЛЕДНЯЯ</span><strong class="stat-date" id="historyStatLast">—</strong></div>
+        </div>
+        <div id="historyList" class="history-list"></div>
+        <div class="empty-state hidden" id="historyEmpty"><div class="empty-mark">↘</div><h3>Пока пусто</h3><p>Сохрани первую тренировку — здесь появится твоя история весов и повторений.</p><button type="button" class="text-button" data-go="training">Перейти к тренировке →</button></div>
+        <div class="backup-panel">
+          <div><span class="section-index">ТВОИ ДАННЫЕ</span><h3>Резервная копия</h3><p>Экспортируй журнал в файл и храни его отдельно. При смене телефона файл можно импортировать обратно.</p></div>
+          <div class="backup-actions"><button class="secondary-button" type="button" id="exportBtn">↓ Экспорт JSON</button><button class="secondary-button" type="button" id="importBtn">↑ Импорт JSON</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-progress" aria-labelledby="progressTitle">
+        <div class="eyebrow">АНАЛИТИКА <span class="eyebrow-line"></span> ДИНАМИКА</div>
+        <h1 id="progressTitle">Прогресс<span class="lime-dot">.</span></h1>
+        <p class="subhead">Не по ощущениям — по записям.</p>
+        <div class="progress-pick"><label for="progressExercise">УПРАЖНЕНИЕ</label><select id="progressExercise"></select></div>
+        <div class="metric-grid">
+          <div class="metric-card"><span>ПОСЛЕДНИЙ ВЕС</span><strong id="metricWeight">—</strong><small id="metricWeightDelta">Нет записей</small></div>
+          <div class="metric-card"><span>РАСЧЁТНЫЙ МАКС.</span><strong id="metricE1rm">—</strong><small>e1RM · оценка</small></div>
+          <div class="metric-card"><span>ОБЪЁМ СЕССИИ</span><strong id="metricVolume">—</strong><small>кг × повторения</small></div>
+          <div class="metric-card"><span>ЛУЧШИЙ ВЕС</span><strong id="metricBest">—</strong><small>за всю историю</small></div>
+        </div>
+        <div class="chart-panel">
+          <div class="panel-heading"><div><span class="section-index">ТРЕНД / 01</span><h3>Рабочий вес</h3></div><span class="chart-unit">КГ</span></div>
+          <div id="weightChart" class="chart-wrap"><div class="chart-empty">Здесь появится график после первой записи.</div></div>
+          <div class="chart-legend"><span class="legend-dot"></span> рабочий вес по тренировкам</div>
+        </div>
+        <div class="chart-panel secondary-chart">
+          <div class="panel-heading"><div><span class="section-index">ТРЕНД / 02</span><h3>Повторения</h3></div><span class="chart-unit">ПОВТ.</span></div>
+          <div id="repsChart" class="chart-wrap"><div class="chart-empty">Недостаточно данных для графика.</div></div>
+        </div>
+        <p class="small-print">e1RM — приблизительная оценка силы по весу и повторам, а не результат реального максимального подхода. Сравнивай значения только в рамках одного упражнения и похожей техники.</p>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Основная навигация">
+      <button class="nav-item active" type="button" data-view="training"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 9v6m4-9v12m8-12v12m4-9v6M8 12h8"/></svg></span><span>Тренировка</span></button>
+      <button class="nav-item" type="button" data-view="history"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 7v5h5M5.2 10A7.5 7.5 0 1 1 5 15m6-7v4l3 2"/></svg></span><span>История</span></button>
+      <button class="nav-item" type="button" data-view="progress"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M7 15l4-4 3 2 5-6"/></svg></span><span>Прогресс</span></button>
+    </nav>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <dialog id="addExerciseDialog" class="dialog-card">
+    <form method="dialog" id="addExerciseForm">
+      <div class="dialog-top"><span class="section-index">СВОЁ УПРАЖНЕНИЕ</span><button class="dialog-close" value="cancel" aria-label="Закрыть">×</button></div>
+      <h2>Добавить в день</h2>
+      <label class="field-label" for="customExerciseName">Название</label><input id="customExerciseName" class="text-input" required maxlength="90" placeholder="Например, подъёмы на носки">
+      <label class="field-label" for="customExerciseTarget">Диапазон повторений</label><input id="customExerciseTarget" class="text-input" maxlength="30" placeholder="8–12">
+      <label class="field-label" for="customExerciseMuscle">Мышечная группа (необязательно)</label><input id="customExerciseMuscle" class="text-input" maxlength="60" placeholder="Спина">
+      <button type="submit" class="primary-button wide-button">Добавить упражнение <span>↗</span></button>
+    </form>
+  </dialog>
+
+  <dialog id="installDialog" class="dialog-card">
+    <form method="dialog">
+      <div class="dialog-top"><span class="section-index">УСТАНОВКА</span><button class="dialog-close" value="cancel" aria-label="Закрыть">×</button></div>
+      <h2>Приложение на телефоне</h2>
+      <p class="dialog-copy">Открой эту страницу в браузере телефона. На Android обычно доступно меню «Установить приложение» или «Добавить на главный экран». На iPhone открой в Safari → «Поделиться» → «На экран Домой».</p>
+      <p class="dialog-copy muted">Для установки нужен защищённый HTTPS-адрес. Если открыть файлы просто из архива, приложение будет работать как страница, но установка и офлайн-кэш могут не включиться.</p>
+      <button type="submit" class="primary-button wide-button">Понятно</button>
+    </form>
+  </dialog>
+
+  <script src="./app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>
