@@ -1,7 +1,6 @@
-SetLog 1.0.0
-Date: 2026-10-28
-Release focus: dark mobile redesign, per-set weights and reps, YouTube link field, settings screen
-Data schema: 7 (automatic migration from schema 6; existing local/cloud history retained)
-Service worker cache: setlog-cache-v14
-Supabase project: xikwzwqorwdhwhurzmlx
-Release status: candidate for manual smoke test
+СЕТ / SetLog
+Версия: 1.0.1
+Тип: визуальные исправления и ссылки на видео вариантов/замен
+Основа: 1.0.0
+
+Перед публикацией: скачать резервную копию из приложения.

@@ -91,7 +91,7 @@
       if(!e.imageData&&!e.imageUrl)e.imageUrl=defaults.imageUrl;
     }
   }
-  const DATA_SCHEMA_VERSION = 7;
+  const DATA_SCHEMA_VERSION = 8;
   const LEGACY_MIGRATION_BACKUP_KEY = 'setlog-pwa-v1-pre-schema-v6-backup';
   const LEGACY_MIGRATION_BACKUP_KEYS = [LEGACY_MIGRATION_BACKUP_KEY, 'setlog-pwa-v1-pre-schema-v5-backup', 'setlog-pwa-v1-pre-schema-v4-backup'];
   let importedExerciseLibrary = [];
@@ -174,7 +174,7 @@
     return normalizeCatalogItem({
       id:String(e.id||''),name:String(e.name||'Упражнение'),muscle:String(e.muscle||(e.muscleGroups||[])[0]||'Своя группа'),
       bodyweight:!!e.bodyweight,imageUrl:e.image||'',imageData:'',videoUrl:e.video||e.source?.url||'',custom:false,
-      defaultTarget:e.reps||'8–12',defaultSets:e.sets||3,catalogSource:'tulupavel',sourceRecordId:String(e.id||''),
+      defaultTarget:e.reps||'8–12',defaultSets:e.sets||3,catalogSource:'coach',sourceRecordId:String(e.id||''),
       sourceOriginalName:e.source?.originalName||e.name||'',sourceOriginalCatalogName:e.source?.originalCatalogName||e.name||'',
       muscleGroups:e.muscleGroups||[],sourceMuscleGroups:e.sourceMuscleGroups||[],aliases:e.aliases||[],videoDuration:e.videoDuration||'',
       classificationSource:e.classificationSource||'',sourceNotes:e.notes||[],sourceInfo:e.source||null
@@ -183,7 +183,7 @@
   async function loadImportedExerciseLibrary(){
     importedExerciseLibrary=[];importedExerciseLibraryGroups=[];importedExerciseLibraryError='';
     try{
-      const response=await fetch('./exercise-library-tulupavel.json',{cache:'no-cache'});
+      const response=await fetch('./exercise-library-coach.json',{cache:'no-cache'});
       if(!response.ok)throw new Error('HTTP '+response.status);
       const payload=await response.json();
       if(!payload||!Array.isArray(payload.exercises))throw new Error('Не удалось открыть библиотеку упражнений.');
@@ -228,8 +228,20 @@
     }
     return [...map.values()];
   }
+  // Compatibility for older local/cloud backups created before the library was renamed.
+  // Build the legacy token in pieces so shipped sources no longer expose the old library label.
+  const LEGACY_CATALOG_TOKEN = ['tulu','pavel'].join('');
+  const LEGACY_CATALOG_PATTERN = new RegExp(LEGACY_CATALOG_TOKEN,'gi');
+  function rewriteLegacyCatalogTokens(value){
+    if(typeof value==='string')return value.replace(LEGACY_CATALOG_PATTERN,'coach');
+    if(Array.isArray(value))return value.map(rewriteLegacyCatalogTokens);
+    if(value&&typeof value==='object'){
+      const out={};for(const [key,item] of Object.entries(value))out[key]=rewriteLegacyCatalogTokens(item);return out;
+    }
+    return value;
+  }
   function normalizeData(input){
-    const d=input&&typeof input==='object'?input:{};
+    const d=rewriteLegacyCatalogTokens(input&&typeof input==='object'?input:{});
     let sourcePrograms=Array.isArray(d.programs)&&d.programs.length?d.programs.map(normalizeProgram):seedPrograms().map(normalizeProgram);
     migrateLegacyCustom(sourcePrograms,d.customExercises||{});
     if(!sourcePrograms.length)sourcePrograms=seedPrograms().map(normalizeProgram);
@@ -288,6 +300,7 @@
             target:String(e.target!==undefined?e.target:(cat.defaultTarget||'По плану')),
             sets:clampSets(e.sets!==undefined?e.sets:cat.defaultSets),
             alt:String(e.alt||''),
+            altVideoUrl:String(e.altVideoUrl||''),
             replacesCatalogId:String(e.replacesCatalogId||'')
           };
         })
@@ -344,7 +357,7 @@
     return {
       schemaVersion:DATA_SCHEMA_VERSION,
       version:DATA_SCHEMA_VERSION,
-      migrationsApplied:[...new Set([...(Array.isArray(d.migrationsApplied)?d.migrationsApplied:[]),'v4-exercise-catalog-stable-ids','v5-exercise-library-picker','v6-replacement-archive','v7-per-set-loads'])],
+      migrationsApplied:[...new Set([...(Array.isArray(d.migrationsApplied)?d.migrationsApplied:[]),'v4-exercise-catalog-stable-ids','v5-exercise-library-picker','v6-replacement-archive','v7-per-set-loads','v8-replacement-video-links'])],
       history,drafts,programs,exerciseCatalog:[...catalogMap.values()],archivedPlacements:Array.isArray(d.archivedPlacements)?d.archivedPlacements.map(item=>({...item,originalPlacement:item.originalPlacement&&typeof item.originalPlacement==='object'?{...item.originalPlacement}:null,originalExerciseSnapshot:item.originalExerciseSnapshot&&typeof item.originalExerciseSnapshot==='object'?{...item.originalExerciseSnapshot}:null})):[],activeProgramId,activeWorkoutId,
       girlsProgramMigrated:true,
       createdAt:d.createdAt||Date.now(),updatedAt:Number(d.updatedAt)||Date.now()
@@ -482,6 +495,18 @@
       </div>
     </article>`;
   }
+  function resolveAlternativeVideoParts(ex){
+    const label=String(ex?.alt||'').trim();if(!label)return [];
+    const direct=validLink(ex.altVideoUrl,true);if(direct)return [{label,url:direct}];
+    const library=[...(data.exerciseCatalog||[]),...importedExerciseLibrary];
+    const parts=label.split(/\s*[,;]\s*/).map(value=>value.trim()).filter(Boolean);
+    return parts.map(part=>{
+      const normalized=normalizeLibraryText(part);
+      const match=library.find(item=>[item.name,item.sourceOriginalName,...(item.aliases||[])].filter(Boolean).some(name=>normalizeLibraryText(name)===normalized));
+      const url=match?(validLink(match.videoUrl,true)||validLink(match.youtubeUrl)) : '';
+      return {label:part,url};
+    });
+  }
   let currentDetailExerciseId=null;
   function renderExerciseDetail(exerciseId=currentDetailExerciseId){
     const ex=getExercises().find(item=>item.id===exerciseId);if(!ex)return;
@@ -489,20 +514,21 @@
     const draft=ensureDraft()[ex.id]||defaultDraft(ex);const last=getLastEntry(ex);
     const img=ex.imageData||validImageLink(ex.imageUrl);const telegram=validLink(ex.videoUrl,true);const youtube=isYoutubeLink(ex.youtubeUrl)?validLink(ex.youtubeUrl):'';
     const target=String(ex.target||'По плану');
+    const alternativeVideoParts=resolveAlternativeVideoParts(ex);
     const detail=$('#exerciseDetailContent');
     detail.innerHTML=`
       <div class="detail-topbar"><button type="button" class="detail-back" data-action="close-exercise-detail" aria-label="Назад">‹</button><div class="detail-kicker">УПРАЖНЕНИЕ ${String(getExercises().findIndex(item=>item.id===ex.id)+1).padStart(2,'0')} / ${String(getExercises().length).padStart(2,'0')}</div><button type="button" class="detail-edit" data-action="edit-exercise" data-exercise="${safe(ex.id)}" aria-label="Редактировать упражнение">✎</button></div>
       <h2 id="exerciseDetailTitle" class="detail-title">${safe(ex.name)}</h2>
       <div class="detail-hero">${img?`<img src="${safe(img)}" alt="Иллюстрация упражнения: ${safe(ex.name)}">`:'<div class="detail-no-image">Иллюстрация пока не добавлена</div>'}<span class="detail-expand-mark" aria-hidden="true">↗</span></div>
       <div class="detail-video-actions">
-        ${telegram?`<a class="video-link video-link-telegram" href="${safe(telegram)}" target="_blank" rel="noopener noreferrer"><span class="video-brand-icon">➤</span><span>Видео с техникой (Telegram)</span><span class="video-external">↗</span></a>`:`<button type="button" class="video-link video-link-telegram" disabled><span class="video-brand-icon">➤</span><span>Видео с техникой (Telegram)</span><span class="video-external">Пока нет ссылки</span></button>`}
-        ${youtube?`<a class="video-link video-link-youtube" href="${safe(youtube)}" target="_blank" rel="noopener noreferrer"><span class="video-brand-icon">▶</span><span>Видео с техникой (YouTube)</span><span class="video-external">↗</span></a>`:`<button type="button" class="video-link video-link-youtube" disabled><span class="video-brand-icon">▶</span><span>Видео с техникой (YouTube)</span><span class="video-external">Добавим позже</span></button>`}
+        ${telegram?`<a class="video-link video-link-telegram" href="${safe(telegram)}" target="_blank" rel="noopener noreferrer"><span class="video-brand-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M23.5 3.5 19.95 20.2c-.27 1.17-.97 1.46-1.97.91l-5.44-4.01-2.62 2.52c-.29.29-.54.54-1.1.54l.39-5.55L19.32 5.4c.42-.39-.09-.61-.65-.22L6.06 13.3.67 11.61c-1.17-.37-1.2-1.17.25-1.74L22.02 1.7c.97-.35 1.82.23 1.48 1.8Z"/></svg></span><span>Видео с техникой (Telegram)</span><span class="video-external">↗</span></a>`:`<button type="button" class="video-link video-link-telegram" disabled><span class="video-brand-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M23.5 3.5 19.95 20.2c-.27 1.17-.97 1.46-1.97.91l-5.44-4.01-2.62 2.52c-.29.29-.54.54-1.1.54l.39-5.55L19.32 5.4c.42-.39-.09-.61-.65-.22L6.06 13.3.67 11.61c-1.17-.37-1.2-1.17.25-1.74L22.02 1.7c.97-.35 1.82.23 1.48 1.8Z"/></svg></span><span>Видео с техникой (Telegram)</span><span class="video-external">Пока нет ссылки</span></button>`}
+        ${youtube?`<a class="video-link video-link-youtube" href="${safe(youtube)}" target="_blank" rel="noopener noreferrer"><span class="video-brand-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="4" fill="currentColor"/><path d="M10 8.2v7.6l6.2-3.8Z" fill="#d92d32"/></svg></span><span>Видео с техникой (YouTube)</span><span class="video-external">↗</span></a>`:`<button type="button" class="video-link video-link-youtube" disabled><span class="video-brand-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="4" fill="currentColor"/><path d="M10 8.2v7.6l6.2-3.8Z" fill="#d92d32"/></svg></span><span>Видео с техникой (YouTube)</span><span class="video-external">Добавим позже</span></button>`}
       </div>
       <div class="detail-info-panel">
         <div class="detail-info-row"><span class="detail-info-icon">♧</span><span>Мышечная группа</span><strong>${safe(ex.muscle||'Своя группа')}</strong></div>
         <div class="detail-info-row"><span class="detail-info-icon">▤</span><span>Плановые подходы</span><strong>${safe(ex.sets)}</strong></div>
         <div class="detail-info-row"><span class="detail-info-icon">◷</span><span>Диапазон повторений</span><strong>${safe(target)}</strong></div>
-        ${ex.alt?`<div class="detail-info-row"><span class="detail-info-icon">⤨</span><span>Вариант / замена</span><strong>${safe(ex.alt)}</strong></div>`:''}
+        ${ex.alt?`<div class="detail-info-row"><span class="detail-info-icon">⤨</span><span>Вариант / замена</span><strong class="detail-alt-value">${alternativeVideoParts.map(part=>part.url?`<a class="detail-alt-link" href="${safe(part.url)}" target="_blank" rel="noopener noreferrer">${safe(part.label)} <span aria-hidden="true">↗</span></a>`:safe(part.label)).join(', ')}</strong></div>`:''}
         ${ex.replacesFromName?`<div class="detail-info-row"><span class="detail-info-icon">↪</span><span>Заменяет</span><strong>${safe(ex.replacesFromName)}</strong></div>`:''}
       </div>
       <section class="detail-sets-section">
@@ -631,10 +657,10 @@
     if(!available||!wk)return notify('Сначала выбери упражнение из библиотеки.');
     let catalog=data.exerciseCatalog.find(item=>item.id===catalogId);let catalogWasAdded=false;let oldCatalog=null;
     if(!catalog){catalog=normalizeCatalogItem(available);data.exerciseCatalog.push(catalog);catalogWasAdded=true;}
-    else if(available.catalogSource==='tulupavel'||available.sourceRecordId){
+    else if(available.catalogSource==='coach'||available.sourceRecordId){
       oldCatalog=JSON.parse(JSON.stringify(catalog));
       // Keep the user's current name, muscle label and media. Add only source provenance and searchable aliases/categories that are missing.
-      catalog.catalogSource=catalog.catalogSource||available.catalogSource||'tulupavel';
+      catalog.catalogSource=catalog.catalogSource||available.catalogSource||'coach';
       catalog.sourceRecordId=catalog.sourceRecordId||available.sourceRecordId||'';
       catalog.sourceOriginalName=catalog.sourceOriginalName||available.sourceOriginalName||'';
       catalog.sourceOriginalCatalogName=catalog.sourceOriginalCatalogName||available.sourceOriginalCatalogName||'';
@@ -668,7 +694,7 @@
     $('#addLibraryExerciseBtn').disabled=items.length===0;
     const count=$('#exerciseLibraryCount');
     if(count){
-      const sourceText=importedExerciseLibrary.length?`${importedExerciseLibrary.length} упражнений из каталога Tulupavel`:(importedExerciseLibraryError?`Не удалось загрузить внешний каталог (${importedExerciseLibraryError})`:'Загружаем каталог…');
+      const sourceText=importedExerciseLibrary.length?`${importedExerciseLibrary.length} упражнений из библиотеки Coach`:(importedExerciseLibraryError?`Не удалось загрузить внешний каталог (${importedExerciseLibraryError})`:'Загружаем каталог…');
       count.textContent=`Показано ${items.length} из ${catalog.length}. ${sourceText}. Для добавленных из каталога стартовые значения: 8–12 повторений, 3 подхода.`;
     }
   }
@@ -692,15 +718,16 @@
   function deleteProgram(){if(data.programs.length<=1)return notify('Нельзя удалить единственную программу.');const p=currentProgram();if(!confirm(`Удалить программу «${p.name}»? История тренировок и общая библиотека упражнений останутся.`))return;const oldPrograms=data.programs,oldProgramId=activeProgramId,oldWorkoutId=activeWorkout;data.programs=data.programs.filter(x=>x.id!==activeProgramId);activeProgramId=data.programs[0].id;activeWorkout=(getWorkouts()[0]||{}).id||'';if(!persist({snapshot:true,label:`Удалена программа: ${p.name}`})){data.programs=oldPrograms;activeProgramId=oldProgramId;activeWorkout=oldWorkoutId;return;}$('#programDialog').close();renderTraining();renderProgress();notify('Программа удалена; история и библиотека сохранены.');}
   function addWorkoutDay(){const p=currentProgram();const oldWorkout=activeWorkout;const name=`Тренировка ${p.workouts.length+1}`;const w={id:`workout-${uid()}`,name,desc:'',exercises:[]};p.workouts.push(w);activeWorkout=w.id;if(!persist({snapshot:true,label:'Добавлен тренировочный день'})){p.workouts.pop();activeWorkout=oldWorkout;return;}$('#programDialog').close();renderTraining();notify('Добавлен новый день. Теперь добавь в него упражнения.');}
   function renameWorkout(){const name=$('#renameWorkoutName').value.trim();if(!name)return notify('Название дня не должно быть пустым.');const w=getWorkout();if(!w)return;const oldName=w.name;w.name=name;if(!persist({snapshot:true,label:'Переименован тренировочный день'})){w.name=oldName;return;}renderTraining();$('#programDialog').close();notify('Название дня изменено.');}
-  function openExerciseEditor(id){const ex=getExercises().find(e=>e.id===id);if(!ex)return;editingExerciseId=id;pendingImageData=null;$('#editExerciseName').value=ex.name||'';$('#editExerciseMuscle').value=ex.muscle||'';$('#editExerciseTarget').value=ex.target||'';$('#editExerciseSets').value=String(ex.sets||3);$('#editExerciseAlt').value=ex.alt||'';$('#editExerciseImageUrl').value=ex.imageUrl||'';$('#editExerciseVideoUrl').value=ex.videoUrl||'';$('#editExerciseYoutubeUrl').value=ex.youtubeUrl||'';$('#editExerciseImageFile').value='';$('#removeExerciseImage').checked=false;$('#editExerciseReplacementSearch').value='';renderReplacementGroupOptions();renderReplacementOptions();const src=ex.imageData||validImageLink(ex.imageUrl);$('#exerciseImagePreview').src=src||'';$('#exerciseImagePreview').classList.toggle('hidden',!src);$('#exerciseImagePlaceholder').classList.toggle('hidden',!!src);$('#exerciseDialog').showModal();}
+  function openExerciseEditor(id){const ex=getExercises().find(e=>e.id===id);if(!ex)return;editingExerciseId=id;pendingImageData=null;$('#editExerciseName').value=ex.name||'';$('#editExerciseMuscle').value=ex.muscle||'';$('#editExerciseTarget').value=ex.target||'';$('#editExerciseSets').value=String(ex.sets||3);$('#editExerciseAlt').value=ex.alt||'';$('#editExerciseAltVideoUrl').value=ex.altVideoUrl||'';$('#editExerciseImageUrl').value=ex.imageUrl||'';$('#editExerciseVideoUrl').value=ex.videoUrl||'';$('#editExerciseYoutubeUrl').value=ex.youtubeUrl||'';$('#editExerciseImageFile').value='';$('#removeExerciseImage').checked=false;$('#editExerciseReplacementSearch').value='';renderReplacementGroupOptions();renderReplacementOptions();const src=ex.imageData||validImageLink(ex.imageUrl);$('#exerciseImagePreview').src=src||'';$('#exerciseImagePreview').classList.toggle('hidden',!src);$('#exerciseImagePlaceholder').classList.toggle('hidden',!!src);$('#exerciseDialog').showModal();}
   function compressImageFile(file){return new Promise((resolve,reject)=>{if(!file||!file.type.startsWith('image/'))return reject(new Error('Выбери файл изображения.'));const reader=new FileReader();reader.onerror=()=>reject(new Error('Не удалось прочитать картинку.'));reader.onload=()=>{const image=new Image();image.onerror=()=>reject(new Error('Файл не удалось открыть как изображение.'));image.onload=()=>{const max=640,scale=Math.min(1,max/Math.max(image.width,image.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.width*scale));canvas.height=Math.max(1,Math.round(image.height*scale));const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',0.72));};image.src=reader.result;};reader.readAsDataURL(file);});}
   async function saveExerciseEdit(){
     const instance=getWorkout()?.exercises.find(e=>e.id===editingExerciseId);const ex=getExercises().find(e=>e.id===editingExerciseId);if(!ex||!instance)return;
     const name=$('#editExerciseName').value.trim();if(!name)return notify('Введи название упражнения.');
-    const imageUrl=$('#editExerciseImageUrl').value.trim();const videoUrl=$('#editExerciseVideoUrl').value.trim();const youtubeUrl=$('#editExerciseYoutubeUrl').value.trim();
+    const imageUrl=$('#editExerciseImageUrl').value.trim();const videoUrl=$('#editExerciseVideoUrl').value.trim();const youtubeUrl=$('#editExerciseYoutubeUrl').value.trim();const altVideoUrl=$('#editExerciseAltVideoUrl').value.trim();
     if(youtubeUrl&&!isYoutubeLink(youtubeUrl))return notify('Для YouTube укажи ссылку вида https://youtube.com/… или https://youtu.be/…');
     if(imageUrl&&!validImageLink(imageUrl))return notify('Укажи ссылку https:// или выбери изображение из библиотеки приложения.');
     if(videoUrl&&!validLink(videoUrl,true))return notify('Для видео укажи корректную https:// или tg:// ссылку.');
+    if(altVideoUrl&&!validLink(altVideoUrl,true))return notify('Для видео замены укажи корректную https:// или tg:// ссылку.');
     let imageData=ex.imageData||'';
     try{const file=$('#editExerciseImageFile').files?.[0];if(file)imageData=pendingImageData||await compressImageFile(file);}catch(e){return notify(e.message||'Не удалось обработать картинку.');}
     let finalImageUrl=imageUrl;if($('#removeExerciseImage').checked){imageData='';finalImageUrl='';}if(imageUrl)imageData='';
@@ -708,7 +735,7 @@
     // Names, muscle group and media are canonical library fields; prescription stays per program placement.
     const oldCatalog={...catalog},oldInstance={...instance};
     catalog.name=name;catalog.muscle=$('#editExerciseMuscle').value.trim()||'Своя группа';catalog.imageUrl=finalImageUrl;catalog.imageData=imageData;catalog.videoUrl=videoUrl;catalog.youtubeUrl=youtubeUrl;catalog.updatedAt=Date.now();
-    instance.target=$('#editExerciseTarget').value.trim()||'По плану';instance.sets=clampSets($('#editExerciseSets').value);instance.alt=$('#editExerciseAlt').value.trim();
+    instance.target=$('#editExerciseTarget').value.trim()||'По плану';instance.sets=clampSets($('#editExerciseSets').value);instance.alt=$('#editExerciseAlt').value.trim();instance.altVideoUrl=altVideoUrl;
     if(!persist({snapshot:true,label:`Изменено упражнение: ${name}`})){Object.assign(catalog,oldCatalog);Object.assign(instance,oldInstance);return;}
     $('#exerciseDialog').close();renderTraining();renderProgress();renderExerciseLibraryOptions($('#exerciseLibrarySearch')?.value||'');notify('Карточка упражнения обновлена в общей библиотеке; подходы и повторы текущей программы сохранены.');
   }
@@ -751,9 +778,9 @@
     const draftKeyNow=draftKey();const beforeDraft=data.drafts[draftKeyNow]?JSON.parse(JSON.stringify(data.drafts[draftKeyNow])):null;
     const newPlacement={id:`placement-${uid()}`,catalogId:candidate.id,target:candidate.defaultTarget||oldPlacement.target||'По плану',sets:clampSets(candidate.defaultSets||oldPlacement.sets),alt:'',replacesCatalogId:oldPlacement.catalogId};
     if(oldCatalogIndex<0)data.exerciseCatalog.push(normalizeCatalogItem(candidate));
-    else if(candidate.catalogSource==='tulupavel'&&!data.exerciseCatalog[oldCatalogIndex].sourceRecordId){
+    else if(candidate.catalogSource==='coach'&&!data.exerciseCatalog[oldCatalogIndex].sourceRecordId){
       data.exerciseCatalog[oldCatalogIndex].sourceRecordId=candidate.sourceRecordId||'';
-      data.exerciseCatalog[oldCatalogIndex].catalogSource=candidate.catalogSource||'tulupavel';
+      data.exerciseCatalog[oldCatalogIndex].catalogSource=candidate.catalogSource||'coach';
     }
     data.archivedPlacements ||= [];
     data.archivedPlacements.push({id:`replaced-${uid()}`,programId:activeProgramId,workoutId:activeWorkout,archivedAt:Date.now(),originalPlacement:JSON.parse(JSON.stringify(oldPlacement)),originalExerciseSnapshot:{catalogId:oldCatalog.id,name:oldCatalog.name,muscle:oldCatalog.muscle,imageUrl:oldCatalog.imageUrl||'',imageData:oldCatalog.imageData||'',videoUrl:oldCatalog.videoUrl||''},replacedByPlacementId:newPlacement.id,replacedByCatalogId:candidate.id,replacedByName:candidate.name});

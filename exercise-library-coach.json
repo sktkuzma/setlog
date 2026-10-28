@@ -1,0 +1,5518 @@
+{
+  "schemaVersion": 1,
+  "catalog": {
+    "id": "coach",
+    "name": "Библиотека упражнений Coach",
+    "application": "СЕТ — дневник тренировок",
+    "sourceChannel": "База упражнений Coach",
+    "sourceChannelUrl": "https://t.me/c/2435165254",
+    "generatedAt": "2026-10-25",
+    "exerciseCount": 201,
+    "notes": [
+      "В поле video хранится ссылка на соответствующее сообщение Telegram, а не прямая ссылка на файл видео.",
+      "Поле image намеренно пустое: экспорт сообщений не содержит стабильных иллюстраций, подходящих для встраивания в приложение.",
+      "Поля reps и sets — редактируемые стартовые значения приложения (8–12 повторений, 3 подхода), а не рекомендации из канала.",
+      "Для группы интерфейса используется короткая категория из muscle / muscleGroups; исходные категории сохранены в sourceMuscleGroups."
+    ]
+  },
+  "muscleGroups": [
+    "Грудь",
+    "Широчайшие",
+    "Трапеции",
+    "Бицепс",
+    "Трицепс",
+    "Плечи",
+    "Предплечья",
+    "Пресс",
+    "Шея",
+    "Ягодицы",
+    "Бицепс бедра",
+    "Квадрицепс",
+    "Приводящие",
+    "Икры",
+    "Разгибатели спины"
+  ],
+  "defaults": {
+    "reps": "8–12",
+    "sets": 3
+  },
+  "exercises": [
+    {
+      "id": "coach-130",
+      "name": "Жим в рычажном тренажере на грудь",
+      "muscle": "Грудь",
+      "muscleGroups": [
+        "Грудь"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/130",
+      "videoDuration": "0:32",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 130,
+        "url": "https://t.me/c/2435165254/130",
+        "originalName": "Жим в рычажном тренажере на грудь",
+        "originalCatalogName": "Жим в рычажном тренажере на грудь"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-175",
+      "name": "Жим в Смите на верх груди",
+      "muscle": "Грудь",
+      "muscleGroups": [
+        "Грудь"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/175",
+      "videoDuration": "0:50",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 175,
+        "url": "https://t.me/c/2435165254/175",
+        "originalName": "Жим в Смите на верх груди",
+        "originalCatalogName": "Жим в Смите на верх груди"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-146",
+      "name": "Жим в тренажере на грудные",
+      "muscle": "Грудь",
+      "muscleGroups": [
+        "Грудь"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/146",
+      "videoDuration": "0:22",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 146,
+        "url": "https://t.me/c/2435165254/146",
+        "originalName": "Жим в тренажере на грудные",
+        "originalCatalogName": "Жим в тренажере на грудные"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-127",
+      "name": "Жим гантелей лежа",
+      "muscle": "Грудь",
+      "muscleGroups": [
+        "Грудь"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/127",
+      "videoDuration": "0:37",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 127,
+        "url": "https://t.me/c/2435165254/127",
+        "originalName": "Жим гантелей лежа",
+        "originalCatalogName": "Жим гантелей лежа"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-128",
+      "name": "Жим гантелей на верх груди",
+      "muscle": "Грудь",
+      "muscleGroups": [
+        "Грудь"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/128",
+      "videoDuration": "0:41",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 128,
+        "url": "https://t.me/c/2435165254/128",
+        "originalName": "Жим гантелей на верх груди",
+        "originalCatalogName": "Жим гантелей на верх груди"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-183",
+      "name": "Жим рычажного тренажера на верх груди",
+      "muscle": "Грудь",
+      "muscleGroups": [
+        "Грудь"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/183",
+      "videoDuration": "0:21",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 183,
+        "url": "https://t.me/c/2435165254/183",
+        "originalName": "Жим рычажного тренажера на верх груди",
+        "originalCatalogName": "Жим рычажного тренажера на верх груди"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-123",
+      "name": "Жим штанги в Смите лёжа",
+      "muscle": "Грудь",
+      "muscleGroups": [
+        "Грудь"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/123",
+      "videoDuration": "0:44",
+      "aliases": [
+        "Жим штанги в Смите"
+      ],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 123,
+        "url": "https://t.me/c/2435165254/123",
+        "originalName": "Жим штанги в Смите",
+        "originalCatalogName": "Жим штанги в Смите"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы"
+      ],
+      "classificationSource": "Предположительно по контексту",
+      "notes": []
+    },
+    {
+      "id": "coach-126",
+      "name": "Жим штанги лежа",
+      "muscle": "Грудь",
+      "muscleGroups": [
+        "Грудь"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/126",
+      "videoDuration": "0:43",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 126,
+        "url": "https://t.me/c/2435165254/126",
+        "originalName": "Жим штанги лежа",
+        "originalCatalogName": "Жим штанги лежа"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-124",
+      "name": "Жим штанги на верх груди",
+      "muscle": "Грудь",
+      "muscleGroups": [
+        "Грудь"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/124",
+      "videoDuration": "0:33",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 124,
+        "url": "https://t.me/c/2435165254/124",
+        "originalName": "Жим штанги на верх груди",
+        "originalCatalogName": "Жим штанги на верх груди"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-312",
+      "name": "Отжимания на брусьях 3 варианта исполнения (грудь, трицепс, гравитрон)",
+      "muscle": "Грудь / Трицепс",
+      "muscleGroups": [
+        "Грудь",
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/312",
+      "videoDuration": "0:47",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 312,
+        "url": "https://t.me/c/2435165254/312",
+        "originalName": "Отжимания на брусьях 3 варианта исполнения (грудь, трицепс, гравитрон)",
+        "originalCatalogName": "Отжимания на брусьях 3 варианта исполнения (грудь, трицепс, гравитрон)"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы",
+        "Трицепс"
+      ],
+      "classificationSource": "По подписи",
+      "notes": [
+        "Составное упражнение: грудь и трицепс; группа указана по подписи источника."
+      ]
+    },
+    {
+      "id": "coach-223",
+      "name": "Отжимания обычные",
+      "muscle": "Грудь",
+      "muscleGroups": [
+        "Грудь"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/223",
+      "videoDuration": "0:25",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 223,
+        "url": "https://t.me/c/2435165254/223",
+        "originalName": "Отжимания обычные",
+        "originalCatalogName": "Отжимания обычные"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-72",
+      "name": "Разводка гантелей на наклонной скамье на верх груди",
+      "muscle": "Грудь",
+      "muscleGroups": [
+        "Грудь"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/72",
+      "videoDuration": "0:37",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 72,
+        "url": "https://t.me/c/2435165254/72",
+        "originalName": "Разводка гантелей на наклонной скамье на верх груди",
+        "originalCatalogName": "Разводка гантелей на наклонной скамье на верх груди"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-139",
+      "name": "Разводки в узком кроссовере",
+      "muscle": "Грудь",
+      "muscleGroups": [
+        "Грудь"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/139",
+      "videoDuration": "0:55",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 139,
+        "url": "https://t.me/c/2435165254/139",
+        "originalName": "Разводки в узком кроссовере",
+        "originalCatalogName": "Разводки в узком кроссовере"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-221",
+      "name": "Разводки с гантелями на полу",
+      "muscle": "Грудь",
+      "muscleGroups": [
+        "Грудь"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/221",
+      "videoDuration": "0:34",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 221,
+        "url": "https://t.me/c/2435165254/221",
+        "originalName": "Разводки с гантелями на полу",
+        "originalCatalogName": "Разводки с гантелями на полу"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-200",
+      "name": "Разводки с гантелями на скамье",
+      "muscle": "Грудь",
+      "muscleGroups": [
+        "Грудь"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/200",
+      "videoDuration": "0:46",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 200,
+        "url": "https://t.me/c/2435165254/200",
+        "originalName": "Разводки с гантелями на скамье",
+        "originalCatalogName": "Разводки с гантелями на скамье"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-125",
+      "name": "Сведение рук в широком кроссовере",
+      "muscle": "Грудь",
+      "muscleGroups": [
+        "Грудь"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/125",
+      "videoDuration": "0:40",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 125,
+        "url": "https://t.me/c/2435165254/125",
+        "originalName": "Сведение рук в широком кроссовере",
+        "originalCatalogName": "Сведение рук в широком кроссовере"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-185",
+      "name": "Сведения бабочка с упором в локти",
+      "muscle": "Грудь",
+      "muscleGroups": [
+        "Грудь"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/185",
+      "videoDuration": "0:26",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 185,
+        "url": "https://t.me/c/2435165254/185",
+        "originalName": "Сведения бабочка с упором в локти",
+        "originalCatalogName": "Сведения бабочка с упором в локти"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-196",
+      "name": "Сведения в бабочке",
+      "muscle": "Грудь",
+      "muscleGroups": [
+        "Грудь"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/196",
+      "videoDuration": "0:51",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 196,
+        "url": "https://t.me/c/2435165254/196",
+        "originalName": "Сведения в бабочке",
+        "originalCatalogName": "Сведения в бабочке"
+      },
+      "sourceMuscleGroups": [
+        "Грудные мышцы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-84",
+      "name": "Pull Around в горизонтальной тяге",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/84",
+      "videoDuration": "0:36",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 84,
+        "url": "https://t.me/c/2435165254/84",
+        "originalName": "Pull Around в горизонтальной тяге",
+        "originalCatalogName": "Pull Around в горизонтальной тяге"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-80",
+      "name": "Горизонтальная тяга нейтральным хватом одной рукой",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/80",
+      "videoDuration": "0:32",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 80,
+        "url": "https://t.me/c/2435165254/80",
+        "originalName": "Горизонтальная тяга нейтральным хватом одной рукой",
+        "originalCatalogName": "Горизонтальная тяга нейтральным хватом одной рукой"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-71",
+      "name": "Горизонтальная тяга нейтральным хватом одной рукой с упором",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/71",
+      "videoDuration": "0:21",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 71,
+        "url": "https://t.me/c/2435165254/71",
+        "originalName": "Горизонтальная тяга нейтральным хватом одной рукой с упором",
+        "originalCatalogName": "Горизонтальная тяга нейтральным хватом одной рукой с упором"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-289",
+      "name": "Депрессия лопатки на одной руке",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/289",
+      "videoDuration": "0:21",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 289,
+        "url": "https://t.me/c/2435165254/289",
+        "originalName": "Депрессия лопатки на одной руке",
+        "originalCatalogName": "Депрессия лопатки на одной руке"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-152",
+      "name": "Подтягивания в гравитроне разные акценты",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/152",
+      "videoDuration": "0:43",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 152,
+        "url": "https://t.me/c/2435165254/152",
+        "originalName": "Подтягивания в гравитроне разные акценты",
+        "originalCatalogName": "Подтягивания в гравитроне разные акценты"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-151",
+      "name": "Подтягивания прямым и параллельным хватом",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/151",
+      "videoDuration": "0:22",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 151,
+        "url": "https://t.me/c/2435165254/151",
+        "originalName": "Подтягивания прямым и параллельным хватом",
+        "originalCatalogName": "Подтягивания прямым и параллельным хватом"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-314",
+      "name": "Подтягивания с резинкой",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/314",
+      "videoDuration": "0:38",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 314,
+        "url": "https://t.me/c/2435165254/314",
+        "originalName": "Подтягивания с резинкой",
+        "originalCatalogName": "Подтягивания с резинкой"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-157",
+      "name": "Пулл эраунд с верхнего блока",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/157",
+      "videoDuration": "0:42",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 157,
+        "url": "https://t.me/c/2435165254/157",
+        "originalName": "Пулл эраунд с верхнего блока",
+        "originalCatalogName": "Пулл эраунд с верхнего блока"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-322",
+      "name": "Пулл эраунд с колена",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/322",
+      "videoDuration": "0:57",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 322,
+        "url": "https://t.me/c/2435165254/322",
+        "originalName": "Пулл эраунд с колена",
+        "originalCatalogName": "Пулл эраунд с колена"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-137",
+      "name": "Пуллэраунд в горизонтальном рычажном тренажере",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/137",
+      "videoDuration": "0:32",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 137,
+        "url": "https://t.me/c/2435165254/137",
+        "originalName": "Пуллэраунд в горизонтальном рычажном тренажере",
+        "originalCatalogName": "Пуллэраунд в горизонтальном рычажном тренажере"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-138",
+      "name": "Пуловер двумя руками с канатом",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/138",
+      "videoDuration": "0:25",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 138,
+        "url": "https://t.me/c/2435165254/138",
+        "originalName": "Пуловер двумя руками с канатом",
+        "originalCatalogName": "Пуловер двумя руками с канатом"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-136",
+      "name": "Пуловер одной рукой на широчайшие",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/136",
+      "videoDuration": "0:29",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 136,
+        "url": "https://t.me/c/2435165254/136",
+        "originalName": "Пуловер одной рукой на широчайшие",
+        "originalCatalogName": "Пуловер одной рукой на широчайшие"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-154",
+      "name": "Тяга в вертикальном рычажном тренажере одной рукой пулл эраунд",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/154",
+      "videoDuration": "0:57",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 154,
+        "url": "https://t.me/c/2435165254/154",
+        "originalName": "Тяга в вертикальном рычажном тренажере одной рукой пулл эраунд",
+        "originalCatalogName": "Тяга в вертикальном рычажном тренажере одной рукой пулл эраунд"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-156",
+      "name": "Тяга в горизонтальном рычажном тренажере на широчайшие одной или двумя руками",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/156",
+      "videoDuration": "0:35",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 156,
+        "url": "https://t.me/c/2435165254/156",
+        "originalName": "Тяга в горизонтальном рычажном тренажере на широчайшие одной или двумя руками",
+        "originalCatalogName": "Тяга в горизонтальном рычажном тренажере на широчайшие одной или двумя руками"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-153",
+      "name": "Тяга вертикального рычажного тренажера двумя руками",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/153",
+      "videoDuration": "0:25",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 153,
+        "url": "https://t.me/c/2435165254/153",
+        "originalName": "Тяга вертикального рычажного тренажера двумя руками",
+        "originalCatalogName": "Тяга вертикального рычажного тренажера двумя руками"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-135",
+      "name": "Тяга вертикального рычажного тренажера одной рукой",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/135",
+      "videoDuration": "0:34",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 135,
+        "url": "https://t.me/c/2435165254/135",
+        "originalName": "Тяга вертикального рычажного тренажера одной рукой",
+        "originalCatalogName": "Тяга вертикального рычажного тренажера одной рукой"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-149",
+      "name": "Тяга верхнего блока на широчайшие двумя руками (разные ручки)",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/149",
+      "videoDuration": "0:57",
+      "aliases": [
+        "Тяга верхнего блока на широчайше двумя руками (разные ручки)"
+      ],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 149,
+        "url": "https://t.me/c/2435165254/149",
+        "originalName": "Тяга верхнего блока на широчайше двумя руками (разные ручки)",
+        "originalCatalogName": "Тяга верхнего блока на широчайше двумя руками (разные ручки)"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-150",
+      "name": "Тяга верхнего блока одной рукой",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/150",
+      "videoDuration": "0:29",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 150,
+        "url": "https://t.me/c/2435165254/150",
+        "originalName": "Тяга верхнего блока одной рукой",
+        "originalCatalogName": "Тяга верхнего блока одной рукой"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-148",
+      "name": "Тяга верхнего блока: круглые и широчайшие мышцы",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/148",
+      "videoDuration": "0:39",
+      "aliases": [
+        "Тяга верхнего блока круглые + широчайше"
+      ],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 148,
+        "url": "https://t.me/c/2435165254/148",
+        "originalName": "Тяга верхнего блока круглые + широчайше",
+        "originalCatalogName": "Тяга верхнего блока круглые + широчайше"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "По подписи; требуется проверка",
+      "notes": []
+    },
+    {
+      "id": "coach-79",
+      "name": "Тяга гантели одной рукой (широчайшие)",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/79",
+      "videoDuration": "0:37",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 79,
+        "url": "https://t.me/c/2435165254/79",
+        "originalName": "Тяга гантели одной рукой (широчайшие)",
+        "originalCatalogName": "Тяга гантели одной рукой (широчайшие)"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-54",
+      "name": "Тяга пулл эраунд в узком кроссовере",
+      "muscle": "Широчайшие",
+      "muscleGroups": [
+        "Широчайшие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/54",
+      "videoDuration": "0:35",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 54,
+        "url": "https://t.me/c/2435165254/54",
+        "originalName": "Тяга пулл эраунд в узком кроссовере",
+        "originalCatalogName": "Тяга пулл эраунд в узком кроссовере"
+      },
+      "sourceMuscleGroups": [
+        "Широчайшие и круглые"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-197",
+      "name": "Горизонтальная тяга на верх спины с упором в грудь в рычажном тренажере",
+      "muscle": "Трапеции",
+      "muscleGroups": [
+        "Трапеции"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/197",
+      "videoDuration": "0:34",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 197,
+        "url": "https://t.me/c/2435165254/197",
+        "originalName": "Горизонтальная тяга на верх спины с упором в грудь в рычажном тренажере",
+        "originalCatalogName": "Горизонтальная тяга на верх спины с упором в грудь в рычажном тренажере"
+      },
+      "sourceMuscleGroups": [
+        "Трапеция"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-63",
+      "name": "Горизонтальная тяга широким хватом",
+      "muscle": "Трапеции",
+      "muscleGroups": [
+        "Трапеции"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/63",
+      "videoDuration": "0:39",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 63,
+        "url": "https://t.me/c/2435165254/63",
+        "originalName": "Горизонтальная тяга широким хватом",
+        "originalCatalogName": "Горизонтальная тяга широким хватом"
+      },
+      "sourceMuscleGroups": [
+        "Трапеция"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-93",
+      "name": "Келсо шраги",
+      "muscle": "Трапеции",
+      "muscleGroups": [
+        "Трапеции"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/93",
+      "videoDuration": "0:31",
+      "aliases": [
+        "Келсо шраги"
+      ],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 93,
+        "url": "https://t.me/c/2435165254/93",
+        "originalName": "Келсо шраги",
+        "originalCatalogName": "Келсо шраги"
+      },
+      "sourceMuscleGroups": [
+        "Трапеция"
+      ],
+      "classificationSource": "По подписи; требуется проверка",
+      "notes": []
+    },
+    {
+      "id": "coach-232",
+      "name": "Келсо шраги одной рукой",
+      "muscle": "Трапеции",
+      "muscleGroups": [
+        "Трапеции"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/232",
+      "videoDuration": "0:37",
+      "aliases": [
+        "Келсо-шраги одной рукой"
+      ],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 232,
+        "url": "https://t.me/c/2435165254/232",
+        "originalName": "Келсо-шраги одной рукой",
+        "originalCatalogName": "Келсо-шраги одной рукой"
+      },
+      "sourceMuscleGroups": [
+        "Трапеция"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-92",
+      "name": "Тяга в наклоне в Смите без упора",
+      "muscle": "Трапеции",
+      "muscleGroups": [
+        "Трапеции"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/92",
+      "videoDuration": "0:27",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 92,
+        "url": "https://t.me/c/2435165254/92",
+        "originalName": "Тяга в наклоне в Смите без упора",
+        "originalCatalogName": "Тяга в наклоне в Смите без упора"
+      },
+      "sourceMuscleGroups": [
+        "Трапеция"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-87",
+      "name": "Тяга гантелей в наклоне",
+      "muscle": "Трапеции",
+      "muscleGroups": [
+        "Трапеции"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/87",
+      "videoDuration": "0:28",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 87,
+        "url": "https://t.me/c/2435165254/87",
+        "originalName": "Тяга гантелей в наклоне",
+        "originalCatalogName": "Тяга гантелей в наклоне"
+      },
+      "sourceMuscleGroups": [
+        "Трапеция"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-90",
+      "name": "Тяга гантелей с упором в грудь",
+      "muscle": "Трапеции",
+      "muscleGroups": [
+        "Трапеции"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/90",
+      "videoDuration": "0:29",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 90,
+        "url": "https://t.me/c/2435165254/90",
+        "originalName": "Тяга гантелей с упором в грудь",
+        "originalCatalogName": "Тяга гантелей с упором в грудь"
+      },
+      "sourceMuscleGroups": [
+        "Трапеция"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-88",
+      "name": "Тяга горизонтального блока широким хватом",
+      "muscle": "Трапеции",
+      "muscleGroups": [
+        "Трапеции"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/88",
+      "videoDuration": "0:40",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 88,
+        "url": "https://t.me/c/2435165254/88",
+        "originalName": "Тяга горизонтального блока широким хватом",
+        "originalCatalogName": "Тяга горизонтального блока широким хватом"
+      },
+      "sourceMuscleGroups": [
+        "Трапеция"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-155",
+      "name": "Тяга рычажного тренажера на верх спины",
+      "muscle": "Трапеции",
+      "muscleGroups": [
+        "Трапеции"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/155",
+      "videoDuration": "0:24",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 155,
+        "url": "https://t.me/c/2435165254/155",
+        "originalName": "Тяга рычажного тренажера на верх спины",
+        "originalCatalogName": "Тяга рычажного тренажера на верх спины"
+      },
+      "sourceMuscleGroups": [
+        "Трапеция"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-229",
+      "name": "Тяга Т-грифа с упором в грудь",
+      "muscle": "Трапеции",
+      "muscleGroups": [
+        "Трапеции"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/229",
+      "videoDuration": "0:50",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 229,
+        "url": "https://t.me/c/2435165254/229",
+        "originalName": "Тяга Т-грифа с упором в грудь",
+        "originalCatalogName": "Тяга Т-грифа с упором в грудь"
+      },
+      "sourceMuscleGroups": [
+        "Трапеция"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-89",
+      "name": "Тяга штанги в наклоне",
+      "muscle": "Трапеции",
+      "muscleGroups": [
+        "Трапеции"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/89",
+      "videoDuration": "0:21",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 89,
+        "url": "https://t.me/c/2435165254/89",
+        "originalName": "Тяга штанги в наклоне",
+        "originalCatalogName": "Тяга штанги в наклоне"
+      },
+      "sourceMuscleGroups": [
+        "Трапеция"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-91",
+      "name": "Шраги в Смите",
+      "muscle": "Трапеции",
+      "muscleGroups": [
+        "Трапеции"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/91",
+      "videoDuration": "0:29",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 91,
+        "url": "https://t.me/c/2435165254/91",
+        "originalName": "Шраги в Смите",
+        "originalCatalogName": "Шраги в Смите"
+      },
+      "sourceMuscleGroups": [
+        "Трапеция"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-61",
+      "name": "Шраги на середину трапеций в Смите",
+      "muscle": "Трапеции",
+      "muscleGroups": [
+        "Трапеции"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/61",
+      "videoDuration": "0:25",
+      "aliases": [
+        "Шраги на середину трапеций в смите"
+      ],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 61,
+        "url": "https://t.me/c/2435165254/61",
+        "originalName": "Шраги на середину трапеций в смите",
+        "originalCatalogName": "Шраги на середину трапеций в смите"
+      },
+      "sourceMuscleGroups": [
+        "Трапеция"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-246",
+      "name": "Шраги с гантелями с паузой вверху",
+      "muscle": "Трапеции",
+      "muscleGroups": [
+        "Трапеции"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/246",
+      "videoDuration": "0:26",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 246,
+        "url": "https://t.me/c/2435165254/246",
+        "originalName": "Шраги с гантелями с паузой вверху",
+        "originalCatalogName": "Шраги с гантелями с паузой вверху"
+      },
+      "sourceMuscleGroups": [
+        "Трапеция"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-62",
+      "name": "Шраги со штангой (2 варианта)",
+      "muscle": "Трапеции",
+      "muscleGroups": [
+        "Трапеции"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/62",
+      "videoDuration": "0:21",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 62,
+        "url": "https://t.me/c/2435165254/62",
+        "originalName": "Шраги со штангой (2 варианта)",
+        "originalCatalogName": "Шраги со штангой (2 варианта)"
+      },
+      "sourceMuscleGroups": [
+        "Трапеция"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-50",
+      "name": "Бицепс байезиан в кроссовере одной рукой",
+      "muscle": "Бицепс",
+      "muscleGroups": [
+        "Бицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/50",
+      "videoDuration": "0:33",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 50,
+        "url": "https://t.me/c/2435165254/50",
+        "originalName": "Бицепс байезиан в кроссовере одной рукой",
+        "originalCatalogName": "Бицепс байезиан в кроссовере одной рукой"
+      },
+      "sourceMuscleGroups": [
+        "Бицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-140",
+      "name": "Бицепс в кроссовере акцент на растянутую позицию короткой головки",
+      "muscle": "Бицепс",
+      "muscleGroups": [
+        "Бицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/140",
+      "videoDuration": "0:41",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 140,
+        "url": "https://t.me/c/2435165254/140",
+        "originalName": "Бицепс в кроссовере акцент на растянутую позицию короткой головки",
+        "originalCatalogName": "Бицепс в кроссовере акцент на растянутую позицию короткой головки"
+      },
+      "sourceMuscleGroups": [
+        "Бицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-96",
+      "name": "Бицепс в тренажере Скотта двумя руками",
+      "muscle": "Бицепс",
+      "muscleGroups": [
+        "Бицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/96",
+      "videoDuration": "0:15",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 96,
+        "url": "https://t.me/c/2435165254/96",
+        "originalName": "Бицепс в тренажере Скотта двумя руками",
+        "originalCatalogName": "Бицепс в тренажере Скотта двумя руками"
+      },
+      "sourceMuscleGroups": [
+        "Бицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-103",
+      "name": "Бицепс в тренажере Скотта одной рукой",
+      "muscle": "Бицепс",
+      "muscleGroups": [
+        "Бицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/103",
+      "videoDuration": "0:20",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 103,
+        "url": "https://t.me/c/2435165254/103",
+        "originalName": "Бицепс в тренажере Скотта одной рукой",
+        "originalCatalogName": "Бицепс в тренажере Скотта одной рукой"
+      },
+      "sourceMuscleGroups": [
+        "Бицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-291",
+      "name": "Бицепс лежа на длинном ролле",
+      "muscle": "Бицепс",
+      "muscleGroups": [
+        "Бицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/291",
+      "videoDuration": "0:25",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 291,
+        "url": "https://t.me/c/2435165254/291",
+        "originalName": "Бицепс лежа на длинном ролле",
+        "originalCatalogName": "Бицепс лежа на длинном ролле"
+      },
+      "sourceMuscleGroups": [
+        "Бицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-94",
+      "name": "Бицепс на лавке без упора локтей",
+      "muscle": "Бицепс",
+      "muscleGroups": [
+        "Бицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/94",
+      "videoDuration": "0:25",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 94,
+        "url": "https://t.me/c/2435165254/94",
+        "originalName": "Бицепс на лавке без упора локтей",
+        "originalCatalogName": "Бицепс на лавке без упора локтей"
+      },
+      "sourceMuscleGroups": [
+        "Бицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-47",
+      "name": "Бицепс одной рукой на скамье Скотта",
+      "muscle": "Бицепс",
+      "muscleGroups": [
+        "Бицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/47",
+      "videoDuration": "0:39",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 47,
+        "url": "https://t.me/c/2435165254/47",
+        "originalName": "Бицепс одной рукой на скамье Скотта",
+        "originalCatalogName": "Бицепс одной рукой на скамье Скотта"
+      },
+      "sourceMuscleGroups": [
+        "Бицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-51",
+      "name": "Бицепс с гантелями стоя (обычный + молотковый хват)",
+      "muscle": "Бицепс",
+      "muscleGroups": [
+        "Бицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/51",
+      "videoDuration": "0:32",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 51,
+        "url": "https://t.me/c/2435165254/51",
+        "originalName": "Бицепс с гантелями стоя (обычный + молотковый хват)",
+        "originalCatalogName": "Бицепс с гантелями стоя (обычный + молотковый хват)"
+      },
+      "sourceMuscleGroups": [
+        "Бицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-95",
+      "name": "Бицепс с упором в валики сидя",
+      "muscle": "Бицепс",
+      "muscleGroups": [
+        "Бицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/95",
+      "videoDuration": "0:25",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 95,
+        "url": "https://t.me/c/2435165254/95",
+        "originalName": "Бицепс с упором в валики сидя",
+        "originalCatalogName": "Бицепс с упором в валики сидя"
+      },
+      "sourceMuscleGroups": [
+        "Бицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-49",
+      "name": "Бицепс сидя молоток",
+      "muscle": "Бицепс",
+      "muscleGroups": [
+        "Бицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/49",
+      "videoDuration": "0:26",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 49,
+        "url": "https://t.me/c/2435165254/49",
+        "originalName": "Бицепс сидя молоток",
+        "originalCatalogName": "Бицепс сидя молоток"
+      },
+      "sourceMuscleGroups": [
+        "Бицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-48",
+      "name": "Бицепс сидя с упором в валики",
+      "muscle": "Бицепс",
+      "muscleGroups": [
+        "Бицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/48",
+      "videoDuration": "0:26",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 48,
+        "url": "https://t.me/c/2435165254/48",
+        "originalName": "Бицепс сидя с упором в валики",
+        "originalCatalogName": "Бицепс сидя с упором в валики"
+      },
+      "sourceMuscleGroups": [
+        "Бицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-224",
+      "name": "Концентрированные подъемы на бицепс с упором в ногу",
+      "muscle": "Бицепс",
+      "muscleGroups": [
+        "Бицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/224",
+      "videoDuration": "0:28",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 224,
+        "url": "https://t.me/c/2435165254/224",
+        "originalName": "Концентрированные подъемы на бицепс с упором в ногу",
+        "originalCatalogName": "Концентрированные подъемы на бицепс с упором в ногу"
+      },
+      "sourceMuscleGroups": [
+        "Бицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-218",
+      "name": "Сгибания в Скотте молотковым хватом (акцент на брахиалис и плечелучевую)",
+      "muscle": "Бицепс",
+      "muscleGroups": [
+        "Бицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/218",
+      "videoDuration": "0:22",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 218,
+        "url": "https://t.me/c/2435165254/218",
+        "originalName": "Сгибания в Скотте молотковым хватом (акцент на брахиалис и плечелучевую)",
+        "originalCatalogName": "Сгибания в Скотте молотковым хватом (акцент на брахиалис и плечелучевую)"
+      },
+      "sourceMuscleGroups": [
+        "Бицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-102",
+      "name": "Сгибания на бицепс лежа на лавке с упором локтей",
+      "muscle": "Бицепс",
+      "muscleGroups": [
+        "Бицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/102",
+      "videoDuration": "0:24",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 102,
+        "url": "https://t.me/c/2435165254/102",
+        "originalName": "Сгибания на бицепс лежа на лавке с упором локтей",
+        "originalCatalogName": "Сгибания на бицепс лежа на лавке с упором локтей"
+      },
+      "sourceMuscleGroups": [
+        "Бицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-97",
+      "name": "Сгибания с гантелью одной рукой Скотт (акцент на лучевую и плечелучевую)",
+      "muscle": "Бицепс",
+      "muscleGroups": [
+        "Бицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/97",
+      "videoDuration": "0:18",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 97,
+        "url": "https://t.me/c/2435165254/97",
+        "originalName": "Сгибания с гантелью одной рукой Скотт (акцент на лучевую и плечелучевую)",
+        "originalCatalogName": "Сгибания с гантелью одной рукой Скотт (акцент на лучевую и плечелучевую)"
+      },
+      "sourceMuscleGroups": [
+        "Бицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-194",
+      "name": "Сгибания с канатом с упором локтя",
+      "muscle": "Бицепс",
+      "muscleGroups": [
+        "Бицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/194",
+      "videoDuration": "0:19",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 194,
+        "url": "https://t.me/c/2435165254/194",
+        "originalName": "Сгибания с канатом с упором локтя",
+        "originalCatalogName": "Сгибания с канатом с упором локтя"
+      },
+      "sourceMuscleGroups": [
+        "Бицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-99",
+      "name": "JM-жим на трицепс",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/99",
+      "videoDuration": "0:27",
+      "aliases": [
+        "JM жим на трицепс"
+      ],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 99,
+        "url": "https://t.me/c/2435165254/99",
+        "originalName": "JM жим на трицепс",
+        "originalCatalogName": "JM жим на трицепс"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-242",
+      "name": "JM-жим с гантелями",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/242",
+      "videoDuration": "0:21",
+      "aliases": [
+        "Jm жим с гантелями"
+      ],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 242,
+        "url": "https://t.me/c/2435165254/242",
+        "originalName": "Jm жим с гантелями",
+        "originalCatalogName": "Jm жим с гантелями"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-101",
+      "name": "Жим на трицепс в гравитроне",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/101",
+      "videoDuration": "0:22",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 101,
+        "url": "https://t.me/c/2435165254/101",
+        "originalName": "Жим на трицепс в гравитроне",
+        "originalCatalogName": "Жим на трицепс в гравитроне"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-100",
+      "name": "Отжимания от пола на трицепс + с колен",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/100",
+      "videoDuration": "0:25",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 100,
+        "url": "https://t.me/c/2435165254/100",
+        "originalName": "Отжимания от пола на трицепс + с колен",
+        "originalCatalogName": "Отжимания от пола на трицепс + с колен"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-98",
+      "name": "Отжимания от Смита на трицепс",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/98",
+      "videoDuration": "0:19",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 98,
+        "url": "https://t.me/c/2435165254/98",
+        "originalName": "Отжимания от Смита на трицепс",
+        "originalCatalogName": "Отжимания от Смита на трицепс"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-69",
+      "name": "Перекрестные разгибания в кроссовере",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/69",
+      "videoDuration": "0:34",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 69,
+        "url": "https://t.me/c/2435165254/69",
+        "originalName": "Перекрестные разгибания в кроссовере",
+        "originalCatalogName": "Перекрестные разгибания в кроссовере"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-199",
+      "name": "Разгибание гантели на трицепс с упором в лавку",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/199",
+      "videoDuration": "0:38",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 199,
+        "url": "https://t.me/c/2435165254/199",
+        "originalName": "Разгибание гантели на трицепс с упором в лавку",
+        "originalCatalogName": "Разгибание гантели на трицепс с упором в лавку"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-76",
+      "name": "Разгибание на трицепс в кроссовере с упором оверхэд",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/76",
+      "videoDuration": "1:01",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 76,
+        "url": "https://t.me/c/2435165254/76",
+        "originalName": "Разгибание на трицепс в кроссовере с упором оверхэд",
+        "originalCatalogName": "Разгибание на трицепс в кроссовере с упором оверхэд"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-74",
+      "name": "Разгибание на трицепс с верхнего блока с косичками",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/74",
+      "videoDuration": "0:57",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 74,
+        "url": "https://t.me/c/2435165254/74",
+        "originalName": "Разгибание на трицепс с верхнего блока с косичками",
+        "originalCatalogName": "Разгибание на трицепс с верхнего блока с косичками"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-78",
+      "name": "Разгибание на трицепс с гантелью над головой с упором в спину",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/78",
+      "videoDuration": "0:39",
+      "aliases": [
+        "Разгибание на трицепс с гатнелью над головой с упором в спину"
+      ],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 78,
+        "url": "https://t.me/c/2435165254/78",
+        "originalName": "Разгибание на трицепс с гатнелью над головой с упором в спину",
+        "originalCatalogName": "Разгибание на трицепс с гатнелью над головой с упором в спину"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-70",
+      "name": "Разгибание на трицепс с нижнего блока",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/70",
+      "videoDuration": "0:31",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 70,
+        "url": "https://t.me/c/2435165254/70",
+        "originalName": "Разгибание на трицепс с нижнего блока",
+        "originalCatalogName": "Разгибание на трицепс с нижнего блока"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-52",
+      "name": "Разгибания в кроссовере одной рукой",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/52",
+      "videoDuration": "0:45",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 52,
+        "url": "https://t.me/c/2435165254/52",
+        "originalName": "Разгибания в кроссовере одной рукой",
+        "originalCatalogName": "Разгибания в кроссовере одной рукой"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-250",
+      "name": "Разгибания верхнего блока с упором спиной",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/250",
+      "videoDuration": "0:23",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 250,
+        "url": "https://t.me/c/2435165254/250",
+        "originalName": "Разгибания верхнего блока с упором спиной",
+        "originalCatalogName": "Разгибания верхнего блока с упором спиной"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-75",
+      "name": "Разгибания каната над головой двумя руками (оверхэд трицепс)",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/75",
+      "videoDuration": "1:01",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 75,
+        "url": "https://t.me/c/2435165254/75",
+        "originalName": "Разгибания каната над головой двумя руками (оверхэд трицепс)",
+        "originalCatalogName": "Разгибания каната над головой двумя руками (оверхэд трицепс)"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-195",
+      "name": "Разгибания на трицепс одной рукой с упором локтя",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/195",
+      "videoDuration": "0:22",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 195,
+        "url": "https://t.me/c/2435165254/195",
+        "originalName": "Разгибания на трицепс одной рукой с упором локтя",
+        "originalCatalogName": "Разгибания на трицепс одной рукой с упором локтя"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-82",
+      "name": "Разгибания на трицепс с верхнего блока в наклоне с упором",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/82",
+      "videoDuration": "0:28",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 82,
+        "url": "https://t.me/c/2435165254/82",
+        "originalName": "Разгибания на трицепс с верхнего блока в наклоне с упором",
+        "originalCatalogName": "Разгибания на трицепс с верхнего блока в наклоне с упором"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-81",
+      "name": "Разгибания унилатерально из-за шеи (акцент на внешнюю головку)",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/81",
+      "videoDuration": "0:24",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 81,
+        "url": "https://t.me/c/2435165254/81",
+        "originalName": "Разгибания унилатерально из-за шеи (акцент на внешнюю головку)",
+        "originalCatalogName": "Разгибания унилатерально из-за шеи (акцент на внешнюю головку)"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-187",
+      "name": "Трицепс в тренажере",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/187",
+      "videoDuration": "0:33",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 187,
+        "url": "https://t.me/c/2435165254/187",
+        "originalName": "Трицепс в тренажере",
+        "originalCatalogName": "Трицепс в тренажере"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-53",
+      "name": "Французский жим с гантелями",
+      "muscle": "Трицепс",
+      "muscleGroups": [
+        "Трицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/53",
+      "videoDuration": "0:20",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 53,
+        "url": "https://t.me/c/2435165254/53",
+        "originalName": "Французский жим с гантелями",
+        "originalCatalogName": "Французский жим с гантелями"
+      },
+      "sourceMuscleGroups": [
+        "Трицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-317",
+      "name": "Внутренняя ротация в кроссовере",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/317",
+      "videoDuration": "0:17",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 317,
+        "url": "https://t.me/c/2435165254/317",
+        "originalName": "Внутренняя ротация в кроссовере",
+        "originalCatalogName": "Внутренняя ротация в кроссовере"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "По подписи",
+      "notes": []
+    },
+    {
+      "id": "coach-176",
+      "name": "Жим в Смите на плечи",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/176",
+      "videoDuration": "0:36",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 176,
+        "url": "https://t.me/c/2435165254/176",
+        "originalName": "Жим в Смите на плечи",
+        "originalCatalogName": "Жим в Смите на плечи"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-249",
+      "name": "Жим на плечи сидя в тренажере",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/249",
+      "videoDuration": "0:44",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 249,
+        "url": "https://t.me/c/2435165254/249",
+        "originalName": "Жим на плечи сидя в тренажере",
+        "originalCatalogName": "Жим на плечи сидя в тренажере"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-56",
+      "name": "Жим с гантелями на переднюю дельту",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/56",
+      "videoDuration": "0:42",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 56,
+        "url": "https://t.me/c/2435165254/56",
+        "originalName": "Жим с гантелями на переднюю дельту",
+        "originalCatalogName": "Жим с гантелями на переднюю дельту"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-319",
+      "name": "Жим штанги над головой",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/319",
+      "videoDuration": "0:48",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 319,
+        "url": "https://t.me/c/2435165254/319",
+        "originalName": "Жим штанги над головой",
+        "originalCatalogName": "Жим штанги над головой"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-169",
+      "name": "Махи Y с гантелями",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/169",
+      "videoDuration": "0:39",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 169,
+        "url": "https://t.me/c/2435165254/169",
+        "originalName": "Махи Y с гантелями",
+        "originalCatalogName": "Махи Y с гантелями"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-225",
+      "name": "Махи Y с упором в лавку",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/225",
+      "videoDuration": "0:37",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 225,
+        "url": "https://t.me/c/2435165254/225",
+        "originalName": "Махи Y с упором в лавку",
+        "originalCatalogName": "Махи Y с упором в лавку"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-55",
+      "name": "Махи в тренажере одной рукой",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/55",
+      "videoDuration": "0:25",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 55,
+        "url": "https://t.me/c/2435165254/55",
+        "originalName": "Махи в тренажере одной рукой",
+        "originalCatalogName": "Махи в тренажере одной рукой"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-145",
+      "name": "Махи в тренажере стоя",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/145",
+      "videoDuration": "0:19",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 145,
+        "url": "https://t.me/c/2435165254/145",
+        "originalName": "Махи в тренажере стоя",
+        "originalCatalogName": "Махи в тренажере стоя"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-104",
+      "name": "Махи в тренажёре + махи в тренажёре одной рукой",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/104",
+      "videoDuration": "0:34",
+      "aliases": [
+        "Махи в тренажере + махи тренажере одной рукой"
+      ],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 104,
+        "url": "https://t.me/c/2435165254/104",
+        "originalName": "Махи в тренажере + махи тренажере одной рукой",
+        "originalCatalogName": "Махи в тренажере + махи тренажере одной рукой"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-57",
+      "name": "Махи на заднюю дельту (можно делать и без лавки, просто в наклоне)",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/57",
+      "videoDuration": "0:43",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 57,
+        "url": "https://t.me/c/2435165254/57",
+        "originalName": "Махи на заднюю дельту (можно делать и без лавки, просто в наклоне)",
+        "originalCatalogName": "Махи на заднюю дельту (можно делать и без лавки, просто в наклоне)"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-111",
+      "name": "Махи на плечи в тренажёре для разведения ног",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/111",
+      "videoDuration": "0:17",
+      "aliases": [
+        "Махи на плечи тренажере для разведения ног"
+      ],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 111,
+        "url": "https://t.me/c/2435165254/111",
+        "originalName": "Махи на плечи тренажере для разведения ног",
+        "originalCatalogName": "Махи на плечи тренажере для разведения ног"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-168",
+      "name": "Махи на скамье полулежа",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/168",
+      "videoDuration": "0:17",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 168,
+        "url": "https://t.me/c/2435165254/168",
+        "originalName": "Махи на скамье полулежа",
+        "originalCatalogName": "Махи на скамье полулежа"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-172",
+      "name": "Махи на среднюю дельту лежа на скамье одной рукой",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/172",
+      "videoDuration": "0:30",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 172,
+        "url": "https://t.me/c/2435165254/172",
+        "originalName": "Махи на среднюю дельту лежа на скамье одной рукой",
+        "originalCatalogName": "Махи на среднюю дельту лежа на скамье одной рукой"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-174",
+      "name": "Обратная бабочка двумя руками",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/174",
+      "videoDuration": "0:19",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 174,
+        "url": "https://t.me/c/2435165254/174",
+        "originalName": "Обратная бабочка двумя руками",
+        "originalCatalogName": "Обратная бабочка двумя руками"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-173",
+      "name": "Обратная бабочка одной рукой",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/173",
+      "videoDuration": "0:33",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 173,
+        "url": "https://t.me/c/2435165254/173",
+        "originalName": "Обратная бабочка одной рукой",
+        "originalCatalogName": "Обратная бабочка одной рукой"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-167",
+      "name": "Отведения в кроссовере двумя руками на заднюю дельту",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/167",
+      "videoDuration": "0:32",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 167,
+        "url": "https://t.me/c/2435165254/167",
+        "originalName": "Отведения в кроссовере двумя руками на заднюю дельту",
+        "originalCatalogName": "Отведения в кроссовере двумя руками на заднюю дельту"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-166",
+      "name": "Отведения в кроссовере одной рукой на заднюю дельту",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/166",
+      "videoDuration": "0:25",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 166,
+        "url": "https://t.me/c/2435165254/166",
+        "originalName": "Отведения в кроссовере одной рукой на заднюю дельту",
+        "originalCatalogName": "Отведения в кроссовере одной рукой на заднюю дельту"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-171",
+      "name": "Отведения на заднюю дельту лежа",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/171",
+      "videoDuration": "0:27",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 171,
+        "url": "https://t.me/c/2435165254/171",
+        "originalName": "Отведения на заднюю дельту лежа",
+        "originalCatalogName": "Отведения на заднюю дельту лежа"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-83",
+      "name": "Отведения на среднюю дельту одной рукой (за спиной)",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/83",
+      "videoDuration": "0:54",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 83,
+        "url": "https://t.me/c/2435165254/83",
+        "originalName": "Отведения на среднюю дельту одной рукой (за спиной)",
+        "originalCatalogName": "Отведения на среднюю дельту одной рукой (за спиной)"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-73",
+      "name": "Отведения на среднюю дельту одной рукой (перед собой)",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/73",
+      "videoDuration": "0:58",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 73,
+        "url": "https://t.me/c/2435165254/73",
+        "originalName": "Отведения на среднюю дельту одной рукой (перед собой)",
+        "originalCatalogName": "Отведения на среднюю дельту одной рукой (перед собой)"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-170",
+      "name": "Протяжка на заднюю дельту лежа",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/170",
+      "videoDuration": "0:16",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 170,
+        "url": "https://t.me/c/2435165254/170",
+        "originalName": "Протяжка на заднюю дельту лежа",
+        "originalCatalogName": "Протяжка на заднюю дельту лежа"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-316",
+      "name": "Ротация в кроссовере в горизонтальном положении плеча",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/316",
+      "videoDuration": "0:11",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 316,
+        "url": "https://t.me/c/2435165254/316",
+        "originalName": "Ротация в кроссовере в горизонтальном положении плеча",
+        "originalCatalogName": "Ротация в кроссовере в горизонтальном положении плеча"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "По подписи",
+      "notes": []
+    },
+    {
+      "id": "coach-315",
+      "name": "Ротация плеча в кроссовере",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/315",
+      "videoDuration": "0:16",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 315,
+        "url": "https://t.me/c/2435165254/315",
+        "originalName": "Ротация плеча в кроссовере",
+        "originalCatalogName": "Ротация плеча в кроссовере"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "По подписи",
+      "notes": []
+    },
+    {
+      "id": "coach-324",
+      "name": "Ротация плеча с гантелей лежа на скамье или полу",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/324",
+      "videoDuration": "0:28",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 324,
+        "url": "https://t.me/c/2435165254/324",
+        "originalName": "Ротация плеча с гантелей лежа на скамье или полу",
+        "originalCatalogName": "Ротация плеча с гантелей лежа на скамье или полу"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "По подписи",
+      "notes": []
+    },
+    {
+      "id": "coach-245",
+      "name": "Тяга канатной ручки на плечи «фейс-пулл»",
+      "muscle": "Плечи",
+      "muscleGroups": [
+        "Плечи"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/245",
+      "videoDuration": "0:30",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 245,
+        "url": "https://t.me/c/2435165254/245",
+        "originalName": "Тяга канатной ручки на плечи «фейс-пулл»",
+        "originalCatalogName": "Тяга канатной ручки на плечи «фейс-пулл»"
+      },
+      "sourceMuscleGroups": [
+        "Плечи"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-231",
+      "name": "Подъемы гири за спиной на предплечья",
+      "muscle": "Предплечья",
+      "muscleGroups": [
+        "Предплечья"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/231",
+      "videoDuration": "0:21",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 231,
+        "url": "https://t.me/c/2435165254/231",
+        "originalName": "Подъемы гири за спиной на предплечья",
+        "originalCatalogName": "Подъемы гири за спиной на предплечья"
+      },
+      "sourceMuscleGroups": [
+        "Предплечья"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-237",
+      "name": "Подъемы гири перед собой на предплечья",
+      "muscle": "Предплечья",
+      "muscleGroups": [
+        "Предплечья"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/237",
+      "videoDuration": "0:27",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 237,
+        "url": "https://t.me/c/2435165254/237",
+        "originalName": "Подъемы гири перед собой на предплечья",
+        "originalCatalogName": "Подъемы гири перед собой на предплечья"
+      },
+      "sourceMuscleGroups": [
+        "Предплечья"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-233",
+      "name": "Разгибания кисти с гантелью с упором предплечья в лавку",
+      "muscle": "Предплечья",
+      "muscleGroups": [
+        "Предплечья"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/233",
+      "videoDuration": "0:34",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 233,
+        "url": "https://t.me/c/2435165254/233",
+        "originalName": "Разгибания кисти с гантелью с упором предплечья в лавку",
+        "originalCatalogName": "Разгибания кисти с гантелью с упором предплечья в лавку"
+      },
+      "sourceMuscleGroups": [
+        "Предплечья"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-236",
+      "name": "Разгибания кисти с манжетой в кроссовере",
+      "muscle": "Предплечья",
+      "muscleGroups": [
+        "Предплечья"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/236",
+      "videoDuration": "0:21",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 236,
+        "url": "https://t.me/c/2435165254/236",
+        "originalName": "Разгибания кисти с манжетой в кроссовере",
+        "originalCatalogName": "Разгибания кисти с манжетой в кроссовере"
+      },
+      "sourceMuscleGroups": [
+        "Предплечья"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-226",
+      "name": "Сгибания на предплечье",
+      "muscle": "Предплечья",
+      "muscleGroups": [
+        "Предплечья"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/226",
+      "videoDuration": "0:23",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 226,
+        "url": "https://t.me/c/2435165254/226",
+        "originalName": "Сгибания на предплечье",
+        "originalCatalogName": "Сгибания на предплечье"
+      },
+      "sourceMuscleGroups": [
+        "Предплечья"
+      ],
+      "classificationSource": "По подписи",
+      "notes": []
+    },
+    {
+      "id": "coach-235",
+      "name": "Боковые скручивания в ГЭ",
+      "muscle": "Пресс",
+      "muscleGroups": [
+        "Пресс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/235",
+      "videoDuration": "0:20",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 235,
+        "url": "https://t.me/c/2435165254/235",
+        "originalName": "Боковые скручивания в ГЭ",
+        "originalCatalogName": "Боковые скручивания в ГЭ"
+      },
+      "sourceMuscleGroups": [
+        "Пресс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-234",
+      "name": "Боковые скручивания в смите",
+      "muscle": "Пресс",
+      "muscleGroups": [
+        "Пресс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/234",
+      "videoDuration": "0:14",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 234,
+        "url": "https://t.me/c/2435165254/234",
+        "originalName": "Боковые скручивания в смите",
+        "originalCatalogName": "Боковые скручивания в смите"
+      },
+      "sourceMuscleGroups": [
+        "Пресс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-67",
+      "name": "Обратные скручивания на наклонной скамье",
+      "muscle": "Пресс",
+      "muscleGroups": [
+        "Пресс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/67",
+      "videoDuration": "0:53",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 67,
+        "url": "https://t.me/c/2435165254/67",
+        "originalName": "Обратные скручивания на наклонной скамье",
+        "originalCatalogName": "Обратные скручивания на наклонной скамье"
+      },
+      "sourceMuscleGroups": [
+        "Пресс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-66",
+      "name": "Обратные скручивания с ковриком (абматом)",
+      "muscle": "Пресс",
+      "muscleGroups": [
+        "Пресс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/66",
+      "videoDuration": "0:27",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 66,
+        "url": "https://t.me/c/2435165254/66",
+        "originalName": "Обратные скручивания с ковриком (абматом)",
+        "originalCatalogName": "Обратные скручивания с ковриком (абматом)"
+      },
+      "sourceMuscleGroups": [
+        "Пресс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-64",
+      "name": "Пресс босу болл",
+      "muscle": "Пресс",
+      "muscleGroups": [
+        "Пресс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/64",
+      "videoDuration": "0:37",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 64,
+        "url": "https://t.me/c/2435165254/64",
+        "originalName": "Пресс босу болл",
+        "originalCatalogName": "Пресс босу болл"
+      },
+      "sourceMuscleGroups": [
+        "Пресс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-177",
+      "name": "Пресс в тренажере",
+      "muscle": "Пресс",
+      "muscleGroups": [
+        "Пресс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/177",
+      "videoDuration": "0:30",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 177,
+        "url": "https://t.me/c/2435165254/177",
+        "originalName": "Пресс в тренажере",
+        "originalCatalogName": "Пресс в тренажере"
+      },
+      "sourceMuscleGroups": [
+        "Пресс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-203",
+      "name": "Пресс на округлом тренажере",
+      "muscle": "Пресс",
+      "muscleGroups": [
+        "Пресс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/203",
+      "videoDuration": "0:31",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 203,
+        "url": "https://t.me/c/2435165254/203",
+        "originalName": "Пресс на округлом тренажере",
+        "originalCatalogName": "Пресс на округлом тренажере"
+      },
+      "sourceMuscleGroups": [
+        "Пресс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-308",
+      "name": "Ротация корпуса в кроссовере (косые мышцы)",
+      "muscle": "Пресс",
+      "muscleGroups": [
+        "Пресс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/308",
+      "videoDuration": "0:20",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 308,
+        "url": "https://t.me/c/2435165254/308",
+        "originalName": "Ротация корпуса в кроссовере (косые мышцы)",
+        "originalCatalogName": "Ротация корпуса в кроссовере (косые мышцы)"
+      },
+      "sourceMuscleGroups": [
+        "Пресс"
+      ],
+      "classificationSource": "По подписи",
+      "notes": []
+    },
+    {
+      "id": "coach-248",
+      "name": "Скручивания в кроссовере",
+      "muscle": "Пресс",
+      "muscleGroups": [
+        "Пресс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/248",
+      "videoDuration": "0:43",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 248,
+        "url": "https://t.me/c/2435165254/248",
+        "originalName": "Скручивания в кроссовере",
+        "originalCatalogName": "Скручивания в кроссовере"
+      },
+      "sourceMuscleGroups": [
+        "Пресс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-65",
+      "name": "Скручивания с ковриком (абматом)",
+      "muscle": "Пресс",
+      "muscleGroups": [
+        "Пресс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/65",
+      "videoDuration": "0:32",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 65,
+        "url": "https://t.me/c/2435165254/65",
+        "originalName": "Скручивания с ковриком (абматом)",
+        "originalCatalogName": "Скручивания с ковриком (абматом)"
+      },
+      "sourceMuscleGroups": [
+        "Пресс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-327",
+      "name": "Боковые подъемы головы с гантелью (на скамье или на полу)",
+      "muscle": "Шея",
+      "muscleGroups": [
+        "Шея"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/327",
+      "videoDuration": "0:31",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 327,
+        "url": "https://t.me/c/2435165254/327",
+        "originalName": "Боковые подъемы головы с гантелью (на скамье или на полу)",
+        "originalCatalogName": "Боковые подъемы головы с гантелью (на скамье или на полу)"
+      },
+      "sourceMuscleGroups": [
+        "Шея"
+      ],
+      "classificationSource": "По подписи",
+      "notes": []
+    },
+    {
+      "id": "coach-307",
+      "name": "Боковые сгибания шеи с упором в стену (грудино-ключично сосцевидная мышца)",
+      "muscle": "Шея",
+      "muscleGroups": [
+        "Шея"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/307",
+      "videoDuration": "0:34",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 307,
+        "url": "https://t.me/c/2435165254/307",
+        "originalName": "Боковые сгибания шеи с упором в стену (грудино-ключично сосцевидная мышца)",
+        "originalCatalogName": "Боковые сгибания шеи с упором в стену (грудино-ключично сосцевидная мышца)"
+      },
+      "sourceMuscleGroups": [
+        "Шея"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-325",
+      "name": "Подъемы головы с блином (протракция) на скамье или на полу",
+      "muscle": "Шея",
+      "muscleGroups": [
+        "Шея"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/325",
+      "videoDuration": "1:07",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 325,
+        "url": "https://t.me/c/2435165254/325",
+        "originalName": "Подъемы головы с блином (протракция) на скамье или на полу",
+        "originalCatalogName": "Подъемы головы с блином (протракция) на скамье или на полу"
+      },
+      "sourceMuscleGroups": [
+        "Шея"
+      ],
+      "classificationSource": "По подписи",
+      "notes": []
+    },
+    {
+      "id": "coach-326",
+      "name": "Разгибание головы на лавке с блином",
+      "muscle": "Шея",
+      "muscleGroups": [
+        "Шея"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/326",
+      "videoDuration": "0:34",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 326,
+        "url": "https://t.me/c/2435165254/326",
+        "originalName": "Разгибание головы на лавке с блином",
+        "originalCatalogName": "Разгибание головы на лавке с блином"
+      },
+      "sourceMuscleGroups": [
+        "Шея"
+      ],
+      "classificationSource": "По подписи",
+      "notes": []
+    },
+    {
+      "id": "coach-306",
+      "name": "Разгибания головы с упором в стену (разгибатели шеи)",
+      "muscle": "Шея",
+      "muscleGroups": [
+        "Шея"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/306",
+      "videoDuration": "0:34",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 306,
+        "url": "https://t.me/c/2435165254/306",
+        "originalName": "Разгибания головы с упором в стену (разгибатели шеи)",
+        "originalCatalogName": "Разгибания головы с упором в стену (разгибатели шеи)"
+      },
+      "sourceMuscleGroups": [
+        "Шея"
+      ],
+      "classificationSource": "По подписи",
+      "notes": []
+    },
+    {
+      "id": "coach-321",
+      "name": "Разгибатели шеи в тренажере для сгибания/разгибания",
+      "muscle": "Шея",
+      "muscleGroups": [
+        "Шея"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/321",
+      "videoDuration": "0:32",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 321,
+        "url": "https://t.me/c/2435165254/321",
+        "originalName": "Разгибатели шеи в тренажере для сгибания/разгибания",
+        "originalCatalogName": "Разгибатели шеи в тренажере для сгибания/разгибания"
+      },
+      "sourceMuscleGroups": [
+        "Шея"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-313",
+      "name": "Тренировка мышц шеи с мануальным сопротивлением (без оборудования)",
+      "muscle": "Шея",
+      "muscleGroups": [
+        "Шея"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/313",
+      "videoDuration": "0:52",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 313,
+        "url": "https://t.me/c/2435165254/313",
+        "originalName": "Тренировка мышц шеи с мануальным сопротивлением (без оборудования)",
+        "originalCatalogName": "Тренировка мышц шеи с мануальным сопротивлением (без оборудования)"
+      },
+      "sourceMuscleGroups": [
+        "Шея"
+      ],
+      "classificationSource": "По подписи",
+      "notes": []
+    },
+    {
+      "id": "coach-142",
+      "name": "Шея в тренажере для махов",
+      "muscle": "Шея",
+      "muscleGroups": [
+        "Шея"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/142",
+      "videoDuration": "0:35",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 142,
+        "url": "https://t.me/c/2435165254/142",
+        "originalName": "Шея в тренажере для махов",
+        "originalCatalogName": "Шея в тренажере для махов"
+      },
+      "sourceMuscleGroups": [
+        "Шея"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-292",
+      "name": "Абдукция бедра в наклоне в кроссовере",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/292",
+      "videoDuration": "0:32",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 292,
+        "url": "https://t.me/c/2435165254/292",
+        "originalName": "Абдукция бедра в наклоне в кроссовере",
+        "originalCatalogName": "Абдукция бедра в наклоне в кроссовере"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-216",
+      "name": "Болгарский сплит присед с гантелями",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/216",
+      "videoDuration": "0:40",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 216,
+        "url": "https://t.me/c/2435165254/216",
+        "originalName": "Болгарский сплит присед с гантелями",
+        "originalCatalogName": "Болгарский сплит присед с гантелями"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-323",
+      "name": "Болгарский сплит присед с упором рукой перед собой (2 варианта ягодицы/квадрицепс)",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/323",
+      "videoDuration": "1:12",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 323,
+        "url": "https://t.me/c/2435165254/323",
+        "originalName": "Болгарский сплит присед с упором рукой перед собой (2 варианта ягодицы/квадрицепс)",
+        "originalCatalogName": "Болгарский сплит присед с упором рукой перед собой (2 варианта ягодицы/квадрицепс)"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-190",
+      "name": "Болгарский сплит-присед в Смите",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/190",
+      "videoDuration": "0:50",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 190,
+        "url": "https://t.me/c/2435165254/190",
+        "originalName": "Болгарский сплит-присед в Смите",
+        "originalCatalogName": "Болгарский сплит-присед в Смите"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-58",
+      "name": "Гиперэкстензия в 1/2-1 амплитуды",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/58",
+      "videoDuration": "0:32",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 58,
+        "url": "https://t.me/c/2435165254/58",
+        "originalName": "Гиперэкстензия в 1/2-1 амплитуды",
+        "originalCatalogName": "Гиперэкстензия в 1/2-1 амплитуды"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-129",
+      "name": "Гиперэкстензия все варианты + на одной ноге",
+      "muscle": "Ягодицы / Бицепс бедра",
+      "muscleGroups": [
+        "Ягодицы",
+        "Бицепс бедра"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/129",
+      "videoDuration": "1:12",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 129,
+        "url": "https://t.me/c/2435165254/129",
+        "originalName": "Гиперэкстензия все варианты + на одной ноге",
+        "originalCatalogName": "Гиперэкстензия все варианты + на одной ноге"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы",
+        "«Бицепс» бедра"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-191",
+      "name": "Гудмонинг в Смите",
+      "muscle": "Ягодицы / Бицепс бедра",
+      "muscleGroups": [
+        "Ягодицы",
+        "Бицепс бедра"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/191",
+      "videoDuration": "0:40",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 191,
+        "url": "https://t.me/c/2435165254/191",
+        "originalName": "Гудмонинг в Смите",
+        "originalCatalogName": "Гудмонинг в Смите"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы",
+        "«Бицепс» бедра"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-162",
+      "name": "Диагональная румынская тяга на одной ноге в кроссовере",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/162",
+      "videoDuration": "0:25",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 162,
+        "url": "https://t.me/c/2435165254/162",
+        "originalName": "Диагональная румынская тяга на одной ноге в кроссовере",
+        "originalCatalogName": "Диагональная румынская тяга на одной ноге в кроссовере"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-204",
+      "name": "Диагональная румынская тяга на одной ноге в Смите",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/204",
+      "videoDuration": "0:39",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 204,
+        "url": "https://t.me/c/2435165254/204",
+        "originalName": "Диагональная румынская тяга на одной ноге в Смите",
+        "originalCatalogName": "Диагональная румынская тяга на одной ноге в Смите"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-180",
+      "name": "Жим ногами в тренажере",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/180",
+      "videoDuration": "0:42",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 180,
+        "url": "https://t.me/c/2435165254/180",
+        "originalName": "Жим ногами в тренажере",
+        "originalCatalogName": "Жим ногами в тренажере"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-220",
+      "name": "Жим ногами на ягодицы",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/220",
+      "videoDuration": "0:38",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 220,
+        "url": "https://t.me/c/2435165254/220",
+        "originalName": "Жим ногами на ягодицы",
+        "originalCatalogName": "Жим ногами на ягодицы"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-160",
+      "name": "Жим ногой в гравитроне",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/160",
+      "videoDuration": "0:39",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 160,
+        "url": "https://t.me/c/2435165254/160",
+        "originalName": "Жим ногой в гравитроне",
+        "originalCatalogName": "Жим ногой в гравитроне"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-109",
+      "name": "Жим одной ногой на ягодицы",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/109",
+      "videoDuration": "0:32",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 109,
+        "url": "https://t.me/c/2435165254/109",
+        "originalName": "Жим одной ногой на ягодицы",
+        "originalCatalogName": "Жим одной ногой на ягодицы"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-164",
+      "name": "Зашагивания на скамью",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/164",
+      "videoDuration": "0:30",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 164,
+        "url": "https://t.me/c/2435165254/164",
+        "originalName": "Зашагивания на скамью",
+        "originalCatalogName": "Зашагивания на скамью"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-165",
+      "name": "Зашагивания на скамью в кроссовере",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/165",
+      "videoDuration": "0:27",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 165,
+        "url": "https://t.me/c/2435165254/165",
+        "originalName": "Зашагивания на скамью в кроссовере",
+        "originalCatalogName": "Зашагивания на скамью в кроссовере"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-134",
+      "name": "Кикбэки в кроссовере обычные",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/134",
+      "videoDuration": "0:35",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 134,
+        "url": "https://t.me/c/2435165254/134",
+        "originalName": "Кикбэки в кроссовере обычные",
+        "originalCatalogName": "Кикбэки в кроссовере обычные"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-179",
+      "name": "Кикбэки в тренажере",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/179",
+      "videoDuration": "0:21",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 179,
+        "url": "https://t.me/c/2435165254/179",
+        "originalName": "Кикбэки в тренажере",
+        "originalCatalogName": "Кикбэки в тренажере"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-133",
+      "name": "Кикбэки на скамье",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/133",
+      "videoDuration": "0:30",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 133,
+        "url": "https://t.me/c/2435165254/133",
+        "originalName": "Кикбэки на скамье",
+        "originalCatalogName": "Кикбэки на скамье"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-132",
+      "name": "Кикбэки по диагонали на верх большой ягодичной",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/132",
+      "videoDuration": "0:36",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 132,
+        "url": "https://t.me/c/2435165254/132",
+        "originalName": "Кикбэки по диагонали на верх большой ягодичной",
+        "originalCatalogName": "Кикбэки по диагонали на верх большой ягодичной"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-182",
+      "name": "Обратный присед в V тренажере",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/182",
+      "videoDuration": "0:30",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 182,
+        "url": "https://t.me/c/2435165254/182",
+        "originalName": "Обратный присед в V тренажере",
+        "originalCatalogName": "Обратный присед в V тренажере"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-205",
+      "name": "Отведение бедра лежа",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/205",
+      "videoDuration": "0:19",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 205,
+        "url": "https://t.me/c/2435165254/205",
+        "originalName": "Отведение бедра лежа",
+        "originalCatalogName": "Отведение бедра лежа"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-188",
+      "name": "Отведения бедра в тренажере стоя",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/188",
+      "videoDuration": "0:20",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 188,
+        "url": "https://t.me/c/2435165254/188",
+        "originalName": "Отведения бедра в тренажере стоя",
+        "originalCatalogName": "Отведения бедра в тренажере стоя"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "По подписи",
+      "notes": []
+    },
+    {
+      "id": "coach-247",
+      "name": "Присед сумо с гантелью",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/247",
+      "videoDuration": "0:42",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 247,
+        "url": "https://t.me/c/2435165254/247",
+        "originalName": "Присед сумо с гантелью",
+        "originalCatalogName": "Присед сумо с гантелью"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-186",
+      "name": "Разведения ног сидя",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/186",
+      "videoDuration": "0:42",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 186,
+        "url": "https://t.me/c/2435165254/186",
+        "originalName": "Разведения ног сидя",
+        "originalCatalogName": "Разведения ног сидя"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-107",
+      "name": "Румынка на двух ногах в Смите",
+      "muscle": "Ягодицы / Бицепс бедра",
+      "muscleGroups": [
+        "Ягодицы",
+        "Бицепс бедра"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/107",
+      "videoDuration": "0:36",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 107,
+        "url": "https://t.me/c/2435165254/107",
+        "originalName": "Румынка на двух ногах в Смите",
+        "originalCatalogName": "Румынка на двух ногах в Смите"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы",
+        "«Бицепс» бедра"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-106",
+      "name": "Румынка на одной ноге в Смите",
+      "muscle": "Ягодицы / Бицепс бедра",
+      "muscleGroups": [
+        "Ягодицы",
+        "Бицепс бедра"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/106",
+      "videoDuration": "0:25",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 106,
+        "url": "https://t.me/c/2435165254/106",
+        "originalName": "Румынка на одной ноге в Смите",
+        "originalCatalogName": "Румынка на одной ноге в Смите"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы",
+        "«Бицепс» бедра"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-163",
+      "name": "Румынка на одной ноге с упором рукой",
+      "muscle": "Ягодицы / Бицепс бедра",
+      "muscleGroups": [
+        "Ягодицы",
+        "Бицепс бедра"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/163",
+      "videoDuration": "0:36",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 163,
+        "url": "https://t.me/c/2435165254/163",
+        "originalName": "Румынка на одной ноге с упором рукой",
+        "originalCatalogName": "Румынка на одной ноге с упором рукой"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы",
+        "«Бицепс» бедра"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-105",
+      "name": "Румынка с гантелями с упором в Смите",
+      "muscle": "Ягодицы / Бицепс бедра",
+      "muscleGroups": [
+        "Ягодицы",
+        "Бицепс бедра"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/105",
+      "videoDuration": "0:45",
+      "aliases": [
+        "Румынка с гантелями с упором в смит"
+      ],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 105,
+        "url": "https://t.me/c/2435165254/105",
+        "originalName": "Румынка с гантелями с упором в смит",
+        "originalCatalogName": "Румынка с гантелями с упором в смит"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы",
+        "«Бицепс» бедра"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-59",
+      "name": "Румынская тяга в смите на двух либо на одной ноге",
+      "muscle": "Ягодицы / Бицепс бедра",
+      "muscleGroups": [
+        "Ягодицы",
+        "Бицепс бедра"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/59",
+      "videoDuration": "1:04",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 59,
+        "url": "https://t.me/c/2435165254/59",
+        "originalName": "Румынская тяга в смите на двух либо на одной ноге",
+        "originalCatalogName": "Румынская тяга в смите на двух либо на одной ноге"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы",
+        "«Бицепс» бедра"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-77",
+      "name": "Румынская тяга со штангой",
+      "muscle": "Ягодицы / Бицепс бедра",
+      "muscleGroups": [
+        "Ягодицы",
+        "Бицепс бедра"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/77",
+      "videoDuration": "2:09",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 77,
+        "url": "https://t.me/c/2435165254/77",
+        "originalName": "Румынская тяга со штангой",
+        "originalCatalogName": "Румынская тяга со штангой"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы",
+        "«Бицепс» бедра"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-189",
+      "name": "Ягодичный мостик в Смите",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/189",
+      "videoDuration": "0:45",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 189,
+        "url": "https://t.me/c/2435165254/189",
+        "originalName": "Ягодичный мостик в Смите",
+        "originalCatalogName": "Ягодичный мостик в Смите"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-159",
+      "name": "Ягодичный мостик в тренажере",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/159",
+      "videoDuration": "0:30",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 159,
+        "url": "https://t.me/c/2435165254/159",
+        "originalName": "Ягодичный мостик в тренажере",
+        "originalCatalogName": "Ягодичный мостик в тренажере"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-115",
+      "name": "Ягодичный мостик в тренажере для разгибания ног",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/115",
+      "videoDuration": "0:33",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 115,
+        "url": "https://t.me/c/2435165254/115",
+        "originalName": "Ягодичный мостик в тренажере для разгибания ног",
+        "originalCatalogName": "Ягодичный мостик в тренажере для разгибания ног"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-147",
+      "name": "Ягодичный мостик на одной ноге",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/147",
+      "videoDuration": "0:34",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 147,
+        "url": "https://t.me/c/2435165254/147",
+        "originalName": "Ягодичный мостик на одной ноге",
+        "originalCatalogName": "Ягодичный мостик на одной ноге"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-158",
+      "name": "Ягодичный мостик со штангой",
+      "muscle": "Ягодицы",
+      "muscleGroups": [
+        "Ягодицы"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/158",
+      "videoDuration": "0:50",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 158,
+        "url": "https://t.me/c/2435165254/158",
+        "originalName": "Ягодичный мостик со штангой",
+        "originalCatalogName": "Ягодичный мостик со штангой"
+      },
+      "sourceMuscleGroups": [
+        "Ягодицы"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-143",
+      "name": "Сгибания двумя ногами лежа",
+      "muscle": "Бицепс бедра",
+      "muscleGroups": [
+        "Бицепс бедра"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/143",
+      "videoDuration": "0:46",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 143,
+        "url": "https://t.me/c/2435165254/143",
+        "originalName": "Сгибания двумя ногами лежа",
+        "originalCatalogName": "Сгибания двумя ногами лежа"
+      },
+      "sourceMuscleGroups": [
+        "«Бицепс» бедра"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-116",
+      "name": "Сгибания ног сидя",
+      "muscle": "Бицепс бедра",
+      "muscleGroups": [
+        "Бицепс бедра"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/116",
+      "videoDuration": "0:49",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 116,
+        "url": "https://t.me/c/2435165254/116",
+        "originalName": "Сгибания ног сидя",
+        "originalCatalogName": "Сгибания ног сидя"
+      },
+      "sourceMuscleGroups": [
+        "«Бицепс» бедра"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-181",
+      "name": "Сгибания ног стоя",
+      "muscle": "Бицепс бедра",
+      "muscleGroups": [
+        "Бицепс бедра"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/181",
+      "videoDuration": "0:14",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 181,
+        "url": "https://t.me/c/2435165254/181",
+        "originalName": "Сгибания ног стоя",
+        "originalCatalogName": "Сгибания ног стоя"
+      },
+      "sourceMuscleGroups": [
+        "«Бицепс» бедра"
+      ],
+      "classificationSource": "По подписи",
+      "notes": []
+    },
+    {
+      "id": "coach-144",
+      "name": "Сгибания одной ногой лежа",
+      "muscle": "Бицепс бедра",
+      "muscleGroups": [
+        "Бицепс бедра"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/144",
+      "videoDuration": "0:39",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 144,
+        "url": "https://t.me/c/2435165254/144",
+        "originalName": "Сгибания одной ногой лежа",
+        "originalCatalogName": "Сгибания одной ногой лежа"
+      },
+      "sourceMuscleGroups": [
+        "«Бицепс» бедра"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-120",
+      "name": "Жим ногами на квадрицепс",
+      "muscle": "Квадрицепс",
+      "muscleGroups": [
+        "Квадрицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/120",
+      "videoDuration": "0:46",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 120,
+        "url": "https://t.me/c/2435165254/120",
+        "originalName": "Жим ногами на квадрицепс",
+        "originalCatalogName": "Жим ногами на квадрицепс"
+      },
+      "sourceMuscleGroups": [
+        "Квадрицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-119",
+      "name": "Маятниковый жим ногами",
+      "muscle": "Квадрицепс",
+      "muscleGroups": [
+        "Квадрицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/119",
+      "videoDuration": "0:34",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 119,
+        "url": "https://t.me/c/2435165254/119",
+        "originalName": "Маятниковый жим ногами",
+        "originalCatalogName": "Маятниковый жим ногами"
+      },
+      "sourceMuscleGroups": [
+        "Квадрицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-222",
+      "name": "Присед «пистолетик»",
+      "muscle": "Квадрицепс",
+      "muscleGroups": [
+        "Квадрицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/222",
+      "videoDuration": "0:31",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 222,
+        "url": "https://t.me/c/2435165254/222",
+        "originalName": "Присед «пистолетик»",
+        "originalCatalogName": "Присед «пистолетик»"
+      },
+      "sourceMuscleGroups": [
+        "Квадрицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-184",
+      "name": "Присед в V тренажере",
+      "muscle": "Квадрицепс",
+      "muscleGroups": [
+        "Квадрицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/184",
+      "videoDuration": "0:27",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 184,
+        "url": "https://t.me/c/2435165254/184",
+        "originalName": "Присед в V тренажере",
+        "originalCatalogName": "Присед в V тренажере"
+      },
+      "sourceMuscleGroups": [
+        "Квадрицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-215",
+      "name": "Присед в гакк-тренажёре",
+      "muscle": "Квадрицепс",
+      "muscleGroups": [
+        "Квадрицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/215",
+      "videoDuration": "0:54",
+      "aliases": [
+        "Присед в Гакк тренажере"
+      ],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 215,
+        "url": "https://t.me/c/2435165254/215",
+        "originalName": "Присед в Гакк тренажере",
+        "originalCatalogName": "Присед в Гакк тренажере"
+      },
+      "sourceMuscleGroups": [
+        "Квадрицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-122",
+      "name": "Присед на квадрицепс в Смите",
+      "muscle": "Квадрицепс",
+      "muscleGroups": [
+        "Квадрицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/122",
+      "videoDuration": "0:34",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 122,
+        "url": "https://t.me/c/2435165254/122",
+        "originalName": "Присед на квадрицепс в Смите",
+        "originalCatalogName": "Присед на квадрицепс в Смите"
+      },
+      "sourceMuscleGroups": [
+        "Квадрицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-60",
+      "name": "Приседания со штангой (без акцентов)",
+      "muscle": "Квадрицепс",
+      "muscleGroups": [
+        "Квадрицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/60",
+      "videoDuration": "1:10",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 60,
+        "url": "https://t.me/c/2435165254/60",
+        "originalName": "Приседания со штангой (без акцентов)",
+        "originalCatalogName": "Приседания со штангой (без акцентов)"
+      },
+      "sourceMuscleGroups": [
+        "Квадрицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-304",
+      "name": "Разгибания ног в Смите",
+      "muscle": "Квадрицепс",
+      "muscleGroups": [
+        "Квадрицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/304",
+      "videoDuration": "0:40",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 304,
+        "url": "https://t.me/c/2435165254/304",
+        "originalName": "Разгибания ног в Смите",
+        "originalCatalogName": "Разгибания ног в Смите"
+      },
+      "sourceMuscleGroups": [
+        "Квадрицепс"
+      ],
+      "classificationSource": "По подписи",
+      "notes": []
+    },
+    {
+      "id": "coach-131",
+      "name": "Разгибания ног сидя",
+      "muscle": "Квадрицепс",
+      "muscleGroups": [
+        "Квадрицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/131",
+      "videoDuration": "0:59",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 131,
+        "url": "https://t.me/c/2435165254/131",
+        "originalName": "Разгибания ног сидя",
+        "originalCatalogName": "Разгибания ног сидя"
+      },
+      "sourceMuscleGroups": [
+        "Квадрицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-178",
+      "name": "Сисси присед",
+      "muscle": "Квадрицепс",
+      "muscleGroups": [
+        "Квадрицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/178",
+      "videoDuration": "0:35",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 178,
+        "url": "https://t.me/c/2435165254/178",
+        "originalName": "Сисси присед",
+        "originalCatalogName": "Сисси присед"
+      },
+      "sourceMuscleGroups": [
+        "Квадрицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-198",
+      "name": "Сисси-присед в гакк-тренажёре",
+      "muscle": "Квадрицепс",
+      "muscleGroups": [
+        "Квадрицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/198",
+      "videoDuration": "0:26",
+      "aliases": [
+        "Сисси присед в гакк тренажере"
+      ],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 198,
+        "url": "https://t.me/c/2435165254/198",
+        "originalName": "Сисси присед в гакк тренажере",
+        "originalCatalogName": "Сисси присед в гакк тренажере"
+      },
+      "sourceMuscleGroups": [
+        "Квадрицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-118",
+      "name": "Сплит присед с гантелями на квадрицепс",
+      "muscle": "Квадрицепс",
+      "muscleGroups": [
+        "Квадрицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/118",
+      "videoDuration": "0:41",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 118,
+        "url": "https://t.me/c/2435165254/118",
+        "originalName": "Сплит присед с гантелями на квадрицепс",
+        "originalCatalogName": "Сплит присед с гантелями на квадрицепс"
+      },
+      "sourceMuscleGroups": [
+        "Квадрицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-320",
+      "name": "Стульчик у стены на одной ноге",
+      "muscle": "Квадрицепс",
+      "muscleGroups": [
+        "Квадрицепс"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/320",
+      "videoDuration": "0:29",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 320,
+        "url": "https://t.me/c/2435165254/320",
+        "originalName": "Стульчик у стены на одной ноге",
+        "originalCatalogName": "Стульчик у стены на одной ноге"
+      },
+      "sourceMuscleGroups": [
+        "Квадрицепс"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-117",
+      "name": "Гиперэкстензия на приводящие",
+      "muscle": "Приводящие",
+      "muscleGroups": [
+        "Приводящие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/117",
+      "videoDuration": "0:20",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 117,
+        "url": "https://t.me/c/2435165254/117",
+        "originalName": "Гиперэкстензия на приводящие",
+        "originalCatalogName": "Гиперэкстензия на приводящие"
+      },
+      "sourceMuscleGroups": [
+        "Приводящие"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-121",
+      "name": "Присед в Смите на приводящие",
+      "muscle": "Приводящие",
+      "muscleGroups": [
+        "Приводящие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/121",
+      "videoDuration": "0:31",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 121,
+        "url": "https://t.me/c/2435165254/121",
+        "originalName": "Присед в Смите на приводящие",
+        "originalCatalogName": "Присед в Смите на приводящие"
+      },
+      "sourceMuscleGroups": [
+        "Приводящие"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-108",
+      "name": "Сведение ног в тренажере",
+      "muscle": "Приводящие",
+      "muscleGroups": [
+        "Приводящие"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/108",
+      "videoDuration": "0:49",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 108,
+        "url": "https://t.me/c/2435165254/108",
+        "originalName": "Сведение ног в тренажере",
+        "originalCatalogName": "Сведение ног в тренажере"
+      },
+      "sourceMuscleGroups": [
+        "Приводящие"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-110",
+      "name": "Икры в жиме",
+      "muscle": "Икры",
+      "muscleGroups": [
+        "Икры"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/110",
+      "videoDuration": "0:21",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 110,
+        "url": "https://t.me/c/2435165254/110",
+        "originalName": "Икры в жиме",
+        "originalCatalogName": "Икры в жиме"
+      },
+      "sourceMuscleGroups": [
+        "Икроножные"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-112",
+      "name": "Икры в Смите",
+      "muscle": "Икры",
+      "muscleGroups": [
+        "Икры"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/112",
+      "videoDuration": "0:32",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 112,
+        "url": "https://t.me/c/2435165254/112",
+        "originalName": "Икры в Смите",
+        "originalCatalogName": "Икры в Смите"
+      },
+      "sourceMuscleGroups": [
+        "Икроножные"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-318",
+      "name": "Икры в тренажере сидя",
+      "muscle": "Икры",
+      "muscleGroups": [
+        "Икры"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/318",
+      "videoDuration": "0:45",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 318,
+        "url": "https://t.me/c/2435165254/318",
+        "originalName": "Икры в тренажере сидя",
+        "originalCatalogName": "Икры в тренажере сидя"
+      },
+      "sourceMuscleGroups": [
+        "Икроножные"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-113",
+      "name": "Икры в тренажере стоя",
+      "muscle": "Икры",
+      "muscleGroups": [
+        "Икры"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/113",
+      "videoDuration": "0:27",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 113,
+        "url": "https://t.me/c/2435165254/113",
+        "originalName": "Икры в тренажере стоя",
+        "originalCatalogName": "Икры в тренажере стоя"
+      },
+      "sourceMuscleGroups": [
+        "Икроножные"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-114",
+      "name": "Икры на одной ноге с паузой внизу",
+      "muscle": "Икры",
+      "muscleGroups": [
+        "Икры"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/114",
+      "videoDuration": "0:38",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 114,
+        "url": "https://t.me/c/2435165254/114",
+        "originalName": "Икры на одной ноге с паузой внизу",
+        "originalCatalogName": "Икры на одной ноге с паузой внизу"
+      },
+      "sourceMuscleGroups": [
+        "Икроножные"
+      ],
+      "classificationSource": "Каталог канала",
+      "notes": []
+    },
+    {
+      "id": "coach-228",
+      "name": "Подъемы на носки в тренажере сидя с согнутым коленом",
+      "muscle": "Икры",
+      "muscleGroups": [
+        "Икры"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/228",
+      "videoDuration": "0:36",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 228,
+        "url": "https://t.me/c/2435165254/228",
+        "originalName": "Подъемы на носки в тренажере сидя с согнутым коленом",
+        "originalCatalogName": "Подъемы на носки в тренажере сидя с согнутым коленом"
+      },
+      "sourceMuscleGroups": [
+        "Икроножные"
+      ],
+      "classificationSource": "По подписи",
+      "notes": []
+    },
+    {
+      "id": "coach-217",
+      "name": "Гиперэкстензия с акцентом на разгибатели спины",
+      "muscle": "Разгибатели спины",
+      "muscleGroups": [
+        "Разгибатели спины"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/217",
+      "videoDuration": "0:20",
+      "aliases": [
+        "Гиперэкзтензия с акцентом на разгибатели спины"
+      ],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 217,
+        "url": "https://t.me/c/2435165254/217",
+        "originalName": "Гиперэкзтензия с акцентом на разгибатели спины",
+        "originalCatalogName": "Гиперэкзтензия с акцентом на разгибатели спины"
+      },
+      "sourceMuscleGroups": [
+        "Выпрямители позвоночника"
+      ],
+      "classificationSource": "По подписи",
+      "notes": []
+    },
+    {
+      "id": "coach-290",
+      "name": "Разгибания позвоночника с упором таза в стену",
+      "muscle": "Разгибатели спины",
+      "muscleGroups": [
+        "Разгибатели спины"
+      ],
+      "reps": "8–12",
+      "sets": 3,
+      "replacement": "",
+      "image": "",
+      "video": "https://t.me/c/2435165254/290",
+      "videoDuration": "0:16",
+      "aliases": [],
+      "source": {
+        "channel": "База упражнений Coach",
+        "messageId": 290,
+        "url": "https://t.me/c/2435165254/290",
+        "originalName": "Разгибания позвоночника с упором таза в стену",
+        "originalCatalogName": "Разгибания позвоночника с упором таза в стену"
+      },
+      "sourceMuscleGroups": [
+        "Выпрямители позвоночника"
+      ],
+      "classificationSource": "По подписи",
+      "notes": []
+    }
+  ]
+}
