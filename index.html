@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#151713">
+  <meta name="theme-color" content="#07100f">
   <meta name="description" content="Дневник тренировок и прогрессии рабочих весов.">
-  <title>СЕТ — дневник тренировок</title>
+  <title>СЕТ — дневник тренировок · 1.0</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -19,8 +19,8 @@
         <span class="brand-sub">ДНЕВНИК ТРЕНИРОВОК</span>
       </a>
       <button class="account-button" id="accountBtn" type="button" aria-label="Аккаунт и облачная синхронизация" title="Аккаунт и облачная синхронизация"><span class="account-button-dot"></span><span id="accountButtonText">Войти</span></button>
-      <button class="icon-button" id="installBtn" type="button" aria-label="Установить приложение" title="Установить приложение">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m-4-4 4 4 4-4M5 16v3h14v-3"/></svg>
+      <button class="icon-button" id="installBtn" type="button" aria-label="Настройки" title="Настройки">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.7-1l-1.7.7-1.4-2.4 1.4-1.1a7 7 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a8 8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.7 1l1.7-.7 1.4 2.4-1.4 1.1a7 7 0 0 1 0 2Z" transform="translate(-2 -1) scale(1.08)"/></svg>
       </button>
     </header>
 
@@ -45,7 +45,7 @@
         <div class="program-picker">
           <label for="programSelect">ПРОГРАММА</label>
           <select id="programSelect" class="field-input" aria-label="Выбрать программу тренировок"></select>
-          <button class="secondary-button manage-programs-button" type="button" id="manageProgramsBtn">Настроить</button>
+          <button class="secondary-button manage-programs-button" type="button" id="manageProgramsBtn" aria-label="Настроить программы" title="Настроить программы">☷</button>
         </div>
         <div class="workout-switch" id="workoutSwitch" role="tablist" aria-label="Выбор тренировочного дня"></div>
         <div class="workout-heading">
@@ -58,7 +58,7 @@
           <div class="save-info"><strong id="filledCount">0 упражнений</strong><span>с данными для записи</span></div>
           <button class="primary-button" type="button" id="saveWorkoutBtn">Сохранить тренировку <span>↗</span></button>
         </div>
-        <p class="small-print">Подсказка: повторы вводятся отдельно для каждого подхода. Вес указывается общий для упражнения; если вес менялся между подходами, сохрани их отдельными упражнениями или запиши разницу в заметке.</p>
+        <p class="small-print">Открой упражнение, чтобы записать вес и повторения каждого подхода отдельно. Черновик сохраняется автоматически.</p>
       </section>
 
       <section class="view" id="view-history" aria-labelledby="historyTitle">
@@ -72,11 +72,7 @@
         </div>
         <div id="historyList" class="history-list"></div>
         <div class="empty-state hidden" id="historyEmpty"><div class="empty-mark">↘</div><h3>Пока пусто</h3><p>Сохрани первую тренировку — здесь появится твоя история весов и повторений.</p><button type="button" class="text-button" data-go="training">Перейти к тренировке →</button></div>
-        <div class="backup-panel">
-          <div><span class="section-index">ТВОИ ДАННЫЕ</span><h3>Резервная копия</h3><p>Скачай копию дневника и храни её отдельно. Она поможет восстановить программы и результаты при смене телефона или неполадке.</p></div>
-          <div class="backup-actions"><button class="secondary-button" type="button" id="exportBtn">↓ Скачать резервную копию</button><button class="secondary-button" type="button" id="importBtn">↑ Восстановить копию</button><button class="secondary-button" type="button" id="createSnapshotBtn">＋ Создать копию сейчас</button><button class="secondary-button" type="button" id="manageSnapshotsBtn">↶ История копий</button><input id="importFile" type="file" accept=".setlog,.json,application/json" hidden></div>
-          <p class="auto-backup-status" id="autoBackupStatus">Автоматические копии хранятся на этом устройстве. Для защиты при потере телефона скачивай резервную копию отдельно.</p>
-        </div>
+        
       </section>
 
       <section class="view" id="view-progress" aria-labelledby="progressTitle">
@@ -101,16 +97,48 @@
         </div>
         <p class="small-print">Расчётный максимум — приблизительная оценка силы по рабочему весу и повторам, а не фактический максимум. Сравнивай значения только в рамках одного упражнения и похожей техники.</p>
       </section>
+
+      <section class="view" id="view-settings" aria-labelledby="settingsTitle">
+        <div class="eyebrow">ПРОСТРАНСТВО <span class="eyebrow-line"></span> ЛИЧНЫЕ НАСТРОЙКИ</div>
+        <h1 id="settingsTitle">Настройки<span class="lime-dot">.</span></h1>
+        <p class="subhead">Программы, упражнения и сохранность дневника.</p>
+        <section class="settings-section">
+          <div class="settings-section-heading"><h2>Программы тренировок</h2><span id="settingsProgramCount" class="settings-count"></span></div>
+          <div id="settingsProgramsList" class="settings-program-list"></div>
+          <button class="settings-action-row settings-create" id="settingsCreateProgramBtn" type="button"><span class="settings-row-icon">＋</span><span class="settings-row-copy"><strong>Создать программу</strong><small>Новая программа или копия текущей</small></span><span class="settings-row-arrow">›</span></button>
+        </section>
+        <section class="settings-section">
+          <div class="settings-section-heading"><h2>Упражнения</h2></div>
+          <button class="settings-action-row" id="settingsLibraryBtn" type="button"><span class="settings-row-icon">✣</span><span class="settings-row-copy"><strong>Библиотека упражнений</strong><small>Найти упражнение и добавить в план</small></span><span class="settings-row-arrow">›</span></button>
+        </section>
+        <section class="settings-section">
+          <div class="settings-section-heading"><h2>Другое</h2></div>
+          <div class="settings-links">
+            <button class="settings-action-row" id="settingsInstallBtn" type="button"><span class="settings-row-icon">↥</span><span class="settings-row-copy"><strong>Установить приложение</strong><small>Добавить СЕТ на главный экран телефона</small></span><span class="settings-row-arrow">›</span></button>
+            <button class="settings-action-row" id="settingsAccountBtn" type="button"><span class="settings-row-icon">☁</span><span class="settings-row-copy"><strong>Аккаунт и синхронизация</strong><small>Облачное сохранение на разных устройствах</small></span><span class="settings-row-arrow">›</span></button>
+            <button class="settings-action-row" id="settingsAboutBtn" type="button"><span class="settings-row-icon">ⓘ</span><span class="settings-row-copy"><strong>О приложении</strong><small>Версия и информация о сохранении данных</small></span><span class="settings-row-arrow">›</span></button>
+          </div>
+        </section>
+        <div class="backup-panel">
+          <div><span class="section-index">ТВОИ ДАННЫЕ</span><h3>Резервная копия</h3><p>Скачай копию дневника и храни её отдельно. Она поможет восстановить программы и результаты при смене телефона или неполадке.</p></div>
+          <div class="backup-actions"><button class="secondary-button" type="button" id="exportBtn">↓ Скачать резервную копию</button><button class="secondary-button" type="button" id="importBtn">↑ Восстановить копию</button><button class="secondary-button" type="button" id="createSnapshotBtn">＋ Создать копию сейчас</button><button class="secondary-button" type="button" id="manageSnapshotsBtn">↶ История копий</button><input id="importFile" type="file" accept=".setlog,.json,application/json" hidden></div>
+          <p class="auto-backup-status" id="autoBackupStatus">Автоматические копии хранятся на этом устройстве. Для защиты при потере телефона скачивай резервную копию отдельно.</p>
+        </div>
+      </section>
     </main>
 
     <nav class="bottom-nav" aria-label="Основная навигация">
       <button class="nav-item active" type="button" data-view="training"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 9v6m4-9v12m8-12v12m4-9v6M8 12h8"/></svg></span><span>Тренировка</span></button>
-      <button class="nav-item" type="button" data-view="history"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 7v5h5M5.2 10A7.5 7.5 0 1 1 5 15m6-7v4l3 2"/></svg></span><span>История</span></button>
       <button class="nav-item" type="button" data-view="progress"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M7 15l4-4 3 2 5-6"/></svg></span><span>Прогресс</span></button>
+      <button class="nav-item" type="button" data-view="history"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 7v5h5M5.2 10A7.5 7.5 0 1 1 5 15m6-7v4l3 2"/></svg></span><span>История</span></button>
+      <button class="nav-item" type="button" data-view="settings"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 13.5 21 15l-2 3-2.2-.6-1.4.8L15 20h-4l-.5-1.8-1.4-.8L7 18l-2-3 2-1.5v-1L5 11l2-3 2.2.6 1.4-.8L11 6h4l.5 1.8 1.4.8L19 8l2 3-2 1.5z"/></svg></span><span>Настройки</span></button>
     </nav>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <dialog id="exerciseDetailDialog" class="dialog-card exercise-detail-dialog" aria-labelledby="exerciseDetailTitle">
+    <div id="exerciseDetailContent"></div>
+  </dialog>
   <dialog id="addExerciseDialog" class="dialog-card">
     <div class="dialog-top"><span class="section-index">БИБЛИОТЕКА УПРАЖНЕНИЙ</span><button class="dialog-close" type="button" onclick="document.getElementById('addExerciseDialog').close()" aria-label="Закрыть">×</button></div>
     <h2>Добавить в день</h2>
@@ -184,15 +212,17 @@
         <p class="dialog-copy muted">Старое упражнение уйдёт из активного плана, но останется в архиве и аналитике со всеми прежними весами и повторами. Новая замена начнёт отдельную историю прогресса. Незавершённый черновик старого упражнения сохраняется.</p>
       </div>
       <div class="editor-section">
-        <label class="field-label" for="editExerciseImageUrl">ССЫЛКА НА КАРТИНКУ</label><input id="editExerciseImageUrl" class="text-input" type="url" placeholder="https://…">
+        <label class="field-label" for="editExerciseImageUrl">ССЫЛКА НА КАРТИНКУ</label><input id="editExerciseImageUrl" class="text-input" type="text" inputmode="url" placeholder="https://… или локальный путь">
         <label class="field-label" for="editExerciseImageFile">ИЛИ ЗАГРУЗИТЬ КАРТИНКУ С ТЕЛЕФОНА</label><input id="editExerciseImageFile" class="file-input" type="file" accept="image/*">
         <div class="image-preview-wrap"><img id="exerciseImagePreview" class="exercise-image-preview hidden" alt="Предпросмотр упражнения"><span id="exerciseImagePlaceholder" class="image-placeholder">Здесь будет картинка упражнения</span></div>
         <label class="check-row"><input id="removeExerciseImage" type="checkbox"> Удалить текущую картинку</label>
         <p class="dialog-copy muted">Картинка сохраняется вместе с дневником. После синхронизации она будет доступна на других устройствах.</p>
       </div>
       <div class="editor-section">
-        <label class="field-label" for="editExerciseVideoUrl">ССЫЛКА НА ВИДЕО С ТЕХНИКОЙ</label><input id="editExerciseVideoUrl" class="text-input" type="url" placeholder="https://t.me/c/… или другая ссылка">
+        <label class="field-label" for="editExerciseVideoUrl">ССЫЛКА НА ВИДЕО В TELEGRAM</label><input id="editExerciseVideoUrl" class="text-input" type="url" placeholder="https://t.me/c/… или другая ссылка">
         <p class="dialog-copy muted">Ссылки на сообщения из закрытого Telegram-канала подойдут: при открытии Telegram проверит, есть ли у тебя доступ к каналу.</p>
+        <label class="field-label" for="editExerciseYoutubeUrl">ССЫЛКА НА ВИДЕО В YOUTUBE</label><input id="editExerciseYoutubeUrl" class="text-input" type="url" placeholder="Добавим позже">
+        <p class="dialog-copy muted">Пока ссылка не добавлена, кнопка YouTube в упражнении будет неактивной.</p>
       </div>
       <button type="submit" class="primary-button wide-button">Сохранить упражнение <span>↗</span></button>
     </form>
