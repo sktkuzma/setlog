@@ -118,7 +118,7 @@ begin
 
     insert into public.setlog_user_snapshots (user_id, revision, payload, created_at)
     values (v_user_id, v_new_revision, p_payload, now())
-    on conflict (user_id, revision) do nothing;
+    on conflict on constraint setlog_user_snapshots_user_revision_unique do nothing;
   else
     if v_current_revision <> p_expected_revision then
       raise exception 'revision_conflict';
@@ -142,7 +142,7 @@ begin
       select s.user_id, s.revision, s.payload, now()
       from public.setlog_user_data as s
       where s.user_id = v_user_id
-      on conflict (user_id, revision) do nothing;
+      on conflict on constraint setlog_user_snapshots_user_revision_unique do nothing;
 
       delete from public.setlog_user_snapshots as b
       where b.user_id = v_user_id
@@ -200,7 +200,7 @@ begin
 
   insert into public.setlog_user_snapshots (user_id, revision, payload, created_at)
   values (v_user_id, v_current_revision, v_current_payload, now())
-  on conflict (user_id, revision) do nothing;
+  on conflict on constraint setlog_user_snapshots_user_revision_unique do nothing;
 
   delete from public.setlog_user_snapshots as b
   where b.user_id = v_user_id
@@ -224,4 +224,4 @@ grant execute on function public.create_setlog_restore_point(bigint) to authenti
 insert into public.setlog_user_snapshots (user_id, revision, payload, created_at)
 select user_id, revision, payload, now()
 from public.setlog_user_data
-on conflict (user_id, revision) do nothing;
+on conflict on constraint setlog_user_snapshots_user_revision_unique do nothing;
