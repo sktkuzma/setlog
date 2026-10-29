@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#07100f">
   <meta name="description" content="Дневник тренировок и прогрессии рабочих весов.">
-  <title>СЕТ — дневник тренировок · 1.1.0</title>
+  <title>СЕТ — дневник тренировок · 1.1.1</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -14,13 +14,13 @@
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="#training" aria-label="СЕТ — главная">
+      <a class="brand" href="#training" data-go="training" aria-label="СЕТ — перейти к тренировке" title="Перейти к тренировке">
         <span class="brand-mark">С<span>Е</span>Т</span>
         <span class="brand-sub">ДНЕВНИК ТРЕНИРОВОК</span>
       </a>
       <button class="account-button" id="accountBtn" type="button" aria-label="Аккаунт и облачная синхронизация" title="Аккаунт и облачная синхронизация"><span class="account-button-dot"></span><span id="accountButtonText">Войти</span></button>
       <button class="icon-button" id="installBtn" type="button" aria-label="Настройки" title="Настройки">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.7-1l-1.7.7-1.4-2.4 1.4-1.1a7 7 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a8 8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.7 1l1.7-.7 1.4 2.4-1.4 1.1a7 7 0 0 1 0 2Z" transform="translate(-2 -1) scale(1.08)"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10 3.09V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v.09A1.65 1.65 0 0 0 20.91 10H21a2 2 0 1 1 0 4h-.09A1.65 1.65 0 0 0 19.4 15z"/></svg>
       </button>
     </header>
 
@@ -132,7 +132,7 @@
       <button class="nav-item active" type="button" data-view="training"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 9v6m4-9v12m8-12v12m4-9v6M8 12h8"/></svg></span><span>Тренировка</span></button>
       <button class="nav-item" type="button" data-view="progress"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M7 15l4-4 3 2 5-6"/></svg></span><span>Прогресс</span></button>
       <button class="nav-item" type="button" data-view="history"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 7v5h5M5.2 10A7.5 7.5 0 1 1 5 15m6-7v4l3 2"/></svg></span><span>История</span></button>
-      <button class="nav-item" type="button" data-view="settings"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 13.5 21 15l-2 3-2.2-.6-1.4.8L15 20h-4l-.5-1.8-1.4-.8L7 18l-2-3 2-1.5v-1L5 11l2-3 2.2.6 1.4-.8L11 6h4l.5 1.8 1.4.8L19 8l2 3-2 1.5z"/></svg></span><span>Настройки</span></button>
+      <button class="nav-item" type="button" data-view="settings"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10 3.09V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v.09A1.65 1.65 0 0 0 20.91 10H21a2 2 0 1 1 0 4h-.09A1.65 1.65 0 0 0 19.4 15z"/></svg></span><span>Настройки</span></button>
     </nav>
   </div>
 

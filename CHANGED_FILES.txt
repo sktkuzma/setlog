@@ -1,0 +1,13 @@
+Runtime files to replace in repository root:
+- index.html
+- style.css
+- sw.js
+- VERSION.txt
+Documentation:
+- README.md
+- README_UPDATE_RU.txt
+- DOCS/CHANGELOG.md
+- DOCS/RELEASE_TEST_PLAN_RU.md
+- DOCS/TEST_REPORT.md
+- DOCS/CONTROL_POINT_v1.1.1.md
+No illustration assets, exercise catalog, app.js, or Supabase schema changes are included in the update archive.
