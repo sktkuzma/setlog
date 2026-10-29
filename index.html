@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#07100f">
   <meta name="description" content="Дневник тренировок и прогрессии рабочих весов.">
-  <title>СЕТ — дневник тренировок · 1.1.1</title>
+  <title>СЕТ — дневник тренировок · 1.2.0</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -71,6 +71,7 @@
           <div><span>УПРАЖНЕНИЙ</span><strong id="historyStatExercises">0</strong></div>
           <div><span>ПОСЛЕДНЯЯ</span><strong class="stat-date" id="historyStatLast">—</strong></div>
         </div>
+        <button type="button" class="share-results-button" data-action="open-share-export"><span class="share-results-icon">↗</span><span><strong>Поделиться результатами</strong><small>Выбрать период или упражнения · PNG / PDF</small></span><span class="settings-row-arrow">›</span></button>
         <div id="historyList" class="history-list"></div>
         <div class="empty-state hidden" id="historyEmpty"><div class="empty-mark">↘</div><h3>Пока пусто</h3><p>Сохрани первую тренировку — здесь появится твоя история весов и повторений.</p><button type="button" class="text-button" data-go="training">Перейти к тренировке →</button></div>
         
@@ -80,6 +81,7 @@
         <div class="eyebrow">АНАЛИТИКА <span class="eyebrow-line"></span> ДИНАМИКА</div>
         <h1 id="progressTitle">Прогресс<span class="lime-dot">.</span></h1>
         <p class="subhead">Не по ощущениям — по записям.</p>
+        <button type="button" class="share-results-button" data-action="open-share-export"><span class="share-results-icon">↗</span><span><strong>Поделиться результатами</strong><small>Красивая сводка в PNG или PDF</small></span><span class="settings-row-arrow">›</span></button>
         <div class="progress-pick"><label for="progressExercise">УПРАЖНЕНИЕ</label><select id="progressExercise"></select></div>
         <div class="metric-grid">
           <div class="metric-card"><span>ПОСЛЕДНИЙ ВЕС</span><strong id="metricWeight">—</strong><small id="metricWeightDelta">Нет записей</small></div>
@@ -241,18 +243,22 @@
     </div>
     <div id="authFormPanel">
       <form id="authForm" class="editor-section">
-        <label class="field-label" for="authEmail">ЭЛЕКТРОННАЯ ПОЧТА</label>
+        <label id="authEmailLabel" class="field-label" for="authEmail">ЭЛЕКТРОННАЯ ПОЧТА</label>
         <input id="authEmail" class="text-input" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com">
-        <label class="field-label" for="authPassword">ПАРОЛЬ</label>
+        <label id="authPasswordLabel" class="field-label" for="authPassword">ПАРОЛЬ</label>
         <input id="authPassword" class="text-input" type="password" autocomplete="current-password" minlength="8" maxlength="128" placeholder="Минимум 8 символов">
+        <p id="authRecoveryNote" class="dialog-copy auth-recovery-note hidden">Ссылка подтверждена. Придумай новый пароль не короче 8 символов и повтори его для проверки.</p>
         <label id="newPasswordLabel" class="field-label hidden" for="authNewPassword">НОВЫЙ ПАРОЛЬ</label>
         <input id="authNewPassword" class="text-input hidden" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="Новый пароль">
+        <label id="authConfirmPasswordLabel" class="field-label hidden" for="authConfirmPassword">ПОВТОРИ НОВЫЙ ПАРОЛЬ</label>
+        <input id="authConfirmPassword" class="text-input hidden" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="Повтори новый пароль">
         <div id="authActionButtons" class="auth-action-grid">
           <button id="authSignInBtn" class="primary-button" type="button">Войти</button>
           <button id="authSignUpBtn" class="secondary-button" type="button">Создать аккаунт</button>
           <button id="authResetBtn" class="text-button" type="button">Забыли пароль?</button>
         </div>
         <button id="authSaveNewPasswordBtn" class="primary-button wide-button hidden" type="button">Сохранить новый пароль</button>
+        <button id="authBackToSignInBtn" class="text-button wide-button hidden" type="button">Вернуться ко входу</button>
       </form>
     </div>
     <div id="cloudAccountPanel" class="editor-section hidden">
@@ -293,6 +299,35 @@
     </form>
   </dialog>
 
+
+  <dialog id="shareExportDialog" class="dialog-card share-export-dialog" aria-labelledby="shareExportTitle">
+    <div class="dialog-top"><span class="section-index">ЭКСПОРТ РЕЗУЛЬТАТОВ</span><button class="dialog-close" type="button" onclick="document.getElementById('shareExportDialog').close()" aria-label="Закрыть">×</button></div>
+    <h2 id="shareExportTitle">Поделиться результатами</h2>
+    <p class="dialog-copy">Выбери, чем поделиться. В отчёт попадут только сохранённые результаты тренировок — без упражнений, которые ты ещё не выполнял.</p>
+    <fieldset class="share-scope-options">
+      <legend class="field-label">ЧТО ЭКСПОРТИРУЕМ</legend>
+      <label class="share-scope-option"><input type="radio" name="shareScope" value="period" checked><span><strong>Период</strong><small>Все тренировки за выбранные даты</small></span></label>
+      <label class="share-scope-option"><input type="radio" name="shareScope" value="session"><span><strong>Одна тренировка</strong><small>Все упражнения из выбранной записи</small></span></label>
+      <label class="share-scope-option"><input type="radio" name="shareScope" value="exercises"><span><strong>Отдельные упражнения</strong><small>Выбрать упражнения с результатами в истории</small></span></label>
+    </fieldset>
+    <div id="shareRangeControls" class="share-export-section">
+      <div class="share-date-fields">
+        <label class="field-label" for="shareDateFrom">С ДАТЫ<input id="shareDateFrom" class="text-input" type="date"></label>
+        <label class="field-label" for="shareDateTo">ПО ДАТУ<input id="shareDateTo" class="text-input" type="date"></label>
+      </div>
+      <div class="share-range-presets"><button type="button" data-export-range="7">7 дней</button><button type="button" data-export-range="30">30 дней</button><button type="button" data-export-range="90">90 дней</button><button type="button" data-export-range="all">Всё время</button></div>
+    </div>
+    <div id="shareSessionControls" class="share-export-section hidden">
+      <label class="field-label" for="shareSessionSelect">ТРЕНИРОВКА ИЗ ИСТОРИИ</label><select id="shareSessionSelect" class="text-input"></select>
+    </div>
+    <div id="shareExerciseControls" class="share-export-section hidden">
+      <div class="share-exercise-heading"><label class="field-label">УПРАЖНЕНИЯ С РЕЗУЛЬТАТАМИ</label><div><button type="button" id="shareSelectAllExercises" class="text-button">Выбрать все</button><button type="button" id="shareClearExercises" class="text-button">Снять выбор</button></div></div>
+      <div id="shareExerciseList" class="share-exercise-list"></div>
+    </div>
+    <div class="share-export-preview" id="shareExportPreview" aria-live="polite">Подготовим отчёт по твоим сохранённым результатам.</div>
+    <div class="share-export-actions"><button type="button" id="shareDownloadPngBtn" class="secondary-button">Скачать PNG</button><button type="button" id="shareDownloadPdfBtn" class="primary-button">Скачать PDF</button></div>
+    <p id="shareExportStatus" class="dialog-copy muted" aria-live="polite">Файл сформируется на этом устройстве. Данные на сервер не отправляются.</p>
+  </dialog>
 
   <dialog id="snapshotDialog" class="dialog-card">
     <div class="dialog-top"><span class="section-index">КОПИИ НА ЭТОМ УСТРОЙСТВЕ</span><button class="dialog-close" type="button" onclick="document.getElementById('snapshotDialog').close()" aria-label="Закрыть">×</button></div>

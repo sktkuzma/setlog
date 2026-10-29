@@ -671,6 +671,182 @@
   function getEntriesForExercise(id){const arr=[];for(const s of data.history)for(const e of s.entries||[])if(String(e.exerciseCatalogId||e.exerciseId||e.exerciseName||'')===String(id)||e.exerciseId===id||e.exerciseCatalogId===id||(!e.exerciseId&&e.exerciseName===id))arr.push({...e,date:s.date,workout:s.workout,savedAt:s.savedAt});return arr.sort((a,b)=>(a.date||'').localeCompare(b.date||'')||((a.savedAt||0)-(b.savedAt||0)));}
   function updateProgressForSelection(){const id=currentExerciseStats();if(!id){$('#metricWeight').textContent='—';$('#metricE1rm').textContent='—';$('#metricVolume').textContent='—';$('#metricBest').textContent='—';$('#metricWeightDelta').textContent='Нет записей';$('#weightChart').innerHTML='<div class="chart-empty">Здесь появится график после первой записи.</div>';$('#repsChart').innerHTML='<div class="chart-empty">Недостаточно данных для графика.</div>';return;}const es=getEntriesForExercise(id);const withWeight=es.filter(e=>num(e.weight)!==null&&num(e.weight)>0);const last=es[es.length-1];const lw=withWeight[withWeight.length-1];const prev=withWeight[withWeight.length-2];$('#metricWeight').textContent=lw?`${fmt(lw.weight)} кг`:'—';$('#metricE1rm').textContent=last?.e1rm?`${fmt(last.e1rm)} кг`:'—';$('#metricVolume').textContent=last?fmt(last.volume||0):'—';$('#metricBest').textContent=withWeight.length?`${fmt(Math.max(...withWeight.map(e=>e.weight)))} кг`:'—';$('#metricWeightDelta').textContent=lw&&prev?`${lw.weight-prev.weight>0?'+':''}${fmt(lw.weight-prev.weight)} кг к прошлому разу`:lw?'Последняя запись':'Нет записей с весом';drawChart($('#weightChart'),withWeight.slice(-10).map(e=>({label:dateFmt(e.date).replace(/\s+\d{4}$/,''),value:Number(e.weight)})),'кг');const repEntries=es.filter(e=>(e.reps||[]).length>0).map(e=>({label:dateFmt(e.date).replace(/\s+\d{4}$/,''),value:Math.max(...e.reps.filter(v=>Number.isFinite(v)))})).filter(e=>Number.isFinite(e.value));drawChart($('#repsChart'),repEntries.slice(-10),'повт.');}
   function drawChart(container,items,unit){if(items.length<2){container.innerHTML=`<div class="chart-empty">${items.length===0?'Здесь появится график после первой записи.':'Добавь ещё одну запись, чтобы увидеть динамику.'}</div>`;return;}const w=320,h=160,p={l:29,r:10,t:13,b:26};const vals=items.map(x=>x.value);let min=Math.min(...vals),max=Math.max(...vals);if(max===min){min=Math.max(0,min-2);max=max+2;}else{const pad=(max-min)*.18;min=Math.max(0,min-pad);max+=pad;}const x=i=>p.l+i*((w-p.l-p.r)/(items.length-1));const y=v=>p.t+(max-v)*(h-p.t-p.b)/(max-min);const grid=[0,1,2,3].map(i=>{const val=min+(max-min)*i/3;const yy=y(val);return `<line x1="${p.l}" y1="${yy}" x2="${w-p.r}" y2="${yy}" stroke="#34392f" stroke-width="1"/><text x="${p.l-6}" y="${yy+3}" font-family="DM Mono,monospace" font-size="8" text-anchor="end" fill="#818879">${fmt(val)}</text>`;}).join('');const line=items.map((d,i)=>`${x(i)},${y(d.value)}`).join(' ');const marks=items.map((d,i)=>`<circle cx="${x(i)}" cy="${y(d.value)}" r="3.2" fill="#c8f169" stroke="#1d201b" stroke-width="1.5"><title>${safe(d.label)}: ${fmt(d.value)} ${unit}</title></circle>`).join('');const labels=items.map((d,i)=>i===0||i===items.length-1||i===Math.floor(items.length/2)?`<text x="${x(i)}" y="${h-7}" font-family="DM Mono,monospace" font-size="8" text-anchor="${i===0?'start':i===items.length-1?'end':'middle'}" fill="#818879">${safe(d.label)}</text>`:'').join('');container.innerHTML=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="График изменения ${unit}">${grid}<polyline points="${line}" fill="none" stroke="#c8f169" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>${marks}${labels}</svg>`;}
+  // Shareable history exports. The export is rendered locally; no workout data is uploaded.
+  function shareExerciseKey(entry){return String(entry.exerciseCatalogId||entry.exerciseId||entry.exerciseName||'');}
+  function shareLocalDateISO(date){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;}
+  function shareDateInputDefaults(){
+    const today=todayISO();const from=new Date();from.setDate(from.getDate()-29);
+    $('#shareDateFrom').value=shareLocalDateISO(from);$('#shareDateTo').value=today;
+  }
+  function renderShareSessionOptions(){
+    const select=$('#shareSessionSelect');const old=select.value;
+    const sessions=[...data.history].filter(s=>(s.entries||[]).length).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||((b.savedAt||0)-(a.savedAt||0)));
+    select.innerHTML=sessions.map(session=>{
+      const label=`${dateFmt(session.date)} · ${session.programName?session.programName+' — ':''}${session.workoutName||'Тренировка'} · ${(session.entries||[]).length} упр.`;
+      return `<option value="${safe(session.id)}">${safe(label)}</option>`;
+    }).join('');
+    if(sessions.some(s=>s.id===old))select.value=old;
+    return sessions;
+  }
+  function renderShareExerciseOptions(){
+    const list=$('#shareExerciseList');const old=new Set([...list.querySelectorAll('input[name="shareExercise"]:checked')].map(el=>el.value));
+    const exercises=allExercisesForStats();
+    list.innerHTML=exercises.length?exercises.map(ex=>`<label class="share-exercise-option"><input type="checkbox" name="shareExercise" value="${safe(ex.id)}" ${old.size===0||old.has(ex.id)?'checked':''}><span><strong>${safe(ex.name)}</strong><small>Есть записи в истории</small></span></label>`).join(''):'<p class="dialog-copy muted">Пока нет упражнений с результатами в истории.</p>';
+  }
+  function shareScopeMode(){return document.querySelector('input[name="shareScope"]:checked')?.value||'period';}
+  function updateShareScopeUI(){
+    const mode=shareScopeMode();$('#shareRangeControls').classList.toggle('hidden',mode==='session');$('#shareSessionControls').classList.toggle('hidden',mode!=='session');$('#shareExerciseControls').classList.toggle('hidden',mode!=='exercises');
+    updateShareExportPreview();
+  }
+  function dateInShareRange(session,from,to){const date=String(session.date||'');return (!from||date>=from)&&(!to||date<=to);}
+  function buildShareSelection(throwOnEmpty=true){
+    const mode=shareScopeMode();let sessions=[];
+    if(mode==='session'){
+      const target=$('#shareSessionSelect').value;sessions=data.history.filter(session=>session.id===target&&Array.isArray(session.entries)&&session.entries.length);
+    }else{
+      const from=$('#shareDateFrom').value;const to=$('#shareDateTo').value;
+      if(from&&to&&from>to){if(throwOnEmpty)throw new Error('Начальная дата не может быть позже конечной.');return {sessions:[],message:'Проверь порядок дат.'};}
+      sessions=data.history.filter(session=>dateInShareRange(session,from,to)&&(session.entries||[]).length).map(session=>({...session,entries:[...(session.entries||[])]}));
+      if(mode==='exercises'){
+        const ids=new Set([...document.querySelectorAll('input[name="shareExercise"]:checked')].map(el=>el.value));
+        if(!ids.size){if(throwOnEmpty)throw new Error('Выбери хотя бы одно упражнение.');return {sessions:[],message:'Отметь упражнения, которые нужно включить.'};}
+        sessions=sessions.map(session=>({...session,entries:session.entries.filter(entry=>ids.has(shareExerciseKey(entry)))})).filter(session=>session.entries.length);
+      }
+    }
+    sessions.sort((a,b)=>(a.date||'').localeCompare(b.date||'')||((a.savedAt||0)-(b.savedAt||0)));
+    if(!sessions.length&&throwOnEmpty)throw new Error(mode==='session'?'Выбери тренировку из истории.':'За выбранный период нет записанных результатов.');
+    return {sessions,mode,from:$('#shareDateFrom').value,to:$('#shareDateTo').value};
+  }
+  function updateShareExportPreview(){
+    const result=buildShareSelection(false);const sessions=result.sessions||[];const entries=sessions.reduce((sum,session)=>sum+session.entries.length,0);
+    const exerciseCount=new Set(sessions.flatMap(session=>session.entries.map(shareExerciseKey))).size;
+    const volume=sessions.reduce((sum,session)=>sum+session.entries.reduce((total,entry)=>total+shareEntryVolume(entry),0),0);
+    $('#shareExportPreview').innerHTML=sessions.length?`<div class="share-preview-metrics"><div><strong>${sessions.length}</strong><small>${plural(sessions.length,'тренировка','тренировки','тренировок')}</small></div><div><strong>${exerciseCount}</strong><small>${plural(exerciseCount,'упражнение','упражнения','упражнений')}</small></div><div><strong>${fmt(volume)}</strong><small>кг × повторы</small></div></div><p>В отчёте будет ${entries} ${plural(entries,'запись об упражнении','записи об упражнениях','записей об упражнениях')}.</p>`:`<p>${safe(result.message||'Нет данных для экспорта. Выбери другой период или тренировку.')}</p>`;
+    const disabled=!sessions.length;$('#shareDownloadPngBtn').disabled=disabled;$('#shareDownloadPdfBtn').disabled=disabled;
+  }
+  function openShareExportDialog(){
+    if(historyEditContext){notify('Сначала закончи или отмени доработку истории, затем открой экспорт.');return;}
+    shareDateInputDefaults();renderShareSessionOptions();renderShareExerciseOptions();
+    const radios=[...document.querySelectorAll('input[name="shareScope"]')];radios.forEach(r=>r.checked=r.value==='period');
+    $('#shareExportStatus').textContent='Файл сформируется на этом устройстве. Данные на сервер не отправляются.';updateShareScopeUI();$('#shareExportDialog').showModal();
+  }
+  function shareEntryVolume(entry){
+    if(Number.isFinite(Number(entry.volume))&&entry.volume!==null&&entry.volume!=='')return Number(entry.volume);
+    const sets=shareEntrySets(entry);return sets.reduce((sum,set)=>sum+(set.weight!==null&&set.reps!==null?set.weight*set.reps:0),0);
+  }
+  function shareEntrySets(entry){
+    if(Array.isArray(entry.setResults)&&entry.setResults.length)return entry.setResults.map(set=>({weight:num(set.weight),reps:num(set.reps)}));
+    if(Array.isArray(entry.reps)&&entry.reps.length)return entry.reps.map(reps=>({weight:num(entry.weight),reps:num(reps)}));
+    if(entry.weight!==undefined||entry.reps!==undefined)return [{weight:num(entry.weight),reps:num(entry.reps)}];
+    return [];
+  }
+  function wrapShareText(ctx,text,maxWidth,maxLines=8){
+    const words=String(text??'').split(/\s+/).filter(Boolean);const lines=[];let line='';
+    for(const word of words){const next=line?line+' '+word:word;if(line&&ctx.measureText(next).width>maxWidth){lines.push(line);line=word;if(lines.length>=maxLines)break;}else line=next;}
+    if(line&&lines.length<maxLines)lines.push(line);
+    if(lines.length===maxLines&&words.length&&ctx.measureText(lines[lines.length-1]+'…').width<maxWidth&&lines.join(' ').length<String(text||'').length)lines[lines.length-1]+='…';
+    return lines;
+  }
+  function roundedShareRect(ctx,x,y,w,h,r,fill,stroke=null){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();}}
+  function prepareShareReport(selection){
+    const W=1200,M=60,INNER=W-M*2,measure=document.createElement('canvas').getContext('2d');
+    const groups=selection.sessions.map(session=>({session,entries:session.entries.map(entry=>{
+      const sets=shareEntrySets(entry);measure.font='500 22px Arial, sans-serif';const setText=sets.map((set,i)=>`${String(i+1).padStart(2,'0')}  ${set.weight===null?'—':fmt(set.weight)+' кг'} × ${set.reps===null?'—':fmt(set.reps)+' повт.'}`).join('     ·     ');
+      const setLines=wrapShareText(measure,setText||'Данные подходов не указаны',INNER-44,24);
+      measure.font='400 20px Arial, sans-serif';const noteLines=entry.notes?wrapShareText(measure,`Заметка: ${entry.notes}`,INNER-44,5):[];
+      const titleLines=(()=>{measure.font='700 27px Arial, sans-serif';return wrapShareText(measure,entry.exerciseName||'Упражнение',INNER-48,2);})();
+      const info= [entry.muscle,entry.target].filter(Boolean).join(' · ');measure.font='400 18px Arial, sans-serif';const infoLines=info?wrapShareText(measure,info,INNER-48,2):[];
+      const height=25+titleLines.length*34+infoLines.length*24+20+setLines.length*30+noteLines.length*26+22;
+      return {entry,sets,setLines,noteLines,titleLines,infoLines,height};
+    })}));
+    const exercises=groups.reduce((sum,g)=>sum+g.entries.length,0);const volume=groups.reduce((sum,g)=>sum+g.entries.reduce((t,item)=>t+shareEntryVolume(item.entry),0),0);const setCount=groups.reduce((sum,g)=>sum+g.entries.reduce((t,item)=>t+item.sets.length,0),0);
+    const estimate=500+groups.reduce((sum,g)=>sum+100+g.entries.reduce((t,e)=>t+e.height+14,0),0);
+    if(estimate>16000)throw new Error('Отчёт получается очень длинным для телефона. Выбери более короткий период или меньше упражнений.');
+    const canvas=document.createElement('canvas');canvas.width=W;canvas.height=estimate;const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#07100f';ctx.fillRect(0,0,W,estimate);
+    // Decorative lime rail and report identity.
+    ctx.fillStyle='#c8f169';ctx.fillRect(M,48,8,76);ctx.font='800 40px Arial, sans-serif';ctx.fillStyle='#f0f6ef';ctx.fillText('СЕТ',M+27,82);ctx.font='600 15px Arial, sans-serif';ctx.fillStyle='#96a99c';ctx.fillText('ДНЕВНИК ТРЕНИРОВОК',M+30,110);
+    roundedShareRect(ctx,W-230,54,170,42,21,'#132019','#385037');ctx.font='700 14px Arial, sans-serif';ctx.fillStyle='#c8f169';ctx.fillText('РЕЗУЛЬТАТЫ',W-205,81);
+    ctx.font='800 46px Arial, sans-serif';ctx.fillStyle='#f0f6ef';ctx.fillText('Твои результаты',M,177);
+    let dateSummary='';if(selection.mode==='session'){const ss=selection.sessions[0];dateSummary=`${dateFmt(ss.date)} · ${ss.workoutName||'Тренировка'}`;}else if(selection.mode==='exercises'){dateSummary=`${selection.from||'Все даты'} — ${selection.to||'сегодня'} · выбранные упражнения`;}else dateSummary=`${selection.from||'Все даты'} — ${selection.to||'сегодня'}`;
+    ctx.font='400 21px Arial, sans-serif';ctx.fillStyle='#a7b8ab';ctx.fillText(dateSummary, M, 218, INNER);
+    const metricY=254,metricGap=14,metricW=(INNER-metricGap*3)/4,metricH=112;
+    const metrics=[{v:String(groups.length),l:'ТРЕНИРОВОК'},{v:String(exercises),l:'УПРАЖНЕНИЙ'},{v:String(setCount),l:'ПОДХОДОВ'},{v:`${fmt(volume)} кг`,l:'ОБЪЁМ · КГ × ПОВТ.'}];
+    metrics.forEach((item,i)=>{const x=M+i*(metricW+metricGap);roundedShareRect(ctx,x,metricY,metricW,metricH,16,'#111c18','#2b3b32');ctx.font='800 31px Arial, sans-serif';ctx.fillStyle='#c8f169';ctx.fillText(item.v,x+18,metricY+47,metricW-36);ctx.font='700 12px Arial, sans-serif';ctx.fillStyle='#97aa9c';ctx.fillText(item.l,x+18,metricY+80,metricW-36);});
+    const breaks=[];let y=405;
+    groups.forEach((group,gi)=>{
+      const session=group.session;const sVol=group.entries.reduce((sum,item)=>sum+shareEntryVolume(item.entry),0);const sessionName=`${session.programName?session.programName+' · ':''}${session.workoutName||'Тренировка'}`;
+      roundedShareRect(ctx,M,y,INNER,80,15,'#1a2820','#344937');ctx.fillStyle='#c8f169';ctx.fillRect(M+18,y+18,4,44);
+      ctx.font='800 25px Arial, sans-serif';ctx.fillStyle='#edf5ed';ctx.fillText(sessionName,M+38,y+35,INNER-250);
+      ctx.font='400 17px Arial, sans-serif';ctx.fillStyle='#9fb0a3';ctx.fillText(`${dateFmt(session.date)} · ${group.entries.length} ${plural(group.entries.length,'упражнение','упражнения','упражнений')}`,M+38,y+61,INNER-250);
+      ctx.font='700 19px Arial, sans-serif';ctx.textAlign='right';ctx.fillStyle='#c8f169';ctx.fillText(`${fmt(sVol)} кг`,W-M-22,y+46);ctx.textAlign='left';y+=94;breaks.push(y);
+      group.entries.forEach((item,ei)=>{
+        const h=item.height;roundedShareRect(ctx,M,y,INNER,h,14,'#111c18','#2b3b32');let ty=y+35;
+        ctx.font='700 27px Arial, sans-serif';ctx.fillStyle='#edf5ed';item.titleLines.forEach(line=>{ctx.fillText(line,M+22,ty,INNER-44);ty+=34;});
+        ctx.font='400 18px Arial, sans-serif';ctx.fillStyle='#9fb0a3';item.infoLines.forEach(line=>{ctx.fillText(line,M+22,ty,INNER-44);ty+=24;});
+        ctx.strokeStyle='#2a3931';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(M+22,ty+2);ctx.lineTo(W-M-22,ty+2);ctx.stroke();ty+=28;
+        ctx.font='500 21px Arial, sans-serif';ctx.fillStyle='#dce8df';item.setLines.forEach(line=>{ctx.fillText(line,M+22,ty,INNER-44);ty+=30;});
+        if(item.noteLines.length){ctx.font='400 18px Arial, sans-serif';ctx.fillStyle='#a8ba9d';item.noteLines.forEach(line=>{ctx.fillText(line,M+22,ty,INNER-44);ty+=26;});}
+        y+=h+14;breaks.push(y);
+      });
+      y+=6;
+    });
+    ctx.strokeStyle='#34483a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(M,y+4);ctx.lineTo(W-M,y+4);ctx.stroke();y+=38;ctx.font='600 16px Arial, sans-serif';ctx.fillStyle='#8fa295';ctx.fillText(`СЕТ · Сформировано ${new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})}`,M,y);
+    breaks.push(y+32);
+    return {canvas,breaks,height:canvas.height,summary:{sessions:groups.length,exercises,sets:setCount,volume}};
+  }
+  function downloadGeneratedBlob(blob,filename){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);}
+  async function canvasToBlob(canvas,type,quality){return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Браузер не смог сформировать изображение.')),type,quality));}
+  function asciiBytes(text){return new TextEncoder().encode(text);}
+  function concatenateBytes(parts){const length=parts.reduce((sum,part)=>sum+part.length,0);const out=new Uint8Array(length);let offset=0;for(const part of parts){out.set(part,offset);offset+=part.length;}return out;}
+  function bytesFromJpegDataUrl(url){const binary=atob(url.slice(url.indexOf(',')+1));const bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);return bytes;}
+  function jpegPagesToPdf(jpegPages){
+    const objects=[];objects[1]=asciiBytes('<< /Type /Catalog /Pages 2 0 R >>');
+    const kids=[];jpegPages.forEach((jpeg,i)=>{const pageId=3+i*3,imageId=pageId+1,contentId=pageId+2;kids.push(`${pageId} 0 R`);
+      objects[pageId]=asciiBytes(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 ${imageId} 0 R >> >> /Contents ${contentId} 0 R >>`);
+      objects[imageId]={image:jpeg};
+      const content=asciiBytes('q\n595.28 0 0 841.89 0 0 cm\n/Im0 Do\nQ');objects[contentId]=asciiBytes(`<< /Length ${content.length} >>\nstream\n${new TextDecoder().decode(content)}\nendstream`);
+    });
+    objects[2]=asciiBytes(`<< /Type /Pages /Kids [${kids.join(' ')}] /Count ${jpegPages.length} >>`);
+    const chunks=[asciiBytes('%PDF-1.4\n%SETLOG\n')];const offsets=new Array(objects.length).fill(0);let total=chunks[0].length;
+    for(let id=1;id<objects.length;id++){
+      offsets[id]=total;const header=asciiBytes(`${id} 0 obj\n`);chunks.push(header);total+=header.length;
+      let body;
+      if(objects[id]&&objects[id].image){const jpeg=objects[id].image;const prefix=asciiBytes(`<< /Type /XObject /Subtype /Image /Width 1200 /Height 1697 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`);const suffix=asciiBytes('\nendstream');body=concatenateBytes([prefix,jpeg,suffix]);}
+      else body=objects[id];
+      chunks.push(body);total+=body.length;const tail=asciiBytes('\nendobj\n');chunks.push(tail);total+=tail.length;
+    }
+    const xrefOffset=total;let xref=`xref\n0 ${objects.length}\n0000000000 65535 f \n`;
+    for(let id=1;id<objects.length;id++)xref+=`${String(offsets[id]).padStart(10,'0')} 00000 n \n`;
+    xref+=`trailer\n<< /Size ${objects.length} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+    chunks.push(asciiBytes(xref));return new Blob([concatenateBytes(chunks)],{type:'application/pdf'});
+  }
+  async function buildSharePdf(report){
+    const W=report.canvas.width,PAGE_H=1697,totalH=report.canvas.height,pages=[];let start=0;const breaks=[...report.breaks].sort((a,b)=>a-b);
+    while(start<totalH){
+      const maxEnd=Math.min(start+PAGE_H,totalH);let end=maxEnd;
+      if(maxEnd<totalH){const candidates=breaks.filter(point=>point>start+Math.round(PAGE_H*.5)&&point<=maxEnd);if(candidates.length)end=candidates[candidates.length-1];}
+      if(end<=start)end=maxEnd;
+      const page=document.createElement('canvas');page.width=W;page.height=PAGE_H;const ctx=page.getContext('2d');ctx.fillStyle='#07100f';ctx.fillRect(0,0,W,PAGE_H);ctx.drawImage(report.canvas,0,start,W,end-start,0,0,W,end-start);
+      pages.push(bytesFromJpegDataUrl(page.toDataURL('image/jpeg',.9)));start=end;
+    }
+    return jpegPagesToPdf(pages);
+  }
+  async function exportShareResults(format){
+    const button=format==='png'?$('#shareDownloadPngBtn'):$('#shareDownloadPdfBtn');if(button.disabled)return;
+    const original=button.textContent;button.disabled=true;button.textContent=format==='png'?'Готовим PNG…':'Готовим PDF…';$('#shareExportStatus').textContent='Формируем файл на устройстве…';
+    try{
+      const selection=buildShareSelection(true);const report=prepareShareReport(selection);const filename=`setlog-results-${todayISO()}`;
+      if(format==='png'){
+        const blob=await canvasToBlob(report.canvas,'image/png');downloadGeneratedBlob(blob,`${filename}.png`);
+      }else{
+        const pdf=await buildSharePdf(report);downloadGeneratedBlob(pdf,`${filename}.pdf`);
+      }
+      $('#shareExportStatus').textContent=`Готово: ${report.summary.sessions} тренировок, ${report.summary.exercises} упражнений. Файл сохранён через браузер.`;notify(format==='png'?'PNG с результатами готов.':'PDF с результатами готов.');
+    }catch(error){console.error('SetLog share export failed:',error);$('#shareExportStatus').textContent=error.message||'Не удалось подготовить файл. Попробуй выбрать меньше данных.';notify(error.message||'Не удалось сформировать файл.');}
+    finally{button.disabled=false;button.textContent=original;updateShareExportPreview();}
+  }
+
   function downloadJSON(payload,filename){const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/vnd.setlog.backup+json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
   function exportData(){
     if(storageReadFailure){notify('Не удалось прочитать текущие данные. Они не перезаписаны. Попробуй восстановить дневник из сохранённой копии.');return;}
@@ -992,11 +1168,22 @@
     const setup=$('#cloudSetupInstructions');const authPanel=$('#authFormPanel');const accountPanel=$('#cloudAccountPanel');
     if(setup){setup.classList.toggle('hidden',configured);const text=setup.querySelector('.dialog-copy');if(text)text.textContent=settingsPresent?'Не удалось подключиться к облачному хранилищу. Проверь интернет и перезагрузи приложение. Данные на устройстве сохранены.':'Облачное сохранение пока не подключено. Дневник останется на этом устройстве; сообщи владельцу приложения, что облако недоступно.';}
     if(authPanel)authPanel.classList.toggle('hidden',!configured||(!!cloudSession&&!cloudRecoveryMode));
-    if(accountPanel)accountPanel.classList.toggle('hidden',!cloudSession);
+    if(accountPanel)accountPanel.classList.toggle('hidden',!cloudSession||cloudRecoveryMode);
+    $('#authEmailLabel')?.classList.toggle('hidden',cloudRecoveryMode);
+    if($('#authEmail'))$('#authEmail').required=!cloudRecoveryMode;
+    if($('#authNewPassword'))$('#authNewPassword').required=cloudRecoveryMode;
+    if($('#authConfirmPassword'))$('#authConfirmPassword').required=cloudRecoveryMode;
+    $('#authEmail')?.classList.toggle('hidden',cloudRecoveryMode);
+    $('#authPasswordLabel')?.classList.toggle('hidden',cloudRecoveryMode);
+    $('#authPassword')?.classList.toggle('hidden',cloudRecoveryMode);
     $('#authActionButtons')?.classList.toggle('hidden',cloudRecoveryMode);
+    $('#authRecoveryNote')?.classList.toggle('hidden',!cloudRecoveryMode);
     $('#newPasswordLabel')?.classList.toggle('hidden',!cloudRecoveryMode);
     $('#authNewPassword')?.classList.toggle('hidden',!cloudRecoveryMode);
+    $('#authConfirmPasswordLabel')?.classList.toggle('hidden',!cloudRecoveryMode);
+    $('#authConfirmPassword')?.classList.toggle('hidden',!cloudRecoveryMode);
     $('#authSaveNewPasswordBtn')?.classList.toggle('hidden',!cloudRecoveryMode);
+    $('#authBackToSignInBtn')?.classList.toggle('hidden',!cloudRecoveryMode);
     if(cloudSession){
       $('#cloudUserEmail').textContent=cloudSession.user?.email||'Аккаунт подключён';
       $('#accountButtonText').textContent='Облако';
@@ -1384,7 +1571,7 @@
       cloudSession=session||null;updateCloudUI();
       if(event==='PASSWORD_RECOVERY'){
         cloudRecoveryMode=true;updateCloudUI('Открой письмо восстановления и задай новый пароль.','pending');
-        const dialog=$('#accountDialog');if(dialog&&!dialog.open)dialog.showModal();return;
+        const dialog=$('#accountDialog');if(dialog&&!dialog.open)dialog.showModal();setTimeout(()=>$('#authNewPassword')?.focus(),50);return;
       }
       if(event==='SIGNED_OUT'){
         cloudReady=false;cloudPaused=false;cloudRevision=0;cloudUserId='';pendingCloudChoice=null;cloudRecoveryMode=false;$('#cloudChoicePanel')?.classList.add('hidden');
@@ -1400,16 +1587,22 @@
     })();
     try{return await cloudInitializationPromise;}finally{cloudInitializationPromise=null;}
   }
+  function getAuthRedirectUrl(){
+    // GitHub Pages project path is preserved; query string and hash are omitted.
+    return new URL('./',window.location.href).href;
+  }
+
   async function submitAuthAction(action){
     if(!cloudClient)return notify('Облачное сохранение пока недоступно. Попробуй позже.');
     const email=$('#authEmail').value.trim();const password=$('#authPassword').value;
     if(!email)return notify('Введи электронную почту.');
-    setCloudMessage('Проверяем данные аккаунта…','pending');
+    if(!$('#authEmail').checkValidity())return notify('Проверь, правильно ли указана электронная почта.');
+    setCloudMessage(action==='reset'?'Готовим письмо для восстановления…':'Проверяем данные аккаунта…','pending');
     try{
       let result;
       if(action==='signup'){
         if(password.length<8)return notify('Для пароля нужно не менее 8 символов.');
-        result=await cloudClient.auth.signUp({email,password,options:{emailRedirectTo:window.location.href.split('#')[0].split('?')[0]}});
+        result=await cloudClient.auth.signUp({email,password,options:{emailRedirectTo:getAuthRedirectUrl()}});
         if(result.error)throw result.error;
         if(result.data?.session){setCloudMessage('Аккаунт создан. Подключаем дневник…','pending');await handleCloudSession(result.data.session);}
         else setCloudMessage('Аккаунт создан. Проверь почту, подтверди адрес и войди в приложение.','pending');
@@ -1418,16 +1611,39 @@
         result=await cloudClient.auth.signInWithPassword({email,password});if(result.error)throw result.error;
         if(result.data?.session)await handleCloudSession(result.data.session);
       }else if(action==='reset'){
-        result=await cloudClient.auth.resetPasswordForEmail(email,{redirectTo:window.location.href.split('#')[0].split('?')[0]});if(result.error)throw result.error;
-        setCloudMessage('Если аккаунт с таким адресом существует, письмо для сброса пароля отправлено.','pending');
+        result=await cloudClient.auth.resetPasswordForEmail(email,{redirectTo:getAuthRedirectUrl()});if(result.error)throw result.error;
+        setCloudMessage('Если аккаунт с таким адресом существует, письмо для сброса пароля отправлено. Проверь входящие и папку «Спам». Ссылка вернёт тебя сюда, чтобы задать новый пароль.','info');notify('Запрос на восстановление отправлен. Проверь почту.');
       }
-    }catch(error){console.error('SetLog authentication action failed:', error);setCloudMessage(action==='signup'?'Не удалось создать аккаунт. Проверь адрес почты и подключение к интернету.':action==='signin'?'Не удалось войти. Проверь адрес почты и пароль.':'Не удалось отправить письмо. Проверь адрес почты и попробуй позже.','error');}
+    }catch(error){
+      console.error('SetLog authentication action failed:', error);
+      const message=String(error?.message||'').toLowerCase();
+      if(action==='reset'&&(message.includes('redirect')||message.includes('allow list')||message.includes('allowlist'))){
+        setCloudMessage('Сброс пока не может открыть СЕТ: добавь https://sktkuzma.github.io/setlog/ в Supabase → Authentication → URL Configuration → Redirect URLs, затем попробуй снова.','error');
+      }else{
+        setCloudMessage(action==='signup'?'Не удалось создать аккаунт. Проверь адрес почты и подключение к интернету.':action==='signin'?'Не удалось войти. Проверь адрес почты и пароль.':action==='reset'?'Не удалось отправить письмо. Проверь адрес почты, подключение и настройки переадресации в Supabase.':'Не удалось выполнить действие с аккаунтом. Попробуй ещё раз.','error');
+      }
+    }
   }
   async function saveRecoveredPassword(){
     if(!cloudClient||!cloudSession)return notify('Открой ссылку восстановления из письма и попробуй ещё раз.');
-    const password=$('#authNewPassword').value;if(password.length<8)return notify('Для пароля нужно не менее 8 символов.');
-    const {error}=await cloudClient.auth.updateUser({password});if(error){console.error('SetLog password update failed:',error);return setCloudMessage('Не удалось изменить пароль. Попробуй запросить письмо для восстановления ещё раз.','error');}
-    cloudRecoveryMode=false;$('#authNewPassword').value='';updateCloudUI('Пароль успешно изменён.','saved');await handleCloudSession(cloudSession);notify('Пароль изменён.');
+    const password=$('#authNewPassword').value;const confirmation=$('#authConfirmPassword').value;
+    if(password.length<8)return notify('Для пароля нужно не менее 8 символов.');
+    if(password!==confirmation)return notify('Пароли не совпадают. Проверь оба поля.');
+    const button=$('#authSaveNewPasswordBtn');button.disabled=true;setCloudMessage('Сохраняем новый пароль…','pending');
+    try{
+      const {error}=await cloudClient.auth.updateUser({password});if(error)throw error;
+      cloudRecoveryMode=false;$('#authNewPassword').value='';$('#authConfirmPassword').value='';
+      updateCloudUI('Пароль успешно изменён.','saved');await handleCloudSession(cloudSession);notify('Пароль изменён. Теперь можно входить с новым паролем.');
+      const dialog=$('#accountDialog');if(dialog?.open)dialog.close();
+    }catch(error){console.error('SetLog password update failed:',error);setCloudMessage('Не удалось изменить пароль. Ссылка могла устареть. Запроси новое письмо для восстановления и попробуй ещё раз.','error');}
+    finally{button.disabled=false;}
+  }
+  async function leavePasswordRecoveryMode(){
+    // The recovery link creates a temporary authenticated session. Sign it out so this button really returns to sign-in.
+    try{if(cloudClient&&cloudRecoveryMode){const {error}=await cloudClient.auth.signOut();if(error)throw error;}}
+    catch(error){console.warn('Could not close password recovery session:',error);notify('Не удалось завершить режим восстановления. Закрой окно и запроси новую ссылку, если она устарела.');return;}
+    cloudRecoveryMode=false;$('#authNewPassword').value='';$('#authConfirmPassword').value='';
+    updateCloudUI('Войди в облачный аккаунт по электронной почте и паролю.','local');
   }
 
   async function initializeApp(){
@@ -1450,7 +1666,7 @@
     renderTraining();await updateBackupStatus();
     if(initialStorageRaw&&startupNeedsMigration&&!storageWriteBlocked)await saveSafetySnapshot('Копия после обновления приложения');
   }
-  function handleClick(e){const nav=e.target.closest('[data-view]');if(nav){switchView(nav.dataset.view);return;}const go=e.target.closest('[data-go]');if(go){switchView(go.dataset.go);return;}const tab=e.target.closest('[data-workout]');if(tab){switchWorkout(tab.dataset.workout);return;}const action=e.target.closest('[data-action]');if(!action)return;const id=action.dataset.exercise;if(action.dataset.action==='open-exercise'){currentDetailExerciseId=id;renderExerciseDetail(id);const dialog=$('#exerciseDetailDialog');if(!dialog.open)dialog.showModal();return;}if(action.dataset.action==='close-exercise-detail'){const dialog=$('#exerciseDetailDialog');if(dialog.open)dialog.close();currentDetailExerciseId=null;return;}if(action.dataset.action==='add-set'||action.dataset.action==='remove-set'){const dr=ensureDraft()[id];if(!dr)return;const previous=JSON.parse(JSON.stringify(dr.sets||[]));if(action.dataset.action==='add-set'&&dr.sets.length<MAX_LOGGED_SETS)dr.sets.push({weight:'',reps:''});if(action.dataset.action==='remove-set'&&dr.sets.length>1)dr.sets.pop();const ok=historyEditContext?persistHistoryEditContext():persist();if(!ok){dr.sets=previous;return;}renderTraining();return;}if(action.dataset.action==='settings-select-program'){switchProgram(action.dataset.program);switchView('training');notify('Программа выбрана.');return;}if(action.dataset.action==='settings-manage-program'){if(data.programs.some(program=>program.id===action.dataset.program)){switchProgram(action.dataset.program);openProgramDialog();}return;}if(action.dataset.action==='edit-history-session'){beginHistoryEdit(action.dataset.session);return;}if(action.dataset.action==='cancel-history-edit'){cancelHistoryEdit();return;}if(action.dataset.action==='delete-session'){deleteSession(action.dataset.session);return;}if(action.dataset.action==='remove-exercise'){deleteExercise(id);return;}if(action.dataset.action==='edit-exercise'){openExerciseEditor(id);return;}if(action.dataset.action==='move-exercise-up'){moveExercise(id,-1);return;}if(action.dataset.action==='move-exercise-down'){moveExercise(id,1);return;}}
+  function handleClick(e){const nav=e.target.closest('[data-view]');if(nav){switchView(nav.dataset.view);return;}const go=e.target.closest('[data-go]');if(go){switchView(go.dataset.go);return;}const tab=e.target.closest('[data-workout]');if(tab){switchWorkout(tab.dataset.workout);return;}const action=e.target.closest('[data-action]');if(!action)return;const id=action.dataset.exercise;if(action.dataset.action==='open-share-export'){openShareExportDialog();return;}if(action.dataset.action==='open-exercise'){currentDetailExerciseId=id;renderExerciseDetail(id);const dialog=$('#exerciseDetailDialog');if(!dialog.open)dialog.showModal();return;}if(action.dataset.action==='close-exercise-detail'){const dialog=$('#exerciseDetailDialog');if(dialog.open)dialog.close();currentDetailExerciseId=null;return;}if(action.dataset.action==='add-set'||action.dataset.action==='remove-set'){const dr=ensureDraft()[id];if(!dr)return;const previous=JSON.parse(JSON.stringify(dr.sets||[]));if(action.dataset.action==='add-set'&&dr.sets.length<MAX_LOGGED_SETS)dr.sets.push({weight:'',reps:''});if(action.dataset.action==='remove-set'&&dr.sets.length>1)dr.sets.pop();const ok=historyEditContext?persistHistoryEditContext():persist();if(!ok){dr.sets=previous;return;}renderTraining();return;}if(action.dataset.action==='settings-select-program'){switchProgram(action.dataset.program);switchView('training');notify('Программа выбрана.');return;}if(action.dataset.action==='settings-manage-program'){if(data.programs.some(program=>program.id===action.dataset.program)){switchProgram(action.dataset.program);openProgramDialog();}return;}if(action.dataset.action==='edit-history-session'){beginHistoryEdit(action.dataset.session);return;}if(action.dataset.action==='cancel-history-edit'){cancelHistoryEdit();return;}if(action.dataset.action==='delete-session'){deleteSession(action.dataset.session);return;}if(action.dataset.action==='remove-exercise'){deleteExercise(id);return;}if(action.dataset.action==='edit-exercise'){openExerciseEditor(id);return;}if(action.dataset.action==='move-exercise-up'){moveExercise(id,-1);return;}if(action.dataset.action==='move-exercise-down'){moveExercise(id,1);return;}}
   $('#workoutDate').addEventListener('change',()=>{if(historyEditContext)return;ensureDraft();renderTraining();});
   $('#exerciseDetailDialog').addEventListener('input',e=>{const input=e.target.closest('[data-field]');if(input)updateDraftFromInput(input);});$('#exerciseDetailDialog').addEventListener('change',e=>{const input=e.target.closest('[data-field]');if(input)updateDraftFromInput(input);});
   document.addEventListener('click',handleClick);
@@ -1460,10 +1676,11 @@
   $('#saveWorkoutBtn').addEventListener('click',saveWorkoutDraft);$('#finishWorkoutBtn').addEventListener('click',()=>{if(historyEditContext)applyHistoryEdit();else finishWorkout();});$('#addExerciseBtn').addEventListener('click',openAddExerciseDialog);$('#addLibraryExerciseBtn').addEventListener('click',addLibraryExercise);$('#exerciseLibrarySearch').addEventListener('input',e=>renderExerciseLibraryOptions(e.target.value));$('#exerciseLibraryGroupFilter').addEventListener('change',()=>renderExerciseLibraryOptions());$('#addExerciseForm').addEventListener('submit',e=>{e.preventDefault();addCustomExercise();});
   $('#createProgramBtn').addEventListener('click',createProgram);$('#renameProgramBtn').addEventListener('click',renameProgram);$('#deleteProgramBtn').addEventListener('click',deleteProgram);$('#addWorkoutDayBtn').addEventListener('click',addWorkoutDay);$('#renameWorkoutBtn').addEventListener('click',renameWorkout);
   $('#editExerciseForm').addEventListener('submit',e=>{e.preventDefault();saveExerciseEdit();});$('#editExerciseReplacementSearch').addEventListener('input',renderReplacementOptions);$('#editExerciseReplacementGroup').addEventListener('change',renderReplacementOptions);$('#editExerciseReplacementSelect').addEventListener('change',()=>{$('#applyExerciseReplacementBtn').disabled=!$('#editExerciseReplacementSelect').value;});$('#applyExerciseReplacementBtn').addEventListener('click',replaceExerciseWithLibrary);$('#editExerciseImageFile').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{pendingImageData=await compressImageFile(file);const img=$('#exerciseImagePreview');img.src=pendingImageData;img.classList.remove('hidden');$('#exerciseImagePlaceholder').classList.add('hidden');$('#editExerciseImageUrl').value='';$('#removeExerciseImage').checked=false;}catch(err){notify(err.message||'Не удалось загрузить картинку.');}});$('#editExerciseImageUrl').addEventListener('input',()=>{if($('#editExerciseImageUrl').value.trim()){$('#exerciseImagePreview').classList.add('hidden');$('#exerciseImagePlaceholder').classList.remove('hidden');}});
+  document.querySelectorAll('input[name="shareScope"]').forEach(input=>input.addEventListener('change',updateShareScopeUI));$('#shareSessionSelect').addEventListener('change',updateShareExportPreview);$('#shareDateFrom').addEventListener('change',updateShareExportPreview);$('#shareDateTo').addEventListener('change',updateShareExportPreview);$('#shareExerciseList').addEventListener('change',updateShareExportPreview);$('#shareSelectAllExercises').addEventListener('click',()=>{document.querySelectorAll('input[name="shareExercise"]').forEach(input=>input.checked=true);updateShareExportPreview();});$('#shareClearExercises').addEventListener('click',()=>{document.querySelectorAll('input[name="shareExercise"]').forEach(input=>input.checked=false);updateShareExportPreview();});document.querySelectorAll('[data-export-range]').forEach(button=>button.addEventListener('click',()=>{const val=button.dataset.exportRange;const to=todayISO();let from;if(val==='all'){from=[...data.history].map(item=>item.date).filter(Boolean).sort()[0]||to;}else{const d=new Date(`${to}T12:00:00`);d.setDate(d.getDate()-Math.max(0,Number(val)-1));from=shareLocalDateISO(d);}$('#shareDateFrom').value=from;$('#shareDateTo').value=to;updateShareExportPreview();}));$('#shareDownloadPngBtn').addEventListener('click',()=>exportShareResults('png'));$('#shareDownloadPdfBtn').addEventListener('click',()=>exportShareResults('pdf'));
   $('#exportBtn').addEventListener('click',exportData);$('#importBtn').addEventListener('click',()=>$('#importFile').click());$('#createSnapshotBtn').addEventListener('click',async()=>{const ok=await saveSafetySnapshot('Ручная копия дневника');if(ok)notify('Копия дневника сохранена на этом устройстве. Для дополнительной защиты скачай резервную копию.');else notify('Не удалось сохранить копию. Проверь свободное место и попробуй снова.');});$('#manageSnapshotsBtn').addEventListener('click',async()=>{await fillSnapshotDialog();$('#snapshotDialog').showModal();});$('#restoreSelectedSnapshotBtn').addEventListener('click',restoreSelectedSnapshot);$('#importFile').addEventListener('change',e=>{if(e.target.files?.[0])importData(e.target.files[0]);e.target.value='';});$('#progressExercise').addEventListener('change',updateProgressForSelection);
   let installPrompt=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});$('#installBtn').addEventListener('click',()=>switchView('settings'));$('#settingsInstallBtn').addEventListener('click',showInstallDialog);$('#settingsAccountBtn').addEventListener('click',()=>{updateCloudUI();$('#accountDialog').showModal();});$('#settingsAboutBtn').addEventListener('click',()=>notify('СЕТ · дневник тренировок. Результаты сохраняются на устройстве, а после входа синхронизируются с облаком.'));$('#settingsCreateProgramBtn').addEventListener('click',openProgramDialog);$('#settingsLibraryBtn').addEventListener('click',openAddExerciseDialog);
   $('#accountBtn').addEventListener('click',()=>{updateCloudUI();const dialog=$('#accountDialog');if(dialog&&!dialog.open)dialog.showModal();});$('#closeAccountDialogBtn').addEventListener('click',()=>$('#accountDialog').close());
-  $('#authSignInBtn').addEventListener('click',()=>submitAuthAction('signin'));$('#authSignUpBtn').addEventListener('click',()=>submitAuthAction('signup'));$('#authResetBtn').addEventListener('click',()=>submitAuthAction('reset'));$('#authForm').addEventListener('submit',e=>{e.preventDefault();submitAuthAction('signin');});$('#authSaveNewPasswordBtn').addEventListener('click',saveRecoveredPassword);
+  $('#authSignInBtn').addEventListener('click',()=>submitAuthAction('signin'));$('#authSignUpBtn').addEventListener('click',()=>submitAuthAction('signup'));$('#authResetBtn').addEventListener('click',()=>submitAuthAction('reset'));$('#authForm').addEventListener('submit',e=>{e.preventDefault();if(cloudRecoveryMode)saveRecoveredPassword();else submitAuthAction('signin');});$('#authSaveNewPasswordBtn').addEventListener('click',saveRecoveredPassword);$('#authBackToSignInBtn').addEventListener('click',leavePasswordRecoveryMode);
   $('#signOutBtn').addEventListener('click',async()=>{if(!cloudClient)return;if(!confirm('Выйти из аккаунта? Облачный дневник останется в безопасности. На этом устройстве останется отдельная локальная копия.'))return;const {error}=await cloudClient.auth.signOut();if(error){console.error('SetLog sign out failed:',error);notify('Не удалось выйти из аккаунта. Попробуй ещё раз.');}else notify('Ты вышел из аккаунта.');});
   $('#cloudSyncNowBtn').addEventListener('click',async()=>{if(!cloudClient||!cloudSession)return;await syncCloudState();});$('#cloudReloadBtn').addEventListener('click',reloadCloudData);$('#cloudUploadLocalBtn').addEventListener('click',()=>uploadLocalDataToCloud(false));$('#useCloudDataBtn').addEventListener('click',chooseCloudData);$('#useLocalDataBtn').addEventListener('click',chooseLocalDataForCloud);$('#cloudHistoryBtn').addEventListener('click',fillCloudHistoryDialog);$('#restoreCloudHistoryBtn').addEventListener('click',restoreCloudHistoryVersion);$('#cloudHistorySelect').addEventListener('change',()=>$('#restoreCloudHistoryBtn').disabled=!$('#cloudHistorySelect').value);
   window.addEventListener('offline',()=>{if(cloudSession){setStorageStatus('Нет интернета · изменения сохранены на устройстве','pending');setCloudMessage('Нет интернета. Изменения сохранены на устройстве и автоматически отправятся, когда связь восстановится.','pending');}});

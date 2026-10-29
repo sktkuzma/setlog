@@ -135,3 +135,48 @@ html,body{background:#07100f;color:var(--text)}body{background:radial-gradient(e
 .icon-button svg,.nav-icon svg{filter:none;transform:none}
 .icon-button svg,.nav-icon svg{overflow:visible}
 .brand{cursor:pointer}
+
+/* v1.2.0 — password recovery and shareable training reports */
+.share-results-button{width:100%;display:flex;align-items:center;gap:13px;min-height:76px;margin:14px 0 20px;padding:13px 15px;border:1px solid #40543a;border-radius:15px;background:linear-gradient(135deg,#1b2a20,#121d18);color:var(--text);text-align:left;cursor:pointer}
+.share-results-button:hover{border-color:var(--lime)}
+.share-results-button>span:nth-child(2){display:flex;flex-direction:column;gap:4px;min-width:0}
+.share-results-button strong{font-size:13px;line-height:1.35}
+.share-results-button small{font-size:10px;line-height:1.45;color:#a3b3a7}
+.share-results-icon{display:grid;place-items:center;flex:0 0 39px;width:39px;height:39px;border-radius:12px;background:#293a23;color:var(--lime);font-size:23px}
+.share-results-button .settings-row-arrow{margin-left:auto}
+.share-export-dialog{width:min(540px,calc(100% - 28px));max-height:calc(100dvh - 28px);overflow-y:auto;overscroll-behavior:contain}
+.share-scope-options{margin:12px 0 17px;padding:11px;border:1px solid #2b3b32;border-radius:14px;min-width:0}
+.share-scope-options legend{padding:0 6px}
+.share-scope-option,.share-exercise-option{display:flex;align-items:center;gap:11px;min-width:0;padding:10px 8px;border-radius:10px;cursor:pointer}
+.share-scope-option+.share-scope-option{margin-top:4px}
+.share-scope-option:has(input:checked){background:rgba(200,241,105,.07)}
+.share-scope-option input,.share-exercise-option input{flex:0 0 18px;width:18px;height:18px;accent-color:var(--lime)}
+.share-scope-option span,.share-exercise-option span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.share-scope-option strong,.share-exercise-option strong{font-size:12px;line-height:1.35;color:#e5eee6}
+.share-scope-option small,.share-exercise-option small{font-size:10px;line-height:1.4;color:#9daf9f}
+.share-export-section{margin:12px 0 16px;padding:13px;border:1px solid #2b3b32;border-radius:13px;background:#101b16}
+.share-date-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.share-date-fields label{display:flex;flex-direction:column;gap:7px}
+.share-date-fields .text-input{width:100%;min-width:0;padding:9px 8px}
+.share-range-presets{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.share-range-presets button{padding:7px 11px;border:1px solid #37483b;border-radius:20px;background:#19251e;color:#c3d1c5;font:10px Manrope,system-ui,sans-serif;cursor:pointer}
+.share-range-presets button:hover{border-color:var(--lime);color:var(--lime)}
+.share-exercise-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:7px}
+.share-exercise-heading>div{display:flex;gap:10px}
+.share-exercise-heading .field-label{margin:0}
+.share-exercise-heading .text-button{padding:4px 0;font-size:10px}
+.share-exercise-list{display:flex;flex-direction:column;gap:3px;max-height:230px;overflow:auto}
+.share-exercise-option{border:1px solid transparent;padding:9px 7px}
+.share-exercise-option:has(input:checked){border-color:#344a32;background:rgba(200,241,105,.045)}
+.share-export-preview{margin:14px 0;padding:13px;border:1px solid #354837;border-radius:13px;background:#152119;color:#c8d5cb;font-size:11px;line-height:1.5}
+.share-export-preview p{margin:7px 0 0;color:#aab8ac}
+.share-preview-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.share-preview-metrics>div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.share-preview-metrics strong{font-size:18px;color:var(--lime);overflow-wrap:anywhere}
+.share-preview-metrics small{font-size:9px;color:#9daf9f}
+.share-export-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.share-export-actions button{min-height:46px;justify-content:center;font-size:12px}
+.share-export-actions button:disabled{opacity:.4;cursor:default}
+.auth-recovery-note{padding:11px 12px;border:1px solid #435536;border-radius:11px;background:rgba(200,241,105,.055);font-size:11px;line-height:1.55}
+#authBackToSignInBtn{width:100%;margin-top:10px;justify-content:center}
+@media(max-width:430px){.share-results-button{min-height:70px;padding:11px}.share-results-button strong{font-size:12px}.share-date-fields{grid-template-columns:1fr 1fr;gap:7px}.share-date-fields .text-input{font-size:11px}.share-export-dialog{width:100%;max-width:none;max-height:calc(100dvh - 8px);margin:auto 0 0;border-radius:22px 22px 0 0;border-bottom:0;padding-bottom:calc(15px + env(safe-area-inset-bottom,0px))}.share-export-actions{position:sticky;bottom:0;padding:8px 0 2px;background:#111c18}.share-export-actions button{font-size:11px}.share-scope-option strong,.share-exercise-option strong{font-size:11px}}
