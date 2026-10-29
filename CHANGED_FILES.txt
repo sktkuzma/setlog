@@ -1,20 +1,17 @@
-СЕТ 1.2.0 — файлы релиза
+СЕТ v1.3.0 — изменённые файлы
 
-Runtime files to replace in repository root:
-- index.html
-- app.js
-- style.css
-- sw.js
-- VERSION.txt
+Runtime-файлы для замены в корне репозитория:
+- index.html — версия интерфейса, описание экспорта и UI.
+- app.js — PNG-карточки и многостраничный PDF-отчёт.
+- style.css — адаптивное оформление диалога экспорта и превью.
+- sw.js — кеш обновлён до setlog-cache-v19.
+- VERSION.txt — версия 1.3.0.
 
-Documentation included in the patch:
-- README.md
+Документация:
 - README_UPDATE_RU.txt
-- CHANGED_FILES.txt
-- SUPABASE_SETUP_RU.md
-- DOCS/CHANGELOG.md
+- DOCS/CHANGELOG_v1.3.0.md
 - DOCS/RELEASE_TEST_PLAN_RU.md
 - DOCS/TEST_REPORT.md
-- DOCS/CONTROL_POINT_v1.2.0.md
+- DOCS/CONTROL_POINT_v1.3.0.md
 
-No exercise illustrations, exercise-library catalog, Supabase config or SQL schema changes are included. No SQL migration is required.
+Архив обновления намеренно не включает иллюстрации упражнений, exercise-library-coach.json, supabase-config.js и SQL-файлы, чтобы не перезаписать их случайно. Текущая схема данных не менялась. В GitHub загружай файлы только поверх совместимой базовой версии, в которой уже есть восстановление пароля и исходный экспортный диалог v1.2.0.

@@ -180,3 +180,8 @@ html,body{background:#07100f;color:var(--text)}body{background:radial-gradient(e
 .auth-recovery-note{padding:11px 12px;border:1px solid #435536;border-radius:11px;background:rgba(200,241,105,.055);font-size:11px;line-height:1.55}
 #authBackToSignInBtn{width:100%;margin-top:10px;justify-content:center}
 @media(max-width:430px){.share-results-button{min-height:70px;padding:11px}.share-results-button strong{font-size:12px}.share-date-fields{grid-template-columns:1fr 1fr;gap:7px}.share-date-fields .text-input{font-size:11px}.share-export-dialog{width:100%;max-width:none;max-height:calc(100dvh - 8px);margin:auto 0 0;border-radius:22px 22px 0 0;border-bottom:0;padding-bottom:calc(15px + env(safe-area-inset-bottom,0px))}.share-export-actions{position:sticky;bottom:0;padding:8px 0 2px;background:#111c18}.share-export-actions button{font-size:11px}.share-scope-option strong,.share-exercise-option strong{font-size:11px}}
+
+
+/* v1.3.0 — compact share cards and multi-page analytics are rendered locally on canvas. */
+.share-export-dialog .dialog-copy{max-width:60ch}
+.share-export-preview{border-color:#3a5038;background:linear-gradient(135deg,#17251b,#101a15)}

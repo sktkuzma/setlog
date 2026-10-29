@@ -1,4 +1,4 @@
-const CACHE = 'setlog-cache-v18';
+const CACHE = 'setlog-cache-v19';
 const ASSETS = ['./', './index.html', './style.css', './app.js', './exercise-library-coach.json', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './supabase-config.js', './exercise-w1-1.svg', './exercise-w1-2.svg', './exercise-w1-3.svg', './exercise-w1-4.svg', './exercise-w1-5.svg', './exercise-w1-6.svg', './exercise-w1-7.svg', './exercise-w2-1.svg', './exercise-w2-2.svg', './exercise-w2-3.svg', './exercise-w2-4.svg', './exercise-w2-5.svg', './exercise-w2-6.svg', './exercise-w3-1.svg', './exercise-w3-2.svg', './exercise-w3-3.svg', './exercise-w3-4.svg', './exercise-w3-5.svg', './exercise-w3-6.svg', './exercise-w3-7.svg', './exercise-w3-8.svg', "./exercise-g1-1.jpg", "./exercise-g1-2.jpg", "./exercise-g1-3.jpg", "./exercise-g1-4.jpg", "./exercise-g1-5.jpg", "./exercise-g1-6.jpg", "./exercise-g2-1.jpg", "./exercise-g2-2.jpg", "./exercise-g2-3.jpg", "./exercise-g2-4.jpg", "./exercise-g2-5.jpg", "./exercise-g2-6.jpg"];
 
 self.addEventListener('install', event => {
