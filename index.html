@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#07100f">
   <meta name="description" content="Дневник тренировок и прогрессии рабочих весов.">
-  <title>СЕТ — дневник тренировок · 1.0.1</title>
+  <title>СЕТ — дневник тренировок · 1.1.0</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -35,6 +35,7 @@
           <div class="session-number" aria-hidden="true">LOG<br><strong id="sessionNumber">001</strong></div>
         </div>
 
+        <div id="historyEditBanner" class="history-edit-banner hidden" role="status"><div id="historyEditBannerText">Доработка сохранённой тренировки. Текущий черновик сохранён отдельно.</div><button type="button" class="secondary-button" data-action="cancel-history-edit">Отменить доработку</button></div>
         <div class="date-control">
           <label for="workoutDate">ДАТА</label>
           <input id="workoutDate" type="date">
@@ -56,7 +57,7 @@
         <button class="add-exercise-button" type="button" id="addExerciseBtn"><span>＋</span> Добавить упражнение из библиотеки или своё</button>
         <div class="save-dock">
           <div class="save-info"><strong id="filledCount">0 упражнений</strong><span>с данными для записи</span></div>
-          <button class="primary-button" type="button" id="saveWorkoutBtn">Сохранить тренировку <span>↗</span></button>
+          <div class="save-dock-actions"><button class="secondary-button" type="button" id="saveWorkoutBtn">Сохранить черновик <span>↗</span></button><button class="primary-button" type="button" id="finishWorkoutBtn">Закончить тренировку <span>✓</span></button></div>
         </div>
         <p class="small-print">Открой упражнение, чтобы записать вес и повторения каждого подхода отдельно. Черновик сохраняется автоматически.</p>
       </section>
