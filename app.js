@@ -567,6 +567,21 @@
     if(/широчайш|спин/.test(value)&&!/разгибател/.test(value))add('lats');
     return ANATOMY_MASKS.filter(mask=>ids.has(mask.id));
   }
+  // Старые записи истории могут не содержать muscle. В таком случае
+  // восстанавливаем группу по стабильному ID из каталога упражнений.
+  function resolveEntryMuscle(entry){
+    const direct=String(entry?.muscle||'').trim();
+    if(direct)return direct;
+    const ids=[entry?.exerciseCatalogId,entry?.exerciseId,entry?.placementExerciseId]
+      .filter(Boolean).map(String);
+    const catalog=Array.isArray(data?.exerciseCatalog)?data.exerciseCatalog:[];
+    let found=catalog.find(item=>ids.includes(String(item.id)));
+    if(!found&&entry?.exerciseName){
+      const name=String(entry.exerciseName).trim().toLocaleLowerCase('ru');
+      found=catalog.find(item=>String(item.name||'').trim().toLocaleLowerCase('ru')===name);
+    }
+    return String(found?.muscle||'').trim();
+  }
   function anatomyMapMarkup(muscle){
     const masks=resolveAnatomyMaskIds(muscle);
     const front=masks.some(mask=>mask.view==='front');
@@ -870,7 +885,7 @@
     const entries=selection.sessions.flatMap(session=>session.entries||[]);
     const counts=new Map(),unmapped=new Map();
     for(const entry of entries){
-      const muscle=String(entry.muscle||'').trim();
+      const muscle=resolveEntryMuscle(entry);
       const matched=resolveAnatomyMaskIds(muscle);
       if(!matched.length&&muscle)unmapped.set(muscle,(unmapped.get(muscle)||0)+1);
       for(const mask of matched)counts.set(mask.id,(counts.get(mask.id)||0)+1);
@@ -941,7 +956,7 @@
     const counts=new Map();
     const unmapped=new Map();
     for(const entry of entries){
-      const muscle=String(entry.muscle||'').trim();
+      const muscle=resolveEntryMuscle(entry);
       const matched=resolveAnatomyMaskIds(muscle);
       if(!matched.length&&muscle)unmapped.set(muscle,(unmapped.get(muscle)||0)+1);
       for(const mask of matched)counts.set(mask.id,(counts.get(mask.id)||0)+1);

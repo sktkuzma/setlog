@@ -1,0 +1,6 @@
+СЕТ v1.3.4 — файлы обновления
+- app.js — единый resolver мышечной группы для PNG/PDF с восстановлением из каталога.
+- sw.js — cache v23 и precache анатомических ресурсов.
+- VERSION.txt — 1.3.4.
+- CHANGELOG_v1.3.4.md
+- README_UPDATE_v1.3.4_RU.txt
