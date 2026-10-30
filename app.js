@@ -530,6 +530,60 @@
       return {label:part,url};
     });
   }
+
+  const ANATOMY_MASKS = [
+    {id:'front_deltoids',label:'Передние дельты',view:'front'},
+    {id:'chest',label:'Грудные',view:'front'},
+    {id:'biceps',label:'Бицепс',view:'front'},
+    {id:'forearms',label:'Предплечья',view:'front'},
+    {id:'abs',label:'Пресс',view:'front'},
+    {id:'adductors',label:'Приводящие',view:'front'},
+    {id:'quadriceps',label:'Квадрицепсы',view:'front'},
+    {id:'calves_front',label:'Икры',view:'front'},
+    {id:'trapezius',label:'Трапеции',view:'back'},
+    {id:'rear_deltoids',label:'Задние дельты',view:'back'},
+    {id:'triceps',label:'Трицепс',view:'back'},
+    {id:'lats',label:'Широчайшие',view:'back'},
+    {id:'hamstrings',label:'Бицепс бедра',view:'back'},
+    {id:'calves_back',label:'Икры',view:'back'}
+  ];
+  function resolveAnatomyMaskIds(muscle){
+    const value=String(muscle||'').toLocaleLowerCase('ru').replace(/ё/g,'е');
+    const ids=new Set();
+    const add=(id)=>ids.add(id);
+    if(/груд/.test(value))add('chest');
+    if(/дельт|(^|[\s/])плеч/.test(value)){add('front_deltoids');add('rear_deltoids');}
+    if(/задн.{0,8}дельт/.test(value))add('rear_deltoids');
+    if(/бицепс\s+бедра|задн.{0,12}поверхност.{0,8}бедра/.test(value))add('hamstrings');
+    else if(/бицепс/.test(value))add('biceps');
+    if(/трицепс/.test(value))add('triceps');
+    if(/предплеч/.test(value))add('forearms');
+    if(/сгибател.{0,8}локтя/.test(value)&&!ids.has('biceps'))add('biceps');
+    if(/пресс|брюшн/.test(value))add('abs');
+    if(/приводящ/.test(value))add('adductors');
+    if(/квадрицепс|передн.{0,10}поверхност.{0,8}бедра/.test(value))add('quadriceps');
+    if(/икр|голеностоп/.test(value)){add('calves_front');add('calves_back');}
+    if(/трапец|верх\s+спин/.test(value))add('trapezius');
+    if(/широчайш|спин/.test(value)&&!/разгибател/.test(value))add('lats');
+    return ANATOMY_MASKS.filter(mask=>ids.has(mask.id));
+  }
+  function anatomyMapMarkup(muscle){
+    const masks=resolveAnatomyMaskIds(muscle);
+    const front=masks.some(mask=>mask.view==='front');
+    const back=masks.some(mask=>mask.view==='back');
+    const chips=masks.map(mask=>`<span class="anatomy-chip">${safe(mask.label)}</span>`).filter((chip,index,array)=>array.indexOf(chip)===index).join('');
+    return `<section class="anatomy-panel" aria-label="Карта задействованных мышц">
+      <div class="anatomy-panel-heading"><div><span class="detail-section-kicker">АНАТОМИЯ / ${masks.length?'ЗАДЕЙСТВОВАННЫЕ ЗОНЫ':'КАРТА ТЕЛА'}</span><h3>Работающие мышцы</h3></div><span class="anatomy-panel-mark">СЕТ / MAP</span></div>
+      <div class="anatomy-map-stage">
+        <img class="anatomy-base" src="./assets/anatomy/base-neutral.png" alt="Анатомическая модель: вид спереди и сзади" loading="lazy">
+        ${masks.map(mask=>`<img class="anatomy-mask" src="./assets/anatomy/masks/${mask.id}.png" alt="" aria-hidden="true" loading="lazy">`).join('')}
+        <span class="anatomy-view-label anatomy-view-front ${front?'is-active':''}">СПЕРЕДИ</span>
+        <span class="anatomy-view-label anatomy-view-back ${back?'is-active':''}">СЗАДИ</span>
+      </div>
+      ${chips?`<div class="anatomy-chip-list">${chips}</div>`:'<p class="anatomy-unavailable">Для этой мышечной группы пока нет отдельной маски.</p>'}
+      <p class="anatomy-disclaimer">Схематичная визуальная подсказка. Маски находятся на этапе проверки и не являются медицинской сегментацией.</p>
+    </section>`;
+  }
   let currentDetailExerciseId=null;
   function renderExerciseDetail(exerciseId=currentDetailExerciseId){
     const ex=getExercises().find(item=>item.id===exerciseId);if(!ex)return;
@@ -547,6 +601,7 @@
         ${telegram?`<a class="video-link video-link-telegram" href="${safe(telegram)}" target="_blank" rel="noopener noreferrer"><span class="video-brand-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M23.5 3.5 19.95 20.2c-.27 1.17-.97 1.46-1.97.91l-5.44-4.01-2.62 2.52c-.29.29-.54.54-1.1.54l.39-5.55L19.32 5.4c.42-.39-.09-.61-.65-.22L6.06 13.3.67 11.61c-1.17-.37-1.2-1.17.25-1.74L22.02 1.7c.97-.35 1.82.23 1.48 1.8Z"/></svg></span><span>Видео с техникой (Telegram)</span><span class="video-external">↗</span></a>`:`<button type="button" class="video-link video-link-telegram" disabled><span class="video-brand-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M23.5 3.5 19.95 20.2c-.27 1.17-.97 1.46-1.97.91l-5.44-4.01-2.62 2.52c-.29.29-.54.54-1.1.54l.39-5.55L19.32 5.4c.42-.39-.09-.61-.65-.22L6.06 13.3.67 11.61c-1.17-.37-1.2-1.17.25-1.74L22.02 1.7c.97-.35 1.82.23 1.48 1.8Z"/></svg></span><span>Видео с техникой (Telegram)</span><span class="video-external">Пока нет ссылки</span></button>`}
         ${youtube?`<a class="video-link video-link-youtube" href="${safe(youtube)}" target="_blank" rel="noopener noreferrer"><span class="video-brand-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="4" fill="currentColor"/><path d="M10 8.2v7.6l6.2-3.8Z" fill="#d92d32"/></svg></span><span>Видео с техникой (YouTube)</span><span class="video-external">↗</span></a>`:`<button type="button" class="video-link video-link-youtube" disabled><span class="video-brand-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="4" fill="currentColor"/><path d="M10 8.2v7.6l6.2-3.8Z" fill="#d92d32"/></svg></span><span>Видео с техникой (YouTube)</span><span class="video-external">Добавим позже</span></button>`}
       </div>
+      ${anatomyMapMarkup(ex.muscle)}
       <div class="detail-info-panel">
         <div class="detail-info-row"><span class="detail-info-icon">♧</span><span>Мышечная группа</span><strong>${safe(ex.muscle||'Своя группа')}</strong></div>
         <div class="detail-info-row"><span class="detail-info-icon">▤</span><span>Плановые подходы</span><strong>${safe(ex.sets)}</strong></div>

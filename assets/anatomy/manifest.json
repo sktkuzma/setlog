@@ -1,0 +1,108 @@
+{
+  "canvas": [
+    1536,
+    1024
+  ],
+  "source": "a_high_resolution_infographic_medical_illustration.png",
+  "notes": "SET — пакет масок для проверки\n\nХолст: 1536×1024 px, PNG RGBA. Источник — существующая анатомическая иллюстрация СЕТ с зелёными зонами.\n\nГруппы: дельтовидные мышцы, грудные, бицепс, предплечья, пресс, приводящие, квадрицепс, икроножные спереди, трапеции, задние дельты, трицепс, широчайшие, бицепс бедра, икроножные сзади.\n\nМаски получены пороговым извлечением зелёной разметки внутри вручную ограниченных контуров; односторонние зоны отражены для симметричного отображения. Это визуальные маски для проверки, не медицински валидированная сегментация. Ягодичные и разгибатели спины отдельно не включены: в исходной иллюстрации они подписаны, но не имеют однозначной зелёной заливки.\n",
+  "masks": [
+    {
+      "id": "front_deltoids",
+      "label": "Дельтовидные мышцы",
+      "view": "front",
+      "pixels": 693,
+      "status": "review_mask"
+    },
+    {
+      "id": "chest",
+      "label": "Грудные мышцы",
+      "view": "front",
+      "pixels": 12230,
+      "status": "review_mask"
+    },
+    {
+      "id": "biceps",
+      "label": "Бицепс",
+      "view": "front",
+      "pixels": 1061,
+      "status": "review_mask"
+    },
+    {
+      "id": "forearms",
+      "label": "Предплечья",
+      "view": "front",
+      "pixels": 3147,
+      "status": "review_mask"
+    },
+    {
+      "id": "abs",
+      "label": "Пресс",
+      "view": "front",
+      "pixels": 4839,
+      "status": "review_mask"
+    },
+    {
+      "id": "adductors",
+      "label": "Приводящие мышцы",
+      "view": "front",
+      "pixels": 6196,
+      "status": "review_mask"
+    },
+    {
+      "id": "quadriceps",
+      "label": "Квадрицепс",
+      "view": "front",
+      "pixels": 6070,
+      "status": "review_mask"
+    },
+    {
+      "id": "calves_front",
+      "label": "Икроножные, спереди",
+      "view": "front",
+      "pixels": 1908,
+      "status": "review_mask"
+    },
+    {
+      "id": "trapezius",
+      "label": "Трапеции",
+      "view": "back",
+      "pixels": 3232,
+      "status": "review_mask"
+    },
+    {
+      "id": "rear_deltoids",
+      "label": "Задняя дельта",
+      "view": "back",
+      "pixels": 2147,
+      "status": "review_mask"
+    },
+    {
+      "id": "triceps",
+      "label": "Трицепс",
+      "view": "back",
+      "pixels": 4181,
+      "status": "review_mask"
+    },
+    {
+      "id": "lats",
+      "label": "Широчайшие мышцы",
+      "view": "back",
+      "pixels": 12080,
+      "status": "review_mask"
+    },
+    {
+      "id": "hamstrings",
+      "label": "Бицепс бедра",
+      "view": "back",
+      "pixels": 9270,
+      "status": "review_mask"
+    },
+    {
+      "id": "calves_back",
+      "label": "Икроножные, сзади",
+      "view": "back",
+      "pixels": 3966,
+      "status": "review_mask"
+    }
+  ]
+}

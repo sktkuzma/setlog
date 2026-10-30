@@ -185,3 +185,22 @@ html,body{background:#07100f;color:var(--text)}body{background:radial-gradient(e
 /* v1.3.0 — compact share cards and multi-page analytics are rendered locally on canvas. */
 .share-export-dialog .dialog-copy{max-width:60ch}
 .share-export-preview{border-color:#3a5038;background:linear-gradient(135deg,#17251b,#101a15)}
+
+
+/* v1.3.1 — anatomy map panel */
+.anatomy-panel{margin:15px 0 14px;padding:14px 12px 11px;border:1px solid #344438;border-radius:17px;background:linear-gradient(145deg,rgba(200,241,105,.045),transparent 48%),#151f19;overflow:hidden}
+.anatomy-panel-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:0 2px 9px}
+.anatomy-panel-heading h3{margin:3px 0 0;font-size:19px;line-height:1.2;letter-spacing:-.035em}
+.anatomy-panel-mark{font:9px 'DM Mono',monospace;letter-spacing:.12em;color:#899789;padding-bottom:3px}
+.anatomy-map-stage{position:relative;width:100%;aspect-ratio:3/2;overflow:hidden;border-radius:12px;background:radial-gradient(ellipse at 50% 45%,rgba(200,241,105,.055),transparent 65%),#111813}
+.anatomy-base,.anatomy-mask{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
+.anatomy-base{filter:contrast(1.03)}
+.anatomy-mask{opacity:.88;mix-blend-mode:screen;pointer-events:none}
+.anatomy-view-label{position:absolute;bottom:8px;padding:4px 7px;border:1px solid rgba(255,255,255,.08);border-radius:5px;background:rgba(9,15,11,.78);font:8px 'DM Mono',monospace;letter-spacing:.1em;color:#778277}
+.anatomy-view-front{left:18%}.anatomy-view-back{right:18%}
+.anatomy-view-label.is-active{color:var(--lime);border-color:rgba(200,241,105,.32)}
+.anatomy-chip-list{display:flex;flex-wrap:wrap;gap:6px;margin:10px 1px 0}
+.anatomy-chip{padding:5px 8px;border:1px solid rgba(200,241,105,.22);border-radius:7px;background:rgba(200,241,105,.07);font-size:10px;color:#d9e7c2}
+.anatomy-unavailable{margin:10px 2px 0;color:#a4afa4;font-size:11px}
+.anatomy-disclaimer{margin:9px 2px 0;color:#7f8c80;font-size:9px;line-height:1.45}
+@media(max-width:380px){.anatomy-panel{padding:11px 9px}.anatomy-panel-heading h3{font-size:17px}.anatomy-view-label{font-size:7px}}
