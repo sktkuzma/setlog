@@ -825,8 +825,8 @@
   function shareTitle(selection){if(selection.mode==='session'){const s=selection.sessions[0];return `Тренировка: ${s?.workoutName||'Тренировка'}`;}if(selection.mode==='exercises')return 'Результаты выбранных упражнений';return 'Твои результаты';}
   function shareSubtitle(selection){if(selection.mode==='session'){const s=selection.sessions[0];return `${dateFmt(s?.date)}${s?.programName?' · '+s.programName:''}`;}return shareDateSpan(selection);}
   function shareMetricsForPng(selection,metrics){const hasVolume=metrics.weightedSets>0;return selection.mode==='session'?[{v:metrics.entries,l:'УПРАЖНЕНИЙ'},{v:metrics.sets,l:'ПОДХОДОВ'},{v:metrics.reps,l:'ПОВТОРЕНИЙ'}]:[{v:metrics.sessions,l:'ТРЕНИРОВОК'},{v:metrics.exercises,l:'РАЗНЫХ УПРАЖНЕНИЙ'},{v:metrics.sets,l:'ПОДХОДОВ'},{v:metrics.reps,l:'ПОВТОРЕНИЙ'}];}
-  function sharePngCard(selection,metrics,analysis){
-    const W=1200,H=1500,M=62,INNER=W-M*2,canvas=shareCanvas(W,H),ctx=canvas.getContext('2d');shareFillBackground(ctx,W,H);
+  async function sharePngCard(selection,metrics,analysis){
+    const W=1200,H=2100,M=62,INNER=W-M*2,canvas=shareCanvas(W,H),ctx=canvas.getContext('2d');shareFillBackground(ctx,W,H);
     ctx.fillStyle=SHARE_THEME.lime;ctx.fillRect(0,0,10,H);shareBrand(ctx,M,94,.88);sharePill(ctx,W-M-230,54,230,selection.mode==='session'?'ТРЕНИРОВКА':'ИТОГИ ПЕРИОДА');
     shareText(ctx,selection.mode==='session'?'ТРЕНИРОВКА / РЕЗУЛЬТАТЫ':selection.mode==='exercises'?'ВЫБРАННЫЕ УПРАЖНЕНИЯ':'ТВОЯ ДИНАМИКА',M,166,'700 14px Arial,sans-serif',SHARE_THEME.lime,INNER);
     const titleLines=shareWrapped(ctx,shareTitle(selection),M,232,INNER,55,'800 48px Arial,sans-serif',SHARE_THEME.text,2);
@@ -860,9 +860,48 @@
       const headline=analysis.gains[0];
       if(headline&&bodyEnd+105<1180){const hy=bodyEnd+8;roundedShareRect(ctx,M,hy,INNER,83,13,'#17251b','#3a5435');shareText(ctx,'ГЛАВНЫЙ ПРИРОСТ ПЕРИОДА',M+16,hy+25,'700 11px Arial,sans-serif',SHARE_THEME.muted,INNER-32);shareWrapped(ctx,headline.name,M+16,hy+51,INNER-235,18,'700 15px Arial,sans-serif',SHARE_THEME.text,1);shareText(ctx,`+${fmt(headline.delta)} кг`,W-M-14,hy+52,'800 21px Arial,sans-serif',SHARE_THEME.lime,190,'right');bodyEnd=hy+91;}
     }
-    const footY=Math.max(1135,Math.min(1325,bodyEnd+55));roundedShareRect(ctx,M,footY,INNER,96,14,'#0d1914','#2a3b30');shareText(ctx,'СЕТ',M+19,footY+41,'800 30px Arial,sans-serif',SHARE_THEME.text,100);shareText(ctx,'Только сохранённые результаты. Твой дневник — твой прогресс.',M+19,footY+68,'400 15px Arial,sans-serif',SHARE_THEME.muted,INNER-150);shareText(ctx,'CET / TRAINING',W-M-12,footY+57,'800 12px Arial,sans-serif',SHARE_THEME.lime,145,'right');
-    shareText(ctx,`СЕТ · ${new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})}`,M,1460,'500 12px Arial,sans-serif','#718479',INNER);
+    await drawPngAnatomyPanel(ctx,selection,M,1370,INNER,590);
+    const footY=1980;roundedShareRect(ctx,M,footY,INNER,82,14,'#0d1914','#2a3b30');shareText(ctx,'СЕТ',M+19,footY+36,'800 28px Arial,sans-serif',SHARE_THEME.text,100);shareText(ctx,'Только сохранённые результаты. Твой дневник — твой прогресс.',M+19,footY+61,'400 13px Arial,sans-serif',SHARE_THEME.muted,INNER-150);shareText(ctx,'CET / TRAINING',W-M-12,footY+50,'800 11px Arial,sans-serif',SHARE_THEME.lime,145,'right');
+    shareText(ctx,`СЕТ · ${new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})}`,M,2085,'500 12px Arial,sans-serif','#718479',INNER);
     return canvas;
+  }
+
+  async function drawPngAnatomyPanel(ctx,selection,x,y,w,h){
+    const entries=selection.sessions.flatMap(session=>session.entries||[]);
+    const counts=new Map(),unmapped=new Map();
+    for(const entry of entries){
+      const muscle=String(entry.muscle||'').trim();
+      const matched=resolveAnatomyMaskIds(muscle);
+      if(!matched.length&&muscle)unmapped.set(muscle,(unmapped.get(muscle)||0)+1);
+      for(const mask of matched)counts.set(mask.id,(counts.get(mask.id)||0)+1);
+    }
+    const activeMasks=ANATOMY_MASKS.filter(mask=>counts.has(mask.id));
+    roundedShareRect(ctx,x,y,w,h,16,'#101b16','#304235');
+    shareText(ctx,'АНАТОМИЯ / ЗАДЕЙСТВОВАННЫЕ МЫШЦЫ',x+20,y+30,'800 16px Arial,sans-serif',SHARE_THEME.lime,w-40);
+    shareText(ctx,selection.mode==='session'?'Мышечные группы этой тренировки':'Мышечные группы за выбранный период',x+20,y+55,'400 12px Arial,sans-serif',SHARE_THEME.muted,w-40);
+    if(!activeMasks.length){
+      shareWrapped(ctx,'В сохранённых упражнениях не найдены группы, для которых есть отдельные маски.',x+24,y+112,w-48,22,'400 16px Arial,sans-serif',SHARE_THEME.muted,3);
+      return;
+    }
+    const base=await loadAnatomyPdfImage('./assets/anatomy/base-neutral.png');
+    const maskImages=await Promise.all(activeMasks.map(mask=>loadAnatomyPdfImage(`./assets/anatomy/masks/${mask.id}.png`)));
+    const imageX=x+20,imageY=y+75,imageW=w-40,imageH=315;
+    const scale=Math.min(imageW/base.width,imageH/base.height);
+    const drawW=base.width*scale,drawH=base.height*scale;
+    const dx=imageX+(imageW-drawW)/2,dy=imageY+(imageH-drawH)/2;
+    ctx.drawImage(base,dx,dy,drawW,drawH);
+    activeMasks.forEach((mask,index)=>ctx.drawImage(maskImages[index],dx,dy,drawW,drawH));
+    const listY=y+397,cols=2,gap=12,cardW=(w-40-gap)/2,cardH=23;
+    activeMasks.forEach((mask,index)=>{
+      const col=index%cols,row=Math.floor(index/cols),cx=x+20+col*(cardW+gap),cy=listY+row*cardH;
+      ctx.fillStyle=SHARE_THEME.lime;ctx.fillRect(cx,cy+5,4,12);
+      shareText(ctx,`${mask.label} · ${counts.get(mask.id)||0}`,cx+11,cy+16,'600 11px Arial,sans-serif',SHARE_THEME.soft,cardW-14);
+    });
+    const unmappedNames=[...unmapped.keys()];
+    if(unmappedNames.length){
+      const noteY=listY+Math.ceil(activeMasks.length/cols)*cardH+8;
+      if(noteY<y+h-8)shareWrapped(ctx,`Без отдельной маски: ${unmappedNames.join(', ')}`,x+20,noteY,w-40,12,'400 9px Arial,sans-serif',SHARE_THEME.muted,2);
+    }
   }
   function pdfPageCanvas(kicker,title,subtitle,pageNo,totalPages){const canvas=shareCanvas(SHARE_W,SHARE_H),ctx=canvas.getContext('2d');shareFillBackground(ctx,SHARE_W,SHARE_H);ctx.fillStyle=SHARE_THEME.lime;ctx.fillRect(0,0,7,SHARE_H);shareBrand(ctx,SHARE_MARGIN,76,.82);sharePill(ctx,SHARE_W-SHARE_MARGIN-180,38,180,kicker);shareText(ctx,title,SHARE_MARGIN,169,'800 43px Arial,sans-serif',SHARE_THEME.text,SHARE_W-SHARE_MARGIN*2);shareWrapped(ctx,subtitle,SHARE_MARGIN,208,SHARE_W-SHARE_MARGIN*2,26,'400 19px Arial,sans-serif',SHARE_THEME.muted,2);ctx.strokeStyle=SHARE_THEME.line;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(SHARE_MARGIN,250);ctx.lineTo(SHARE_W-SHARE_MARGIN,250);ctx.stroke();ctx.strokeStyle='#344b38';ctx.beginPath();ctx.moveTo(SHARE_MARGIN,SHARE_H-72);ctx.lineTo(SHARE_W-SHARE_MARGIN,SHARE_H-72);ctx.stroke();shareText(ctx,'СЕТ · ДНЕВНИК ТРЕНИРОВОК',SHARE_MARGIN,SHARE_H-40,'700 13px Arial,sans-serif',SHARE_THEME.muted,600);shareText(ctx,`${String(pageNo).padStart(2,'0')} / ${String(totalPages).padStart(2,'0')}`,SHARE_W-SHARE_MARGIN,SHARE_H-40,'700 13px Arial,sans-serif',SHARE_THEME.lime,150,'right');return {canvas,ctx};}
   function pdfMetric(ctx,x,y,w,value,label){roundedShareRect(ctx,x,y,w,112,15,'#111d17','#304235');shareText(ctx,String(value),x+17,y+47,'800 32px Arial,sans-serif',SHARE_THEME.lime,w-34);shareWrapped(ctx,label,x+17,y+76,w-34,17,'700 11px Arial,sans-serif',SHARE_THEME.muted,2);}
@@ -877,14 +916,73 @@
   function pdfDrawLineChart(ctx,x,y,w,h,item){roundedShareRect(ctx,x,y,w,h,15,'#111b16','#304235');const p=item.points.filter(pt=>pt.load>0).slice(-10);const first=p[0],last=p[p.length-1];shareWrapped(ctx,item.name,x+18,y+31,w-250,22,'800 18px Arial,sans-serif',SHARE_THEME.text,2);if(first&&last){const delta=last.load-first.load;shareText(ctx,`${delta>0?'+':''}${fmt(delta)} кг`,x+w-18,y+31,'800 17px Arial,sans-serif',delta>=0?SHARE_THEME.lime:SHARE_THEME.orange,185,'right');shareText(ctx,`${fmt(first.load)} → ${fmt(last.load)} кг`,x+w-18,y+55,'500 12px Arial,sans-serif',SHARE_THEME.muted,185,'right');}
     if(p.length<2){shareText(ctx,'Недостаточно записей с весом для графика.',x+18,y+100,'400 15px Arial,sans-serif',SHARE_THEME.muted,w-36);return;}
     const gx=x+66,gy=y+77,gw=w-100,gh=h-126,vals=p.map(pt=>pt.load);let min=Math.min(...vals),max=Math.max(...vals);if(max===min){min=Math.max(0,min-2);max+=2;}else{const pad=(max-min)*.15;min=Math.max(0,min-pad);max+=pad;}ctx.font='10px Arial,sans-serif';for(let i=0;i<4;i++){const value=min+(max-min)*i/3,yy=gy+gh-i*(gh/3);ctx.strokeStyle='#29382f';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(gx,yy);ctx.lineTo(gx+gw,yy);ctx.stroke();shareText(ctx,fmt(value),gx-10,yy+4,'400 10px Arial,sans-serif',SHARE_THEME.muted,45,'right');}const pointX=i=>gx+i*(gw/Math.max(1,p.length-1)),pointY=v=>gy+gh-(v-min)*gh/(max-min);ctx.beginPath();p.forEach((pt,i)=>i?ctx.lineTo(pointX(i),pointY(pt.load)):ctx.moveTo(pointX(i),pointY(pt.load)));ctx.strokeStyle=SHARE_THEME.lime;ctx.lineWidth=3.5;ctx.lineJoin='round';ctx.lineCap='round';ctx.stroke();p.forEach((pt,i)=>{ctx.beginPath();ctx.arc(pointX(i),pointY(pt.load),4,0,Math.PI*2);ctx.fillStyle=SHARE_THEME.lime;ctx.fill();});[0,Math.floor((p.length-1)/2),p.length-1].filter((idx,i,a)=>a.indexOf(idx)===i).forEach(idx=>{const label=dateFmt(p[idx].date).replace(/\s+\d{4}$/,'');shareText(ctx,label,pointX(idx),gy+gh+20,'400 10px Arial,sans-serif',SHARE_THEME.muted,70,idx===0?'left':idx===p.length-1?'right':'center');});}
-  function pdfProgressPage(items,pageIndex,pageCount,pageNo,totalPages){const title=pageIndex===0?'Прогресс по упражнениям':'Прогресс по упражнениям · продолжение';const {canvas,ctx}=pdfPageCanvas('02 / ДИНАМИКА',title,`Изменение максимального записанного рабочего веса · блок ${pageIndex+1} из ${pageCount}`,pageNo,totalPages);const M=SHARE_MARGIN;const rows=items.slice(pageIndex*4,pageIndex*4+4);if(!rows.length){roundedShareRect(ctx,M,310,SHARE_W-M*2,200,18,'#111c16','#304235');shareWrapped(ctx,'Для графика нужны как минимум две записи с указанным весом одного и того же упражнения. Когда появятся повторные измерения, здесь будет отображаться динамика.',M+28,370,SHARE_W-M*2-56,28,'400 20px Arial,sans-serif',SHARE_THEME.muted,4);}else rows.forEach((item,i)=>pdfDrawLineChart(ctx,M,285+i*326,SHARE_W-M*2,300,item));if(rows.length>0&&rows.length<4){const y=285+rows.length*326-5;roundedShareRect(ctx,M,y,SHARE_W-M*2,132,13,'#111c16','#2a3b30');shareText(ctx,'КАК ЧИТАТЬ ГРАФИКИ',M+18,y+29,'800 12px Arial,sans-serif',SHARE_THEME.lime,SHARE_W-M*2-36);shareWrapped(ctx,'Каждая линия показывает максимальный записанный рабочий вес по каждому занятию. Разные упражнения вынесены на отдельные графики: абсолютные веса между разными упражнениями напрямую не сравниваются.',M+18,y+58,SHARE_W-M*2-36,22,'400 15px Arial,sans-serif',SHARE_THEME.soft,3);}return canvas;}
+  function pdfProgressPage(items,pageIndex,pageCount,pageNo,totalPages){const title=pageIndex===0?'Прогресс по упражнениям':'Прогресс по упражнениям · продолжение';const {canvas,ctx}=pdfPageCanvas('03 / ДИНАМИКА',title,`Изменение максимального записанного рабочего веса · блок ${pageIndex+1} из ${pageCount}`,pageNo,totalPages);const M=SHARE_MARGIN;const rows=items.slice(pageIndex*4,pageIndex*4+4);if(!rows.length){roundedShareRect(ctx,M,310,SHARE_W-M*2,200,18,'#111c16','#304235');shareWrapped(ctx,'Для графика нужны как минимум две записи с указанным весом одного и того же упражнения. Когда появятся повторные измерения, здесь будет отображаться динамика.',M+28,370,SHARE_W-M*2-56,28,'400 20px Arial,sans-serif',SHARE_THEME.muted,4);}else rows.forEach((item,i)=>pdfDrawLineChart(ctx,M,285+i*326,SHARE_W-M*2,300,item));if(rows.length>0&&rows.length<4){const y=285+rows.length*326-5;roundedShareRect(ctx,M,y,SHARE_W-M*2,132,13,'#111c16','#2a3b30');shareText(ctx,'КАК ЧИТАТЬ ГРАФИКИ',M+18,y+29,'800 12px Arial,sans-serif',SHARE_THEME.lime,SHARE_W-M*2-36);shareWrapped(ctx,'Каждая линия показывает максимальный записанный рабочий вес по каждому занятию. Разные упражнения вынесены на отдельные графики: абсолютные веса между разными упражнениями напрямую не сравниваются.',M+18,y+58,SHARE_W-M*2-36,22,'400 15px Arial,sans-serif',SHARE_THEME.soft,3);}return canvas;}
   function pdfRankRow(ctx,x,y,w,h,rank,title,detail,value,color=SHARE_THEME.lime){roundedShareRect(ctx,x,y,w,h,13,'#111c16','#2a3b30');ctx.beginPath();ctx.arc(x+25,y+26,15,0,Math.PI*2);ctx.fillStyle=rank<=3?SHARE_THEME.lime:'#304137';ctx.fill();shareText(ctx,String(rank),x+25,y+31,'800 13px Arial,sans-serif','#102016',28,'center');shareWrapped(ctx,title,x+52,y+25,w-68,18,'700 14px Arial,sans-serif',SHARE_THEME.text,2);shareText(ctx,detail,x+52,y+h-17,'400 12px Arial,sans-serif',SHARE_THEME.muted,w-68);shareText(ctx,value,x+w-15,y+25,'800 15px Arial,sans-serif',color,w-70,'right');}
-  function pdfAchievementsPage(analysis,pageNo,totalPages){const {canvas,ctx}=pdfPageCanvas('03 / ЛИЧНЫЕ РЕЗУЛЬТАТЫ','Достижения за период','Сравнение только внутри одного упражнения и только по сохранённым данным.',pageNo,totalPages);const M=SHARE_MARGIN,gap=22,cw=(SHARE_W-M*2-gap)/2;pdfSectionTitle(ctx,'Прирост рабочего веса',M,300,cw);pdfSectionTitle(ctx,'Больше всего повторений',M+cw+gap,300,cw);const gains=analysis.gains.slice(0,6),reps=analysis.reps.slice(0,6);for(let i=0;i<6;i++){const y=340+i*133;if(gains[i]){const g=gains[i];pdfRankRow(ctx,M,y,cw,116,i+1,g.name,`${fmt(g.first.load)} → ${fmt(g.last.load)} кг`,`${g.pct>0?'+':''}${fmt(g.pct)}%`);}else if(i===0){roundedShareRect(ctx,M,y,cw,116,13,'#111c16','#2a3b30');shareWrapped(ctx,'Пока нет двух записей с весом одного упражнения для сравнения.',M+18,y+37,cw-36,22,'400 15px Arial,sans-serif',SHARE_THEME.muted,3);}
+  function pdfAchievementsPage(analysis,pageNo,totalPages){const {canvas,ctx}=pdfPageCanvas('04 / ЛИЧНЫЕ РЕЗУЛЬТАТЫ','Достижения за период','Сравнение только внутри одного упражнения и только по сохранённым данным.',pageNo,totalPages);const M=SHARE_MARGIN,gap=22,cw=(SHARE_W-M*2-gap)/2;pdfSectionTitle(ctx,'Прирост рабочего веса',M,300,cw);pdfSectionTitle(ctx,'Больше всего повторений',M+cw+gap,300,cw);const gains=analysis.gains.slice(0,6),reps=analysis.reps.slice(0,6);for(let i=0;i<6;i++){const y=340+i*133;if(gains[i]){const g=gains[i];pdfRankRow(ctx,M,y,cw,116,i+1,g.name,`${fmt(g.first.load)} → ${fmt(g.last.load)} кг`,`${g.pct>0?'+':''}${fmt(g.pct)}%`);}else if(i===0){roundedShareRect(ctx,M,y,cw,116,13,'#111c16','#2a3b30');shareWrapped(ctx,'Пока нет двух записей с весом одного упражнения для сравнения.',M+18,y+37,cw-36,22,'400 15px Arial,sans-serif',SHARE_THEME.muted,3);}
       const rx=M+cw+gap;if(reps[i]){const r=reps[i];pdfRankRow(ctx,rx,y,cw,116,i+1,r.name,`${r.records} ${plural(r.records,'запись','записи','записей')} в отчёте`,`${fmt(r.reps)} повт.`);}else if(i===0){roundedShareRect(ctx,rx,y,cw,116,13,'#111c16','#2a3b30');shareWrapped(ctx,'Нет записанных повторений для рейтинга.',rx+18,y+37,cw-36,22,'400 15px Arial,sans-serif',SHARE_THEME.muted,3);}}
     roundedShareRect(ctx,M,1130,SHARE_W-M*2,150,14,'#17241a','#31452c');shareText(ctx,'КАК ЧИТАТЬ ПОКАЗАТЕЛИ',M+20,1164,'800 12px Arial,sans-serif',SHARE_THEME.lime,SHARE_W-M*2-40);shareWrapped(ctx,'Прирост — изменение максимального записанного веса от первой к последней тренировке выбранного периода. Проценты рассчитываются относительно начального веса. Повторения — сумма фактически внесённых повторений по каждому упражнению. Рейтинг не заменяет оценку техники и не сравнивает разные упражнения между собой.',M+20,1197,SHARE_W-M*2-40,23,'400 15px Arial,sans-serif',SHARE_THEME.soft,5);return canvas;}
-  function pdfSessionLogPage(selection,sessions,pageIndex,pageCount,pageNo,totalPages){const {canvas,ctx}=pdfPageCanvas('04 / ЖУРНАЛ','Журнал тренировок',`${shareDateSpan(selection)} · страница журнала ${pageIndex+1} из ${pageCount}`,pageNo,totalPages);const M=SHARE_MARGIN;const rows=sessions.slice(pageIndex*11,pageIndex*11+11);const col=[M,M+145,M+575,M+715,M+830,M+945,M+1080];const headers=[['ДАТА',col[0]],['ТРЕНИРОВКА',col[1]],['УПР.',col[2]],['ПОДХ.',col[3]],['ПОВТ.',col[4]],['ОБЪЁМ',col[5]]];headers.forEach(([label,x])=>shareText(ctx,label,x,300,'700 11px Arial,sans-serif',SHARE_THEME.muted,120));ctx.strokeStyle=SHARE_THEME.line;ctx.beginPath();ctx.moveTo(M,317);ctx.lineTo(SHARE_W-M,317);ctx.stroke();rows.forEach((session,i)=>{const y=340+i*110;const m=shareSessionMetrics(session);if(i%2===0)roundedShareRect(ctx,M,y-25,SHARE_W-M*2,94,10,'#101b16');shareText(ctx,dateFmt(session.date).replace(/\s+\d{4}$/,''),col[0],y+5,'700 13px Arial,sans-serif',SHARE_THEME.text,135);shareWrapped(ctx,session.workoutName||session.programName||'Тренировка',col[1],y+1,410,18,'700 13px Arial,sans-serif',SHARE_THEME.soft,2);shareText(ctx,String(m.exercises),col[2],y+5,'700 14px Arial,sans-serif',SHARE_THEME.text,80);shareText(ctx,String(m.sets),col[3],y+5,'700 14px Arial,sans-serif',SHARE_THEME.text,80);shareText(ctx,String(m.reps),col[4],y+5,'700 14px Arial,sans-serif',SHARE_THEME.text,95);shareText(ctx,m.weightedSets?fmt(m.volume):'—',col[5],y+5,'700 14px Arial,sans-serif',SHARE_THEME.lime,100);shareText(ctx,(session.programName||'').slice(0,55),col[1],y+29,'400 11px Arial,sans-serif',SHARE_THEME.muted,400);});shareText(ctx,'Объём учитывает только подходы, где записаны и вес, и повторения.',M,SHARE_H-108,'400 12px Arial,sans-serif',SHARE_THEME.muted,SHARE_W-M*2);return canvas;}
-  function pdfSessionDetailsPage(selection,items,pageIndex,pageCount,pageNo,totalPages){const {canvas,ctx}=pdfPageCanvas('04 / РЕЗУЛЬТАТЫ','Упражнения и подходы',shareSubtitle(selection),pageNo,totalPages);const M=SHARE_MARGIN;const rows=items.slice(pageIndex*10,pageIndex*10+10);rows.forEach((entry,i)=>{const y=285+i*126;const h=112;roundedShareRect(ctx,M,y,SHARE_W-M*2,h,13,'#111c16','#2b3c31');shareWrapped(ctx,entry.exerciseName||'Упражнение',M+18,y+29,SHARE_W-M*2-36,21,'800 17px Arial,sans-serif',SHARE_THEME.text,2);shareText(ctx,`${entry.muscle||'Мышечная группа не указана'} · ${shareEntrySetCount(entry)} подхода`,M+18,y+53,'400 12px Arial,sans-serif',SHARE_THEME.muted,SHARE_W-M*2-36);const sets=shareEntrySets(entry);const setLine=sets.map((s,j)=>`${j+1}. ${s.weight===null?'—':fmt(s.weight)+' кг'} × ${s.reps===null?'—':fmt(s.reps)}`).join('    ·    ')||'Нет отдельных данных по подходам';shareWrapped(ctx,setLine,M+18,y+81,SHARE_W-M*2-36,18,'600 13px Arial,sans-serif',SHARE_THEME.lime,2);});return canvas;}
-  function prepareShareReport(selection){const metrics=shareSelectionMetrics(selection),analysis=shareAnalysis(selection),pngCanvas=sharePngCard(selection,metrics,analysis);const builders=[];builders.push((n,t)=>pdfSummaryPage(selection,metrics,analysis,n,t));if(selection.mode==='session'){const entries=selection.sessions[0]?.entries||[];const chunks=Math.max(1,Math.ceil(entries.length/10));for(let i=0;i<chunks;i++)builders.push((n,t)=>pdfSessionDetailsPage(selection,entries,i,chunks,n,t));}else{const charts=analysis.timelines.filter(item=>item.points.filter(p=>p.load>0).length>=2).sort((a,b)=>{const ap=a.points.filter(p=>p.load>0),bp=b.points.filter(p=>p.load>0);return ((bp.at(-1).load-bp[0].load)/bp[0].load)-((ap.at(-1).load-ap[0].load)/ap[0].load);});const chartChunks=Math.max(1,Math.ceil(charts.length/4));for(let i=0;i<chartChunks;i++)builders.push((n,t)=>pdfProgressPage(charts,i,chartChunks,n,t));builders.push((n,t)=>pdfAchievementsPage(analysis,n,t));const sessions=[...selection.sessions].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||((b.savedAt||0)-(a.savedAt||0)));const chunks=Math.max(1,Math.ceil(sessions.length/11));for(let i=0;i<chunks;i++)builders.push((n,t)=>pdfSessionLogPage(selection,sessions,i,chunks,n,t));}const pdfPages=builders.map((build,index)=>build(index+1,builders.length));return {pngCanvas,pdfPages,summary:{...metrics,changes:analysis.gains.length,repLeaders:analysis.reps.length}};}
+  function pdfSessionLogPage(selection,sessions,pageIndex,pageCount,pageNo,totalPages){const {canvas,ctx}=pdfPageCanvas('05 / ЖУРНАЛ','Журнал тренировок',`${shareDateSpan(selection)} · страница журнала ${pageIndex+1} из ${pageCount}`,pageNo,totalPages);const M=SHARE_MARGIN;const rows=sessions.slice(pageIndex*11,pageIndex*11+11);const col=[M,M+145,M+575,M+715,M+830,M+945,M+1080];const headers=[['ДАТА',col[0]],['ТРЕНИРОВКА',col[1]],['УПР.',col[2]],['ПОДХ.',col[3]],['ПОВТ.',col[4]],['ОБЪЁМ',col[5]]];headers.forEach(([label,x])=>shareText(ctx,label,x,300,'700 11px Arial,sans-serif',SHARE_THEME.muted,120));ctx.strokeStyle=SHARE_THEME.line;ctx.beginPath();ctx.moveTo(M,317);ctx.lineTo(SHARE_W-M,317);ctx.stroke();rows.forEach((session,i)=>{const y=340+i*110;const m=shareSessionMetrics(session);if(i%2===0)roundedShareRect(ctx,M,y-25,SHARE_W-M*2,94,10,'#101b16');shareText(ctx,dateFmt(session.date).replace(/\s+\d{4}$/,''),col[0],y+5,'700 13px Arial,sans-serif',SHARE_THEME.text,135);shareWrapped(ctx,session.workoutName||session.programName||'Тренировка',col[1],y+1,410,18,'700 13px Arial,sans-serif',SHARE_THEME.soft,2);shareText(ctx,String(m.exercises),col[2],y+5,'700 14px Arial,sans-serif',SHARE_THEME.text,80);shareText(ctx,String(m.sets),col[3],y+5,'700 14px Arial,sans-serif',SHARE_THEME.text,80);shareText(ctx,String(m.reps),col[4],y+5,'700 14px Arial,sans-serif',SHARE_THEME.text,95);shareText(ctx,m.weightedSets?fmt(m.volume):'—',col[5],y+5,'700 14px Arial,sans-serif',SHARE_THEME.lime,100);shareText(ctx,(session.programName||'').slice(0,55),col[1],y+29,'400 11px Arial,sans-serif',SHARE_THEME.muted,400);});shareText(ctx,'Объём учитывает только подходы, где записаны и вес, и повторения.',M,SHARE_H-108,'400 12px Arial,sans-serif',SHARE_THEME.muted,SHARE_W-M*2);return canvas;}
+  function pdfSessionDetailsPage(selection,items,pageIndex,pageCount,pageNo,totalPages){const {canvas,ctx}=pdfPageCanvas('03 / РЕЗУЛЬТАТЫ','Упражнения и подходы',shareSubtitle(selection),pageNo,totalPages);const M=SHARE_MARGIN;const rows=items.slice(pageIndex*10,pageIndex*10+10);rows.forEach((entry,i)=>{const y=285+i*126;const h=112;roundedShareRect(ctx,M,y,SHARE_W-M*2,h,13,'#111c16','#2b3c31');shareWrapped(ctx,entry.exerciseName||'Упражнение',M+18,y+29,SHARE_W-M*2-36,21,'800 17px Arial,sans-serif',SHARE_THEME.text,2);shareText(ctx,`${entry.muscle||'Мышечная группа не указана'} · ${shareEntrySetCount(entry)} подхода`,M+18,y+53,'400 12px Arial,sans-serif',SHARE_THEME.muted,SHARE_W-M*2-36);const sets=shareEntrySets(entry);const setLine=sets.map((s,j)=>`${j+1}. ${s.weight===null?'—':fmt(s.weight)+' кг'} × ${s.reps===null?'—':fmt(s.reps)}`).join('    ·    ')||'Нет отдельных данных по подходам';shareWrapped(ctx,setLine,M+18,y+81,SHARE_W-M*2-36,18,'600 13px Arial,sans-serif',SHARE_THEME.lime,2);});return canvas;}
+
+  const ANATOMY_PDF_IMAGE_CACHE = new Map();
+  function loadAnatomyPdfImage(src){
+    if(ANATOMY_PDF_IMAGE_CACHE.has(src))return ANATOMY_PDF_IMAGE_CACHE.get(src);
+    const promise=new Promise((resolve,reject)=>{
+      const image=new Image();
+      image.onload=()=>resolve(image);
+      image.onerror=()=>reject(new Error(`Не удалось загрузить анатомический ресурс: ${src}`));
+      image.src=src;
+    });
+    ANATOMY_PDF_IMAGE_CACHE.set(src,promise);
+    return promise;
+  }
+  async function pdfAnatomyPage(selection,pageNo,totalPages){
+    const entries=selection.sessions.flatMap(session=>session.entries||[]);
+    const counts=new Map();
+    const unmapped=new Map();
+    for(const entry of entries){
+      const muscle=String(entry.muscle||'').trim();
+      const matched=resolveAnatomyMaskIds(muscle);
+      if(!matched.length&&muscle)unmapped.set(muscle,(unmapped.get(muscle)||0)+1);
+      for(const mask of matched)counts.set(mask.id,(counts.get(mask.id)||0)+1);
+    }
+    const activeMasks=ANATOMY_MASKS.filter(mask=>counts.has(mask.id));
+    const base=await loadAnatomyPdfImage('./assets/anatomy/base-neutral.png');
+    const maskImages=await Promise.all(activeMasks.map(mask=>loadAnatomyPdfImage(`./assets/anatomy/masks/${mask.id}.png`)));
+    const {canvas,ctx}=pdfPageCanvas('02 / АНАТОМИЯ','Карта задействованных мышц',
+      selection.mode==='session'?'Мышечные группы упражнений этой тренировки.':'Мышечные группы по всем тренировкам выбранного периода.',
+      pageNo,totalPages);
+    const M=SHARE_MARGIN, panelX=M, panelY=285, panelW=SHARE_W-M*2, panelH=660;
+    roundedShareRect(ctx,panelX,panelY,panelW,panelH,18,'#101b16','#304235');
+    const maxW=panelW-64,maxH=panelH-48,scale=Math.min(maxW/base.width,maxH/base.height);
+    const drawW=base.width*scale,drawH=base.height*scale;
+    const dx=panelX+(panelW-drawW)/2,dy=panelY+(panelH-drawH)/2;
+    ctx.drawImage(base,dx,dy,drawW,drawH);
+    activeMasks.forEach((mask,index)=>ctx.drawImage(maskImages[index],dx,dy,drawW,drawH));
+    const listY=985,cols=3,gap=14,cardW=(panelW-gap*(cols-1))/cols,cardH=68;
+    pdfSectionTitle(ctx,'ЗАДЕЙСТВОВАННЫЕ ГРУППЫ',M,listY, panelW);
+    const items=activeMasks.map(mask=>({label:mask.label,count:counts.get(mask.id)||0}));
+    const rows=Math.max(1,Math.ceil(items.length/cols));
+    items.forEach((item,index)=>{
+      const col=index%cols,row=Math.floor(index/cols),x=M+col*(cardW+gap),y=listY+28+row*(cardH+10);
+      roundedShareRect(ctx,x,y,cardW,cardH,10,'#111d17','#304235');
+      ctx.fillStyle=SHARE_THEME.lime;ctx.fillRect(x,y+12,4,cardH-24);
+      shareWrapped(ctx,item.label,x+14,y+27,cardW-28,16,'700 14px Arial,sans-serif',SHARE_THEME.text,1);
+      shareText(ctx,`${item.count} ${plural(item.count,'упражнение','упражнения','упражнений')}`,x+14,y+51,'400 10px Arial,sans-serif',SHARE_THEME.muted,cardW-28);
+    });
+    const unmappedItems=[...unmapped.entries()];
+    const unmappedY=listY+28+rows*(cardH+10)+4;
+    if(unmappedItems.length&&unmappedY+70<SHARE_H-100){
+      shareText(ctx,'ГРУППЫ БЕЗ ОТДЕЛЬНОЙ МАСКИ',M,unmappedY+13,'700 11px Arial,sans-serif',SHARE_THEME.muted,panelW);
+      shareWrapped(ctx,unmappedItems.map(([name,count])=>`${name} (${count})`).join(' · '),M,unmappedY+39,panelW,17,'400 12px Arial,sans-serif',SHARE_THEME.soft,2);
+    }
+    if(!items.length){
+      shareWrapped(ctx,'В записях выбранного периода не удалось определить мышечные группы для подсветки.',M,1110,panelW,24,'400 17px Arial,sans-serif',SHARE_THEME.muted,3);
+    }
+    return canvas;
+  }
+
+  async function prepareShareReport(selection){const metrics=shareSelectionMetrics(selection),analysis=shareAnalysis(selection),pngCanvas=await sharePngCard(selection,metrics,analysis);const builders=[];builders.push((n,t)=>pdfSummaryPage(selection,metrics,analysis,n,t));builders.push((n,t)=>pdfAnatomyPage(selection,n,t));if(selection.mode==='session'){const entries=selection.sessions[0]?.entries||[];const chunks=Math.max(1,Math.ceil(entries.length/10));for(let i=0;i<chunks;i++)builders.push((n,t)=>pdfSessionDetailsPage(selection,entries,i,chunks,n,t));}else{const charts=analysis.timelines.filter(item=>item.points.filter(p=>p.load>0).length>=2).sort((a,b)=>{const ap=a.points.filter(p=>p.load>0),bp=b.points.filter(p=>p.load>0);return ((bp.at(-1).load-bp[0].load)/bp[0].load)-((ap.at(-1).load-ap[0].load)/ap[0].load);});const chartChunks=Math.max(1,Math.ceil(charts.length/4));for(let i=0;i<chartChunks;i++)builders.push((n,t)=>pdfProgressPage(charts,i,chartChunks,n,t));builders.push((n,t)=>pdfAchievementsPage(analysis,n,t));const sessions=[...selection.sessions].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||((b.savedAt||0)-(a.savedAt||0)));const chunks=Math.max(1,Math.ceil(sessions.length/11));for(let i=0;i<chunks;i++)builders.push((n,t)=>pdfSessionLogPage(selection,sessions,i,chunks,n,t));}const pdfPages=await Promise.all(builders.map((build,index)=>build(index+1,builders.length)));return {pngCanvas,pdfPages,summary:{...metrics,changes:analysis.gains.length,repLeaders:analysis.reps.length}};}
   function downloadGeneratedBlob(blob,filename){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);}
   async function canvasToBlob(canvas,type,quality){return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Браузер не смог сформировать изображение.')),type,quality));}
   function asciiBytes(text){return new TextEncoder().encode(text);}
@@ -919,7 +1017,7 @@
     const button=format==='png'?$('#shareDownloadPngBtn'):$('#shareDownloadPdfBtn');if(button.disabled)return;
     const original=button.textContent;button.disabled=true;button.textContent=format==='png'?'Готовим PNG…':'Готовим PDF…';$('#shareExportStatus').textContent='Формируем файл на устройстве…';
     try{
-      const selection=buildShareSelection(true);const report=prepareShareReport(selection);const filename=`setlog-results-${todayISO()}`;
+      const selection=buildShareSelection(true);const report=await prepareShareReport(selection);const filename=`setlog-results-${todayISO()}`;
       if(format==='png'){
         const blob=await canvasToBlob(report.pngCanvas,'image/png');downloadGeneratedBlob(blob,`${filename}.png`);
       }else{
