@@ -1,3 +1,16 @@
+-- IMPORTANT: this bootstrap script predates the RPC-only permission migration.
+-- It must never be rerun after hardening, as it creates public invoker functions
+-- and grants direct table write privileges during first-time bootstrap.
+-- Existing installations: use db-migrations/ and verify the production state.
+do $setlog_bootstrap_guard$
+begin
+  if to_regprocedure('setlog_internal.save_setlog_state(jsonb,bigint)') is not null
+     or to_regprocedure('setlog_internal.create_setlog_restore_point(bigint)') is not null then
+    raise exception 'SETLOG_SETUP_LOCKED: hardened installation detected; do not rerun supabase-setup.sql';
+  end if;
+end
+$setlog_bootstrap_guard$;
+
 -- SET / SetLog user data and cloud recovery history.
 -- Safe to rerun: this creates/updates tables, policies and the save function
 -- without deleting existing diary data. Browser clients use only the publishable key.
