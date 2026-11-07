@@ -18,6 +18,8 @@ jobs:
         run: |
           node --check app.js
           node --check sw.js
+      - name: Public README and version metadata
+        run: node tests/version.test.cjs
       - name: Safety regression tests
         run: node tests/safety.test.cjs
       - name: Source and asset integrity
