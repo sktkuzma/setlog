@@ -1101,13 +1101,24 @@
     downloadJSON(payload,`setlog-backup-${todayISO()}.setlog`);notify('Резервная копия готова. Сохрани файл в надёжном месте.');
     if(storageWriteBlocked){storageWriteBlocked=false;persist({snapshot:true,label:'После сохранения резервной копии'});}
   }
+  function isRestorableDiary(value){
+    return !!(value&&typeof value==='object'&&!Array.isArray(value)
+      &&Array.isArray(value.history)&&Array.isArray(value.programs)
+      &&value.history.every(entry=>entry&&typeof entry==='object'&&!Array.isArray(entry)&&(!('entries' in entry)||Array.isArray(entry.entries)))
+      &&value.programs.every(program=>program&&typeof program==='object'&&!Array.isArray(program)&&Array.isArray(program.workouts))
+      &&Number(value.schemaVersion||value.version||0)<=DATA_SCHEMA_VERSION);
+  }
   function importData(file){
+    const ownerScope=activeStorageKey,expectedRaw=lastPersistedRaw,generation=cloudSessionGeneration;
     const reader=new FileReader();reader.onload=async()=>{
       try{
-        const imported=JSON.parse(reader.result);if(!imported||!Array.isArray(imported.history))throw new Error('bad');
+        const imported=JSON.parse(reader.result);if(!isRestorableDiary(imported))throw new Error('bad');
         if(!confirm(`Восстановление заменит текущий дневник данными из выбранного файла. В копии ${imported.history.length} тренировок. Текущий дневник сначала будет сохранён отдельно. Продолжить?`))return;
         const oldData=data,oldProgram=activeProgramId,oldWorkout=activeWorkout,oldBlocked=storageWriteBlocked;
         const currentCopySaved=await saveSafetySnapshot('Перед восстановлением из файла');if(!currentCopySaved){notify('Не удалось сохранить текущую копию. Восстановление отменено; скачай резервную копию и попробуй снова.');return;}
+        if(ownerScope!==activeStorageKey||generation!==cloudSessionGeneration||staleTabBlocked||lastPersistedRaw!==expectedRaw||localStorage.getItem(ownerScope)!==expectedRaw){
+          notify('Дневник изменился во время импорта. Файл не применён; обнови страницу и попробуй снова.');return;
+        }
         data=normalizeData(imported);activeProgramId=data.activeProgramId;activeWorkout=(getWorkouts(activeProgramId).find(w=>w.id===data.activeWorkoutId)||getWorkouts(activeProgramId)[0]||{}).id||'';storageWriteBlocked=false;storageReadFailure=null;
         if(!persist({snapshot:true,label:'После восстановления из файла'})){data=oldData;activeProgramId=oldProgram;activeWorkout=oldWorkout;storageWriteBlocked=oldBlocked;return;}
         renderTraining();renderHistory();renderProgress();notify('Данные импортированы и сохранены.');
@@ -1376,8 +1387,13 @@
   }
 
   async function fillSnapshotDialog(){const snapshots=await listSafetySnapshots();const select=$('#snapshotSelect');select.innerHTML=snapshots.map(item=>`<option value="${safe(item.id)}">${safe(new Date(item.createdAt).toLocaleString('ru-RU'))} — ${safe(item.label)}</option>`).join('');$('#snapshotEmpty')?.classList.toggle('hidden',snapshots.length>0);$('#restoreSelectedSnapshotBtn').disabled=snapshots.length===0;await updateBackupStatus();}
-  async function restoreSelectedSnapshot(){const selected=$('#snapshotSelect').value;if(!selected)return;const list=await listSafetySnapshots();const snap=list.find(item=>item.id===selected&&item.ownerScope===currentSnapshotOwner());if(!snap)return notify('Сохранённая копия этого дневника не найдена.');if(!confirm(`Вернуть дневник к состоянию от ${new Date(snap.createdAt).toLocaleString('ru-RU')} («${snap.label}»)? Текущая копия тоже будет сохранена.`))return;
+  async function restoreSelectedSnapshot(){
+    const ownerScope=activeStorageKey,expectedRaw=lastPersistedRaw,generation=cloudSessionGeneration;const selected=$('#snapshotSelect').value;if(!selected)return;const list=await listSafetySnapshots();const snap=list.find(item=>item.id===selected&&item.ownerScope===currentSnapshotOwner());if(!snap)return notify('Сохранённая копия этого дневника не найдена.');
+    if(!isRestorableDiary((()=>{try{return JSON.parse(snap.payload);}catch(error){return null;}})()))return notify('Резервная копия повреждена. Текущий дневник не изменён.');if(!confirm(`Вернуть дневник к состоянию от ${new Date(snap.createdAt).toLocaleString('ru-RU')} («${snap.label}»)? Текущая копия тоже будет сохранена.`))return;
     const oldData=data,oldProgram=activeProgramId,oldWorkout=activeWorkout;const currentCopySaved=await saveSafetySnapshot('Перед восстановлением копии');if(!currentCopySaved){notify('Не удалось сохранить текущую копию. Восстановление отменено; освободи место и попробуй снова.');return;}
+    if(ownerScope!==activeStorageKey||generation!==cloudSessionGeneration||staleTabBlocked||lastPersistedRaw!==expectedRaw||localStorage.getItem(ownerScope)!==expectedRaw){
+      notify('Дневник изменился во время восстановления. Сохранённая копия не применена.');return;
+    }
     try{const parsed=JSON.parse(snap.payload);const restored=normalizeData(parsed);data=restored;activeProgramId=restored.activeProgramId;activeWorkout=restored.activeWorkoutId||getWorkouts(activeProgramId)[0]?.id||'';storageWriteBlocked=false;storageReadFailure=null;
       const ok=persist({snapshot:true,label:'После восстановления копии'});if(!ok)throw new Error('Не удалось сохранить восстановленные данные.');
       $('#snapshotDialog').close();renderTraining();renderHistory();renderProgress();notify('Копия восстановлена.');
@@ -1945,11 +1961,26 @@
 
   async function initializeApp(){
     if(storageReadFailure){
-      const snapshots=await listSafetySnapshots();let restored=null;
-      for(const snap of snapshots){try{const candidate=JSON.parse(snap.payload);if(candidate&&Array.isArray(candidate.history)){restored=candidate;break;}}catch(e){}}
-      if(!restored){for(const backupKey of LEGACY_MIGRATION_BACKUP_KEYS){try{const localBackup=localStorage.getItem(backupKey);if(localBackup){const candidate=JSON.parse(localBackup);if(candidate&&Array.isArray(candidate.history)){restored=candidate;break;}}}catch(e){}}}
-      if(restored){data=normalizeData(restored);activeProgramId=data.activeProgramId;activeWorkout=data.activeWorkoutId||getWorkouts(activeProgramId)[0]?.id||'';storageReadFailure=null;storageWriteBlocked=false;try{localStorage.setItem(activeStorageKey,JSON.stringify(data));}catch(e){storageWriteBlocked=true;}}
-      else storageWriteBlocked=true;
+      // Preserve the unreadable original before automatic recovery. Never silently discard it.
+      const damagedRaw=initialStorageRaw;
+      const preserved=damagedRaw===null||await saveSafetySnapshot('Повреждённая исходная запись · перед восстановлением',damagedRaw);
+      if(!preserved){
+        storageWriteBlocked=true;
+        console.warn('Could not safely archive unreadable diary. Automatic recovery blocked.');
+      }else{
+        const snapshots=await listSafetySnapshots();let restored=null;
+        for(const snap of snapshots){try{const candidate=JSON.parse(snap.payload);if(isRestorableDiary(candidate)){restored=candidate;break;}}catch(e){}}
+        if(!restored){for(const backupKey of LEGACY_MIGRATION_BACKUP_KEYS){try{const localBackup=localStorage.getItem(backupKey);if(localBackup){const candidate=JSON.parse(localBackup);if(isRestorableDiary(candidate)){restored=candidate;break;}}}catch(e){}}}
+        if(restored){
+          try{
+            const recovered=normalizeData(restored),recoveredRaw=JSON.stringify(recovered);
+            localStorage.setItem(activeStorageKey,recoveredRaw);
+            lastPersistedRaw=recoveredRaw;
+            data=recovered;activeProgramId=data.activeProgramId;activeWorkout=data.activeWorkoutId||getWorkouts(activeProgramId)[0]?.id||'';
+            storageReadFailure=null;storageWriteBlocked=false;
+          }catch(error){console.warn('Could not save recovered diary:',error);storageWriteBlocked=true;}
+        }else storageWriteBlocked=true;
+      }
     }
     if(initialStorageRaw&&startupNeedsMigration&&!storageReadFailure){
       let backedUp=await saveSafetySnapshot('Копия перед обновлением приложения',initialStorageRaw);

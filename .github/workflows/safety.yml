@@ -34,6 +34,7 @@ jobs:
           python3 -m http.server 18779 --bind 127.0.0.1 >/tmp/setlog-browser-server.log 2>&1 &
           node tests/browser-smoke.cjs
           node tests/browser-history.cjs
+          node tests/browser-recovery.cjs
       - name: Source and asset integrity
         run: |
           git diff --exit-code -- style.css
