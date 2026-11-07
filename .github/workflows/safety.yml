@@ -21,9 +21,19 @@ jobs:
       - name: Public README and version metadata
         run: node tests/version.test.cjs
       - name: Safety regression tests
-        run: node tests/safety.test.cjs
+        run: |
+          node tests/safety.test.cjs
+          node tests/cloud-restore-safety.test.cjs
       - name: Legacy snapshot isolation tests
         run: node tests/legacy-snapshots.test.cjs
+      - name: Browser tests for multi-tab safety and PNG/PDF (free GitHub runner)
+        run: |
+          npm install --no-save --no-package-lock --ignore-scripts playwright-core@1.65.0
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          test -n "$CHROME_BIN"
+          python3 -m http.server 18779 --bind 127.0.0.1 >/tmp/setlog-browser-server.log 2>&1 &
+          node tests/browser-smoke.cjs
+          node tests/browser-history.cjs
       - name: Source and asset integrity
         run: |
           git diff --exit-code -- style.css

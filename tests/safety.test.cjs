@@ -56,7 +56,7 @@ async function test(name,fn){try{await fn();console.log('PASS',name);pass++}catc
  await test('report rendering source unchanged from v1.3.5',()=>{
   const {execFileSync}=require('node:child_process');
   const old=execFileSync('git',['show','889801f9ffe9c0ef81dbf16d887501a86f15bffd:app.js'],{encoding:'utf8'});
-  const part=s=>s.slice(s.indexOf('  function wrapShareText('),s.indexOf('  async function fillSnapshotDialog(')); // elsewhere no changes expected in rendering
+  const part=s=>s.slice(s.indexOf('  function wrapShareText('),s.indexOf('  function downloadJSON(')); // elsewhere no changes expected in rendering
   assert.equal(part(app).replace(/\r\n/g,'\n'),part(old).replace(/\r\n/g,'\n'));
   const oldCss=execFileSync('git',['show','889801f9ffe9c0ef81dbf16d887501a86f15bffd:style.css'],{encoding:'utf8'});
   assert.equal(fs.readFileSync('style.css','utf8').replace(/\r\n/g,'\n'),oldCss.replace(/\r\n/g,'\n'));

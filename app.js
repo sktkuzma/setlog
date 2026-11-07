@@ -378,10 +378,11 @@
   let lastPersistedRaw=initialStorageRaw;
   let staleTabBlocked=false;
   let historyEditContext=null;
+  let historyEditLastRaw=null;
   function historyEditStorageKey(){return `${activeStorageKey}:history-edit-v1`;}
   function readHistoryEditContext(){
     try{
-      const raw=localStorage.getItem(historyEditStorageKey());if(!raw)return null;
+      const raw=localStorage.getItem(historyEditStorageKey());historyEditLastRaw=raw;if(!raw)return null;
       const ctx=JSON.parse(raw);
       if(!ctx||!ctx.sessionId||!ctx.originalSession||!Array.isArray(ctx.exercises)||!ctx.draft||typeof ctx.draft!=='object')return null;
       return ctx;
@@ -389,10 +390,32 @@
   }
   function persistHistoryEditContext(showError=true){
     if(!historyEditContext)return false;
-    try{localStorage.setItem(historyEditStorageKey(),JSON.stringify(historyEditContext));return true;}
+    if(staleTabBlocked)return false;
+    try{
+      const key=historyEditStorageKey(),stored=localStorage.getItem(key);
+      if(stored!==historyEditLastRaw){
+        staleTabBlocked=true;
+        setStorageStatus('Черновик изменён в другой вкладке. Обнови страницу перед продолжением.','error');
+        if(showError)notify('Доработка истории изменена в другой вкладке. Сохранение остановлено, обнови страницу.');
+        return false;
+      }
+      const payload=JSON.stringify(historyEditContext);
+      localStorage.setItem(key,payload);historyEditLastRaw=payload;return true;
+    }
     catch(error){console.error('Could not save history-edit draft:',error);if(showError)notify('Не удалось сохранить черновик доработки истории. Историческая запись не изменена. Освободи место и попробуй снова.');return false;}
   }
-  function clearHistoryEditContext(){try{localStorage.removeItem(historyEditStorageKey());}catch(error){console.warn('Не удалось удалить временный черновик истории:',error);}historyEditContext=null;}
+  function clearHistoryEditContext(){
+    try{
+      const key=historyEditStorageKey();
+      if(localStorage.getItem(key)!==historyEditLastRaw){
+        staleTabBlocked=true;
+        setStorageStatus('Черновик изменён в другой вкладке. Обнови страницу.','error');
+        notify('Невозможно удалить изменённый в другой вкладке черновик. Обнови страницу.');
+        return false;
+      }
+      localStorage.removeItem(key);historyEditLastRaw=null;historyEditContext=null;return true;
+    }catch(error){console.warn('Не удалось удалить временный черновик истории:',error);return false;}
+  }
   historyEditContext=readHistoryEditContext();
   let activeView='training';
   let activeProgramId=data.activeProgramId||DEFAULT_PROGRAM_ID;
@@ -1195,6 +1218,7 @@
   }
   function beginHistoryEdit(sessionId){
     if(historyEditContext)return notify('Сначала закончи или отмени текущую доработку истории.');
+    if(historyEditLastRaw)return notify('На устройстве есть черновик истории, который не удалось открыть. Он не перезаписан. Сначала сохрани резервную копию данных и восстанови черновик.');
     const session=data.history.find(item=>item.id===sessionId);if(!session)return notify('Не удалось найти эту запись истории. Обнови список и попробуй ещё раз.');
     if(!Array.isArray(session.entries)||!session.entries.length)return notify('В этой записи нет упражнений для доработки.');
     ensureDraft();if(!persist({snapshot:false}))return;
@@ -1208,7 +1232,7 @@
   function cancelHistoryEdit(){
     if(!historyEditContext)return;
     if(!confirm('Отменить доработку? Историческая запись останется без изменений, а текущий черновик вернётся на экран.'))return;
-    const returnState=historyEditContext.returnState||{};clearHistoryEditContext();
+    const returnState=historyEditContext.returnState||{};if(!clearHistoryEditContext())return;
     if(data.programs.some(item=>item.id===returnState.programId))activeProgramId=returnState.programId;
     if(getWorkouts(activeProgramId).some(item=>item.id===returnState.workoutId))activeWorkout=returnState.workoutId;
     $('#workoutDate').value=returnState.date||todayISO();$('#todayLabel').textContent=dateFmt($('#workoutDate').value).toUpperCase();
@@ -1217,6 +1241,14 @@
   }
   function applyHistoryEdit(){
     const ctx=historyEditContext;if(!ctx)return;
+    try{
+      if(staleTabBlocked||localStorage.getItem(historyEditStorageKey())!==historyEditLastRaw){
+        staleTabBlocked=true;
+        setStorageStatus('Черновик истории изменён в другой вкладке. Обнови страницу.','error');
+        notify('Черновик истории изменён в другой вкладке. Текущая историческая запись не перезаписана.');
+        return;
+      }
+    }catch(error){notify('Не удалось проверить черновик истории. Сохранение отменено.');return;}
     const index=data.history.findIndex(item=>item.id===ctx.sessionId);
     if(index<0){notify('Исходная запись не найдена в текущей истории. Черновик доработки сохранён на этом устройстве; ничего не перезаписано.');return;}
     const current=data.history[index];
@@ -1238,7 +1270,7 @@
     const updatedSession={...current,entries,editedAt:Date.now()};
     data.history[index]=updatedSession;
     if(!persist({snapshot:true,label:'Изменена историческая тренировка'})){data.history[index]=current;return;}
-    const returnState=ctx.returnState||{};clearHistoryEditContext();
+    const returnState=ctx.returnState||{};if(!clearHistoryEditContext())return;
     if(data.programs.some(item=>item.id===returnState.programId))activeProgramId=returnState.programId;
     if(getWorkouts(activeProgramId).some(item=>item.id===returnState.workoutId))activeWorkout=returnState.workoutId;
     $('#workoutDate').value=returnState.date||todayISO();$('#todayLabel').textContent=dateFmt($('#workoutDate').value).toUpperCase();
@@ -1754,33 +1786,42 @@
     if(!selected||!cloudClient||!cloudSession)return;
     if(!navigator.onLine)return notify('Подключись к интернету, чтобы восстановить облачную копию.');
     const status=$('#cloudHistoryStatus');const btn=$('#restoreCloudHistoryBtn');btn.disabled=true;status.textContent='Восстанавливаем дневник…';
-    let oldRaw=null;let localPrewrite=false;let cloudSaveAttempted=false;let cloudSaveConfirmed=false;let restorePayload=null;
+    let oldRaw=null;let prewriteRaw=null;let localPrewrite=false;let cloudSaveAttempted=false;let cloudSaveConfirmed=false;let restorePayload=null;
+    const generation=cloudSessionGeneration,scope=activeStorageKey,userId=cloudSession.user.id;
+    const restoreScopeValid=()=>sessionCurrent(generation,userId)&&scope===activeStorageKey&&!staleTabBlocked;
     try{
-      const userId=cloudSession.user.id;
       const {data:snapshot,error:snapshotError}=await cloudClient.from('setlog_user_snapshots').select('id,user_id,revision,payload,created_at').eq('id',selected).eq('user_id',userId).maybeSingle();
+      if(!restoreScopeValid())throw new Error('Аккаунт или вкладка изменились во время восстановления. Операция отменена.');
       if(snapshotError)throw snapshotError;
       if(!snapshot)throw new Error('Сохранённая копия не найдена.');
       const current=await fetchCloudRow(userId);
+      if(!restoreScopeValid())throw new Error('Аккаунт или вкладка изменились во время восстановления. Операция отменена.');
       if(!current)throw new Error('В облаке пока нет текущего дневника.');
       const stamp=new Date(snapshot.created_at).toLocaleString('ru-RU',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
       if(!confirm(`Восстановить дневник к состоянию от ${stamp}? Текущая версия тоже останется среди облачных копий.`)){status.textContent='Восстановление отменено.';return;}
       const kept=await createCloudRestorePoint(current);
+      if(!restoreScopeValid())throw new Error('Аккаунт или вкладка изменились во время восстановления. Операция отменена.');
       if(!kept)throw new Error('Не удалось сохранить текущее состояние в облаке. Восстановление отменено; попробуй ещё раз.');
       const localBackup=await saveSafetySnapshot('Перед восстановлением копии из облака',JSON.stringify(data));
+      if(!restoreScopeValid())throw new Error('Аккаунт или вкладка изменились во время восстановления. Операция отменена.');
       if(!localBackup)throw new Error('Не удалось сохранить копию с этого устройства. Сначала скачай резервную копию.');
       const restored=normalizeData(snapshot.payload);
       const payload={...restored,schemaVersion:DATA_SCHEMA_VERSION,version:DATA_SCHEMA_VERSION,updatedAt:Date.now()};restorePayload=payload;
-      try{oldRaw=localStorage.getItem(activeStorageKey);localStorage.setItem(activeStorageKey,JSON.stringify(payload));lastPersistedRaw=localStorage.getItem(activeStorageKey);localPrewrite=true;}
+      try{oldRaw=localStorage.getItem(scope);
+        if(oldRaw!==lastPersistedRaw)throw new Error('Дневник изменён в другой вкладке. Обнови страницу перед восстановлением.');
+        prewriteRaw=JSON.stringify(payload);localStorage.setItem(scope,prewriteRaw);lastPersistedRaw=prewriteRaw;localPrewrite=true;}
       catch(storageError){console.error('Could not prepare local cache before cloud restore:',storageError);throw new Error('Не удалось подготовить дневник на этом устройстве. Освободи место и попробуй снова.');}
       cloudSaveAttempted=true;const {data:result,error:saveError}=await cloudClient.rpc('save_setlog_state',{p_payload:payload,p_expected_revision:Number(current.revision)||0});
+      if(!restoreScopeValid())throw new Error('Аккаунт или вкладка изменились во время восстановления. Проверь состояние облака.');
       if(saveError){
-        if(localPrewrite){try{if(oldRaw===null)localStorage.removeItem(activeStorageKey);else localStorage.setItem(activeStorageKey,oldRaw);lastPersistedRaw=localStorage.getItem(activeStorageKey);}catch(e){console.error('Could not revert local cache after cloud restore conflict:',e);}}
+        if(localPrewrite){try{if(localStorage.getItem(scope)===prewriteRaw){if(oldRaw===null)localStorage.removeItem(scope);else localStorage.setItem(scope,oldRaw);if(activeStorageKey===scope)lastPersistedRaw=localStorage.getItem(scope);}}catch(e){console.error('Could not revert local cache after cloud restore conflict:',e);}}
         localPrewrite=false;cloudSaveAttempted=false;
         if(/revision_conflict|revision conflict/i.test(String(saveError.message||saveError)))throw new Error('Дневник уже изменился на другом устройстве. Обнови список копий и попробуй ещё раз.');
         console.error('Cloud restore failed:',saveError);throw new Error('Не удалось восстановить облачную копию. Текущая версия не заменена.');
       }
       cloudSaveConfirmed=true;
-      lastPersistedRaw=localStorage.getItem(activeStorageKey);
+      if(localStorage.getItem(scope)!==prewriteRaw){staleTabBlocked=true;throw new Error('Дневник изменился в другой вкладке во время восстановления. Перезагрузи страницу, чтобы сверить данные с облаком.');}
+      lastPersistedRaw=localStorage.getItem(scope);
       data=normalizeData(payload);activeProgramId=data.activeProgramId;activeWorkout=data.activeWorkoutId||getWorkouts(activeProgramId)[0]?.id||'';
       cloudRevision=Number((Array.isArray(result)?result[0]:result)?.revision)||Number(current.revision)+1;cloudUserId=userId;cloudReady=true;cloudPaused=false;pendingCloudChoice=null;
       writeCloudMeta(userId,cloudRevision,data.updatedAt,(Array.isArray(result)?result[0]:result)?.updated_at||new Date().toISOString());
@@ -1788,7 +1829,7 @@
       $('#cloudHistoryDialog').close();renderAfterStorageScopeChange();renderHistory();renderProgress();await updateBackupStatus();
       setStorageStatus('Дневник восстановлен и сохранён в облаке.','saved');setCloudMessage('Дневник восстановлен. Предыдущая копия сохранена отдельно.','saved');notify('Дневник восстановлен из сохранённой копии.');
     }catch(error){
-      if(localPrewrite&&!cloudSaveConfirmed){try{if(oldRaw===null)localStorage.removeItem(activeStorageKey);else localStorage.setItem(activeStorageKey,oldRaw);lastPersistedRaw=localStorage.getItem(activeStorageKey);}catch(rollbackError){console.error('Could not restore local cache after interrupted cloud restore:',rollbackError);}localPrewrite=false;}
+      if(localPrewrite&&!cloudSaveConfirmed){try{if(localStorage.getItem(scope)===prewriteRaw){if(oldRaw===null)localStorage.removeItem(scope);else localStorage.setItem(scope,oldRaw);if(activeStorageKey===scope)lastPersistedRaw=localStorage.getItem(scope);}}catch(rollbackError){console.error('Could not restore local cache after interrupted cloud restore:',rollbackError);}localPrewrite=false;}
       console.error('Cloud diary restore failed:',error);
       if(cloudSaveAttempted&&!cloudSaveConfirmed){cloudReady=false;cloudPaused=true;setCloudMessage('Не удалось подтвердить результат восстановления. Подключись к интернету и перезагрузи приложение, чтобы проверить состояние дневника.','warning');status.textContent='Результат пока не подтверждён. Обнови страницу с интернетом перед продолжением.';}
       else status.textContent=error.message||'Не удалось восстановить копию. Текущие данные сохранены.';
