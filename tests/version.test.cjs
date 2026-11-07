@@ -11,7 +11,7 @@ assert(readme.includes('img.shields.io/github/v/release/sktkuzma/setlog'),'READM
 assert(readme.includes('github.com/sktkuzma/setlog/releases/latest'),'README must link to latest published release');
 assert(!/\b\d+\.\d+\.\d+\b/.test(readme),'README must not contain pinned version numbers');
 assert(!/[A-Z]:\\(?:Users|Documents and Settings|Windows)\\|\bAppData\b|\bDESKTOP-[A-Z0-9]+\b|\/(?:Users|home)\/[A-Za-z0-9_.-]+\//i.test(readme),'README exposes a computer-specific local path');
-const guard=bootstrap.indexOf('SETLOG_SETUP_LOCKED');
+const guard=bootstrap.indexOf("to_regprocedure('setlog_internal.save_setlog_state(jsonb,bigint)')");
 assert(guard>=0,'Missing post-hardening bootstrap guard');
 assert(guard<bootstrap.indexOf('grant select, insert, update on table public.setlog_user_data'),'Bootstrap guard must precede any elevated grants');
 console.log('Public README, version metadata and SQL bootstrap guard verified:',version);
