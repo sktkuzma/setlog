@@ -51,3 +51,12 @@ jobs:
             db-migrations/2026-11-08-harden-rpc-access.sql \
             | docker exec -i "${{ job.services.postgres.id }}" \
                 psql -U postgres -d setlog_test -v ON_ERROR_STOP=1
+      - name: Legacy setup must refuse secured databases
+        run: |
+          if cat supabase-setup.sql | docker exec -i "${{ job.services.postgres.id }}" \
+              psql -U postgres -d setlog_test -v ON_ERROR_STOP=1; then
+            echo "Legacy bootstrap unexpectedly reopened a secured database!" >&2
+            exit 1
+          else
+            echo "Legacy bootstrap correctly refused a hardened deployment."
+          fi

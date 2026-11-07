@@ -1,6 +1,19 @@
 -- SET / SetLog user data and cloud recovery history.
--- Safe to rerun: this creates/updates tables, policies and the save function
--- without deleting existing diary data. Browser clients use only the publishable key.
+-- Run only during initial setup. It is deliberately blocked on hardened installations.
+-- After initial setup, apply db-migrations/2026-11-08-harden-rpc-access.sql.
+-- Browser clients must use only the publishable key.
+
+-- BOOTSTRAP ONLY: use this script for a new database with no hardened RPCs.
+-- On existing deployments, use the tested db-migrations scripts instead.
+-- Re-running the legacy bootstrap would otherwise restore direct INSERT/UPDATE grants.
+do $bootstrap_guard$
+begin
+  if to_regprocedure('setlog_internal.save_setlog_state(jsonb,bigint)') is not null
+     or to_regprocedure('setlog_internal.create_setlog_restore_point(bigint)') is not null then
+    raise exception 'Refusing legacy SetLog bootstrap on a hardened database; use db-migrations scripts';
+  end if;
+end;
+$bootstrap_guard$;
 
 create table if not exists public.setlog_user_data (
   user_id uuid primary key references auth.users(id) on delete cascade,
