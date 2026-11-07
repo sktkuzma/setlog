@@ -1,0 +1,58 @@
+name: Publish verified SetLog release
+
+on:
+  workflow_run:
+    workflows: ["SetLog safety checks"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.event == 'push' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out validated commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+      - name: Ensure this is the live main commit
+        env:
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$SOURCE_SHA"
+          node tests/version.test.cjs
+      - name: Assemble full restore and update-only ZIPs
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, subprocess, zipfile
+          version = pathlib.Path('VERSION.txt').read_text(encoding='utf-8').strip()
+          tracked = [os.fsdecode(value) for value in subprocess.check_output(['git', 'ls-files', '-z']).split(b'\0') if value]
+          update = ['app.js', 'sw.js', 'index.html', 'README.md', 'VERSION.txt', f'CHANGELOG_v{version}.md']
+          for name, paths in [(f'SetLog-v{version}-full-restore.zip', tracked), (f'SetLog-v{version}-update-only.zip', update)]:
+              with zipfile.ZipFile(name, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
+                  for path in paths:
+                      archive.write(path)
+              print(name, len(paths), 'files')
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as env:
+              env.write(f'SETLOG_VERSION={version}\n')
+          PY
+      - name: Publish release if this version is new
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if gh release view "v${SETLOG_VERSION}" >/dev/null 2>&1; then
+            echo "Release v${SETLOG_VERSION} already exists; not replacing its assets."
+            exit 0
+          fi
+          gh release create "v${SETLOG_VERSION}" \
+            "SetLog-v${SETLOG_VERSION}-full-restore.zip" \
+            "SetLog-v${SETLOG_VERSION}-update-only.zip" \
+            --target "$SOURCE_SHA" \
+            --title "СЕТ v${SETLOG_VERSION}" \
+            --notes-file "CHANGELOG_v${SETLOG_VERSION}.md" \
+            --latest

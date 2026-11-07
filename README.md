@@ -2,7 +2,7 @@
 
 **Текущая версия: 1.3.7**
 
-[Открыть приложение](https://sktkuzma.github.io/setlog/) · [История изменений](CHANGELOG_v1.3.7.md) · [Исходный код](https://github.com/sktkuzma/setlog)
+[Открыть приложение](https://sktkuzma.github.io/setlog/) · [Скачать последнюю версию](https://github.com/sktkuzma/setlog/releases/latest) · [История изменений](CHANGELOG_v1.3.7.md) · [Исходный код](https://github.com/sktkuzma/setlog)
 
 СЕТ — веб-приложение для планирования силовых тренировок и ведения тренировочного дневника. Работает в браузере на телефоне и компьютере, поддерживает установку на домашний экран в формате PWA.
 
