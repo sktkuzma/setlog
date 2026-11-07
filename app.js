@@ -444,6 +444,51 @@
   async function listSafetySnapshots(){
     try{const db=await openSafetyDB();const records=await new Promise((resolve,reject)=>{const tx=db.transaction('snapshots','readonly');const req=tx.objectStore('snapshots').getAll();req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error);});db.close();return records.filter(item=>item.ownerScope===currentSnapshotOwner()).sort((a,b)=>b.createdAt-a.createdAt);}catch(error){return [];}
   }
+  function verifiedLegacySnapshotMatchesCurrentHistory(snapshot,knownSessionIds){
+    if(!snapshot||snapshot.ownerScope||!knownSessionIds?.size)return false;
+    try{
+      const source=JSON.parse(snapshot.payload);
+      return Array.isArray(source.history)&&source.history.some(entry=>typeof entry?.id==='string'&&knownSessionIds.has(entry.id));
+    }catch(error){return false;}
+  }
+  // Legacy backups without an owner are associated only by a matching unique workout ID.
+  // Never remove original legacy records, even if there is no safe ownership match.
+  async function claimVerifiedLegacySnapshots(){
+    const userId=cloudSession?.user?.id, ownerScope=currentSnapshotOwner();
+    const generation=cloudSessionGeneration;
+    if(!userId||ownerScope!==accountStorageKey(userId))return 0;
+    const knownSessionIds=new Set((data.history||[]).map(entry=>String(entry?.id||'')).filter(Boolean));
+    if(!knownSessionIds.size)return 0;
+    let db=null,claimed=0;
+    try{
+      db=await openSafetyDB();
+      if(!sessionCurrent(generation,userId)||currentSnapshotOwner()!==ownerScope)return 0;
+      await new Promise((resolve,reject)=>{
+        const tx=db.transaction('snapshots','readwrite');
+        const store=tx.objectStore('snapshots'),request=store.getAll();
+        request.onsuccess=()=>{
+          if(!sessionCurrent(generation,userId)||currentSnapshotOwner()!==ownerScope)return;
+          const all=request.result||[];
+          const owned=all.filter(item=>item.ownerScope===ownerScope);
+          const imported=new Set(owned.map(item=>item.legacySourceId).filter(Boolean));
+          const slots=Math.max(0,10-owned.length);
+          const matches=all.filter(item=>!imported.has(item.id)&&verifiedLegacySnapshotMatchesCurrentHistory(item,knownSessionIds))
+            .sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0)).slice(0,slots);
+          for(const source of matches){
+            store.put({...source,id:`verified-legacy-${uid()}`,ownerScope,legacySourceId:source.id,
+              label:`Старая копия (проверена по истории): ${source.label||'без названия'}`});
+            claimed++;
+          }
+        };
+        request.onerror=()=>reject(request.error);
+        tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('Не удалось проверить старые копии.'));
+        tx.onabort=()=>reject(tx.error||new Error('Проверка старых копий отменена.'));
+      });
+      if(claimed)await updateBackupStatus();
+      return claimed;
+    }catch(error){console.warn('Could not recover verified legacy snapshots:',error);return 0;}
+    finally{db?.close();}
+  }
   async function updateBackupStatus(){
     const el=$('#autoBackupStatus');if(!el)return;const snapshots=await listSafetySnapshots();
     const last=snapshots[0];el.textContent=last?`Сохранённых копий на этом устройстве: ${snapshots.length}. Последняя — ${new Date(last.createdAt).toLocaleString('ru-RU',{day:'2-digit',month:'long',hour:'2-digit',minute:'2-digit'})}.`:'Автоматические копии будут создаваться по мере изменений дневника.';
@@ -1475,6 +1520,7 @@
     renderTraining();renderHistory();renderProgress();
     setCloudMessage(`${label}. Дневник сохранён в облаке.`,'saved');
     setStorageStatus('Все изменения сохранены в облаке.','saved');
+    await claimVerifiedLegacySnapshots();
   }
   function accountStorageKey(userId){return `${STORAGE_KEY}:user:${String(userId||'')}`;}
   function renderAfterStorageScopeChange(){
@@ -1550,6 +1596,8 @@
       cloudSession=session;cloudReady=false;cloudPaused=false;pendingCloudChoice=null;updateCloudUI('Проверяем облачный дневник…','pending');
       try{
         const accountCacheWasNew=await activateAccountStorage(userId);
+        if(!sessionCurrent(generation,userId))return;
+        await claimVerifiedLegacySnapshots();
         if(!sessionCurrent(generation,userId))return;
         const row=await fetchCloudRow(userId);
         if(!sessionCurrent(generation,userId))return;
