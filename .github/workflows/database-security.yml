@@ -1,0 +1,53 @@
+name: SetLog PostgreSQL security integration
+
+on:
+  push:
+    paths:
+      - 'db-migrations/**'
+      - 'db-tests/**'
+      - 'supabase-setup.sql'
+      - '.github/workflows/database-security.yml'
+    branches: [main, 'work/**']
+  pull_request:
+    paths:
+      - 'db-migrations/**'
+      - 'db-tests/**'
+      - 'supabase-setup.sql'
+      - '.github/workflows/database-security.yml'
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-security:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: test-password
+          POSTGRES_DB: setlog_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d setlog_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate fresh schema, migration, rollback, and reapply
+        env:
+          PGPASSWORD: test-password
+        run: |
+          cat db-tests/bootstrap.sql supabase-setup.sql db-tests/seed.sql \
+            db-migrations/2026-11-08-harden-rpc-access.sql \
+            db-migrations/2026-11-08-harden-rpc-access.sql \
+            db-tests/assert-hardened.sql \
+            db-migrations/2026-11-08-rollback-rpc-access.sql \
+            db-tests/assert-rollback.sql \
+            db-migrations/2026-11-08-harden-rpc-access.sql \
+            | docker exec -i "${{ job.services.postgres.id }}" \
+                psql -U postgres -d setlog_test -v ON_ERROR_STOP=1
