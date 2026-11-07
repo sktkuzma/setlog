@@ -1,0 +1,27 @@
+name: SetLog safety checks
+on:
+  push:
+    branches: [main, 'work/**']
+  pull_request:
+    branches: [main]
+jobs:
+  safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax
+        run: |
+          node --check app.js
+          node --check sw.js
+      - name: Safety regression tests
+        run: node tests/safety.test.cjs
+      - name: Source and asset integrity
+        run: |
+          git diff --exit-code -- style.css
+          test -f anatomy-pair.webp
+          test -f exercise-library-coach.json

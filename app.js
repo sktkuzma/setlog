@@ -375,6 +375,8 @@
     }catch(error){storageReadFailure=error;return normalizeData({});}
   }
   let data=loadData();
+  let lastPersistedRaw=initialStorageRaw;
+  let staleTabBlocked=false;
   let historyEditContext=null;
   function historyEditStorageKey(){return `${activeStorageKey}:history-edit-v1`;}
   function readHistoryEditContext(){
@@ -424,22 +426,23 @@
       request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error||new Error('Не удалось открыть хранилище копий.'));
     });
   }
+  const currentSnapshotOwner=()=>activeStorageKey;
   async function saveSafetySnapshot(label='Автоматическая копия',payloadOverride=null){
     try{
       const payload=payloadOverride!==null?(typeof payloadOverride==='string'?payloadOverride:JSON.stringify(payloadOverride)):JSON.stringify(data);
       const parsed=(()=>{try{return JSON.parse(payload);}catch(e){return {};}})();
-      const snapshot={id:`snap-${Date.now()}-${uid()}`,label:String(label),createdAt:Date.now(),schemaVersion:Number(parsed.schemaVersion||parsed.version||0),payload};
+      const snapshot={id:`snap-${Date.now()}-${uid()}`,label:String(label),createdAt:Date.now(),schemaVersion:Number(parsed.schemaVersion||parsed.version||0),ownerScope:currentSnapshotOwner(),payload};
       const db=await openSafetyDB();
       await new Promise((resolve,reject)=>{
         const tx=db.transaction('snapshots','readwrite');const store=tx.objectStore('snapshots');store.put(snapshot);
-        const all=store.getAll();all.onsuccess=()=>{const list=(all.result||[]).sort((a,b)=>b.createdAt-a.createdAt);for(const item of list.slice(10))store.delete(item.id);};
+        const all=store.getAll();all.onsuccess=()=>{const list=(all.result||[]).filter(item=>item.ownerScope===snapshot.ownerScope).sort((a,b)=>b.createdAt-a.createdAt);for(const item of list.slice(10))store.delete(item.id);};
         tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('Не удалось сохранить копию.'));tx.onabort=()=>reject(tx.error||new Error('Создание копии отменено.'));
       });
       db.close();lastAutoSnapshotAt=Date.now();await updateBackupStatus();return true;
     }catch(error){console.warn('SetLog safety snapshot failed:',error);await updateBackupStatus();return false;}
   }
   async function listSafetySnapshots(){
-    try{const db=await openSafetyDB();const records=await new Promise((resolve,reject)=>{const tx=db.transaction('snapshots','readonly');const req=tx.objectStore('snapshots').getAll();req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error);});db.close();return records.sort((a,b)=>b.createdAt-a.createdAt);}catch(error){return [];}
+    try{const db=await openSafetyDB();const records=await new Promise((resolve,reject)=>{const tx=db.transaction('snapshots','readonly');const req=tx.objectStore('snapshots').getAll();req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error);});db.close();return records.filter(item=>item.ownerScope===currentSnapshotOwner()).sort((a,b)=>b.createdAt-a.createdAt);}catch(error){return [];}
   }
   async function updateBackupStatus(){
     const el=$('#autoBackupStatus');if(!el)return;const snapshots=await listSafetySnapshots();
@@ -453,10 +456,15 @@
     },6000);
   }
   function persist(options={}){
+    if(staleTabBlocked){setStorageStatus('Этот дневник изменён в другой вкладке. Обнови страницу перед продолжением.','error');return false;}
     if(storageWriteBlocked){setStorageStatus('Сохранение приостановлено. Восстанови дневник из сохранённой копии.','error');return false;}
     try{
       data.activeProgramId=activeProgramId;data.activeWorkoutId=activeWorkout;data.schemaVersion=DATA_SCHEMA_VERSION;data.version=DATA_SCHEMA_VERSION;data.updatedAt=Date.now();
-      localStorage.setItem(activeStorageKey,JSON.stringify(data));
+      const onDisk=localStorage.getItem(activeStorageKey);
+      if(onDisk!==lastPersistedRaw){staleTabBlocked=true;clearTimeout(cloudSyncTimer);clearTimeout(cloudRetryTimer);setStorageStatus('Дневник изменён в другой вкладке. Обнови страницу, чтобы не потерять изменения.','error');notify('В другой вкладке появились изменения. Сохранение остановлено — обнови эту вкладку.');return false;}
+      const nextRaw=JSON.stringify(data);
+      localStorage.setItem(activeStorageKey,nextRaw);
+      lastPersistedRaw=nextRaw;
       if(cloudSession&&!navigator.onLine){setStorageStatus('Сохранено на устройстве · ждёт отправки','pending');setCloudMessage('Нет интернета. Изменения сохранены на устройстве и отправятся автоматически после восстановления связи.','pending');}else if(!cloudSession||!cloudReady) setStorageStatus('Сохранено на этом устройстве.','saved');
       if(options.snapshot) saveSafetySnapshot(options.label||'Сохранённая копия'); else scheduleSafetySnapshot();
       if(!cloudApplying) scheduleCloudSync();
@@ -1291,7 +1299,7 @@
   }
 
   async function fillSnapshotDialog(){const snapshots=await listSafetySnapshots();const select=$('#snapshotSelect');select.innerHTML=snapshots.map(item=>`<option value="${safe(item.id)}">${safe(new Date(item.createdAt).toLocaleString('ru-RU'))} — ${safe(item.label)}</option>`).join('');$('#snapshotEmpty')?.classList.toggle('hidden',snapshots.length>0);$('#restoreSelectedSnapshotBtn').disabled=snapshots.length===0;await updateBackupStatus();}
-  async function restoreSelectedSnapshot(){const selected=$('#snapshotSelect').value;if(!selected)return;const list=await listSafetySnapshots();const snap=list.find(item=>item.id===selected);if(!snap)return notify('Сохранённая копия не найдена.');if(!confirm(`Вернуть дневник к состоянию от ${new Date(snap.createdAt).toLocaleString('ru-RU')} («${snap.label}»)? Текущая копия тоже будет сохранена.`))return;
+  async function restoreSelectedSnapshot(){const selected=$('#snapshotSelect').value;if(!selected)return;const list=await listSafetySnapshots();const snap=list.find(item=>item.id===selected&&item.ownerScope===currentSnapshotOwner());if(!snap)return notify('Сохранённая копия этого дневника не найдена.');if(!confirm(`Вернуть дневник к состоянию от ${new Date(snap.createdAt).toLocaleString('ru-RU')} («${snap.label}»)? Текущая копия тоже будет сохранена.`))return;
     const oldData=data,oldProgram=activeProgramId,oldWorkout=activeWorkout;const currentCopySaved=await saveSafetySnapshot('Перед восстановлением копии');if(!currentCopySaved){notify('Не удалось сохранить текущую копию. Восстановление отменено; освободи место и попробуй снова.');return;}
     try{const parsed=JSON.parse(snap.payload);const restored=normalizeData(parsed);data=restored;activeProgramId=restored.activeProgramId;activeWorkout=restored.activeWorkoutId||getWorkouts(activeProgramId)[0]?.id||'';storageWriteBlocked=false;storageReadFailure=null;
       const ok=persist({snapshot:true,label:'После восстановления копии'});if(!ok)throw new Error('Не удалось сохранить восстановленные данные.');
@@ -1304,6 +1312,8 @@
   let cloudSdkLoadPromise = null;
   let cloudInitializationPromise = null;
   let cloudSession = null;
+  let cloudSessionGeneration = 0;
+  const sessionCurrent=(generation,userId)=>generation===cloudSessionGeneration&&cloudSession?.user?.id===userId;
   let cloudUserId = '';
   let cloudReady = false;
   let cloudPaused = false;
@@ -1317,6 +1327,7 @@
   let cloudSyncRequested = false;
   let cloudHandlingPromise = null;
   let cloudHandlingUserId = '';
+  let cloudHandlingGeneration = -1;
   let pendingCloudChoice = null;
 
   function cloudConfigIsUsable(){
@@ -1440,11 +1451,14 @@
     const dialog=$('#accountDialog');if(dialog&&!dialog.open)dialog.showModal();
   }
   async function applyCloudPayload(payload,row,label='Загружено из облака'){
+    const generation=cloudSessionGeneration, userId=cloudSession?.user?.id;
+    if(!sessionCurrent(generation,userId))throw new Error('Аккаунт изменился во время загрузки дневника.');
     if(!payload||typeof payload!=='object'||!Array.isArray(payload.programs)||!Array.isArray(payload.history))throw new Error('Не удалось открыть облачную копию. Данные на устройстве не изменены.');
     if(hasMeaningfulLocalData(data)){
       const backedUp=await saveSafetySnapshot('Перед заменой дневника данными из облака',JSON.stringify(data));
       if(!backedUp)throw new Error('Не удалось сохранить текущую копию. Облачные данные пока не применены. Сначала скачай резервную копию и попробуй ещё раз.');
     }
+    if(!sessionCurrent(generation,userId))throw new Error('Аккаунт изменился во время загрузки дневника.');
     const oldData=data,oldProgram=activeProgramId,oldWorkout=activeWorkout;
     try{
       cloudApplying=true;
@@ -1482,18 +1496,23 @@
       if(hasMeaningfulLocalData(data)){
         const backedUp=await saveSafetySnapshot('Перед переносом дневника в аккаунт',JSON.stringify(data));
         if(!backedUp)throw new Error('Не удалось сохранить копию перед подключением аккаунта. Сначала скачай резервную копию и попробуй снова.');
+      if(cloudSession?.user?.id!==uid)throw new Error('Аккаунт изменился во время подготовки дневника.');
       }
       try{localStorage.setItem(nextKey,JSON.stringify(data));nextRaw=localStorage.getItem(nextKey);}catch(error){console.error('Could not create account cache:',error);throw new Error('Не удалось подготовить дневник на этом устройстве. Освободи место и попробуй снова.');}
     }
     activeStorageKey=nextKey;
+    lastPersistedRaw=nextRaw;
+    staleTabBlocked=false;
     if(nextRaw){
       try{const parsed=JSON.parse(nextRaw);if(!parsed||!Array.isArray(parsed.programs)||!Array.isArray(parsed.history))throw new Error('неверная структура');data=normalizeData(parsed);}
       catch(error){activeStorageKey=STORAGE_KEY;throw new Error('Копия этого аккаунта на устройстве повреждена. Она не перезаписана; попробуй восстановить дневник из сохранённой копии.');}
     }else{
       data=normalizeData({});
-      try{localStorage.setItem(nextKey,JSON.stringify(data));}catch(error){activeStorageKey=STORAGE_KEY;console.error('Could not prepare account cache:',error);throw new Error('Не удалось подготовить дневник на этом устройстве. Освободи место и попробуй снова.');}
+      try{localStorage.setItem(nextKey,JSON.stringify(data));lastPersistedRaw=localStorage.getItem(nextKey);}catch(error){activeStorageKey=STORAGE_KEY;console.error('Could not prepare account cache:',error);throw new Error('Не удалось подготовить дневник на этом устройстве. Освободи место и попробуй снова.');}
     }
     try{localStorage.setItem(LOCAL_OWNER_KEY,uid);}catch(e){console.warn('Не удалось записать метку локального аккаунта',e);}
+    lastPersistedRaw=localStorage.getItem(activeStorageKey);
+    staleTabBlocked=false;
     historyEditContext=readHistoryEditContext();
     renderAfterStorageScopeChange();
     return accountCacheWasNew;
@@ -1501,13 +1520,17 @@
   function activateGuestStorage(){
     const leavingAccount=activeStorageKey!==STORAGE_KEY;
     activeStorageKey=STORAGE_KEY;
+    staleTabBlocked=false;
     try{
       // The account-specific cache remains intact. Never surface its legacy duplicate in guest mode.
       if(leavingAccount&&localStorage.getItem(LOCAL_OWNER_KEY)){localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(LOCAL_OWNER_KEY);}
       const raw=localStorage.getItem(STORAGE_KEY);
+      lastPersistedRaw=raw;
       if(raw){const parsed=JSON.parse(raw);if(parsed&&Array.isArray(parsed.programs)&&Array.isArray(parsed.history))data=normalizeData(parsed);else data=normalizeData({});}
       else{data=normalizeData({});localStorage.setItem(STORAGE_KEY,JSON.stringify(data));}
     }catch(error){console.warn('Не удалось переключиться на локальное хранилище после выхода:',error);data=normalizeData({});}
+    lastPersistedRaw=localStorage.getItem(activeStorageKey);
+    staleTabBlocked=false;
     historyEditContext=readHistoryEditContext();
     renderAfterStorageScopeChange();
   }
@@ -1518,14 +1541,19 @@
   async function handleCloudSession(session){
     if(!cloudClient||!session?.user?.id)return;
     const userId=session.user.id;
-    if(cloudHandlingPromise&&cloudHandlingUserId===userId)return cloudHandlingPromise;
+    const generation=cloudSessionGeneration;
+    if(!sessionCurrent(generation,userId))return;
+    if(cloudHandlingPromise&&cloudHandlingUserId===userId&&cloudHandlingGeneration===generation)return cloudHandlingPromise;
     if(cloudReady&&cloudUserId===userId)return;
-    cloudHandlingUserId=userId;
+    cloudHandlingUserId=userId;cloudHandlingGeneration=generation;
     cloudHandlingPromise=(async()=>{
       cloudSession=session;cloudReady=false;cloudPaused=false;pendingCloudChoice=null;updateCloudUI('Проверяем облачный дневник…','pending');
       try{
         const accountCacheWasNew=await activateAccountStorage(userId);
-        const row=await fetchCloudRow(userId);const meta=readCloudMeta(userId);const localImportant=hasMeaningfulLocalData(data);
+        if(!sessionCurrent(generation,userId))return;
+        const row=await fetchCloudRow(userId);
+        if(!sessionCurrent(generation,userId))return;
+        const meta=readCloudMeta(userId);const localImportant=hasMeaningfulLocalData(data);
         if(accountCacheWasNew){
           if(row){if(localImportant){showCloudChoice(row,'first-login-with-local-data');return;}await applyCloudPayload(row.payload,row,'Данные из облака загружены');return;}
           if(localImportant){showCloudChoice(null,'first-login-empty-cloud');return;}
@@ -1556,11 +1584,13 @@
         cloudRevision=0;cloudUserId=userId;cloudReady=true;cloudPaused=false;
         setCloudMessage('Сохраняем дневник в облаке впервые…','pending');await syncCloudState();
       }catch(error){
+        if(!sessionCurrent(generation,userId))return;
         cloudReady=false;cloudPaused=false;
         console.error('SetLog cloud session failed:',error);setCloudMessage('Не удалось подключить облачный дневник. Данные на устройстве сохранены; проверь интернет и попробуй снова.','error');
       }
     })();
-    try{return await cloudHandlingPromise;}finally{cloudHandlingPromise=null;cloudHandlingUserId='';}
+    const handling=cloudHandlingPromise;
+    try{return await handling;}finally{if(cloudHandlingPromise===handling){cloudHandlingPromise=null;cloudHandlingUserId='';cloudHandlingGeneration=-1;}}
   }
   function scheduleCloudRetry(){
     if(!cloudClient||!cloudSession||!cloudReady||cloudPaused||!navigator.onLine)return;
@@ -1580,14 +1610,16 @@
     if(cloudSyncInFlight){cloudSyncRequested=true;return;}
     if(!navigator.onLine){setStorageStatus('Сохранено на устройстве · ждёт отправки','pending');setCloudMessage('Нет интернета. Изменения отправятся автоматически после восстановления связи.','pending');return;}
     cloudSyncInFlight=true;cloudSyncRequested=false;
-    const userId=cloudSession.user.id;const expectedRevision=cloudRevision;
+    const userId=cloudSession.user.id;const generation=cloudSessionGeneration;const expectedRevision=cloudRevision;
     const payload=JSON.parse(JSON.stringify(data));payload.schemaVersion=DATA_SCHEMA_VERSION;payload.version=DATA_SCHEMA_VERSION;
     try{
       const {data:result,error}=await cloudClient.rpc('save_setlog_state',{p_payload:payload,p_expected_revision:expectedRevision});
+      if(!sessionCurrent(generation,userId)||staleTabBlocked)return;
       if(error){
         const message=String(error.message||error.details||error);
         if(/revision_conflict|revision conflict|not_authenticated/i.test(message)){
           const row=await fetchCloudRow(userId).catch(()=>null);
+          if(!sessionCurrent(generation,userId)||staleTabBlocked)return;
           if(row)showCloudChoice(row,'revision-conflict');
           else{cloudReady=false;cloudPaused=true;setCloudMessage('Дневник изменился на другом устройстве. Текущие данные сохранены; открой список сохранений и выбери нужную копию.','warning');}
           setStorageStatus('Изменения сохранены на устройстве. Выбери копию для синхронизации.','error');
@@ -1607,6 +1639,7 @@
       setStorageStatus('Все изменения сохранены в облаке.','saved');
       setCloudMessage('Дневник синхронизирован. Все изменения сохранены в облаке.','saved');
     }catch(error){
+      if(!sessionCurrent(generation,userId)||staleTabBlocked)return;
       setStorageStatus('Изменения сохранены на устройстве, ждём связи с облаком.','error');
       setCloudMessage('Не удалось связаться с облаком. Данные на устройстве сохранены; попробуем снова автоматически.','error');console.error('SetLog cloud sync failed:', error);
       scheduleCloudRetry();
@@ -1689,16 +1722,17 @@
       if(!localBackup)throw new Error('Не удалось сохранить копию с этого устройства. Сначала скачай резервную копию.');
       const restored=normalizeData(snapshot.payload);
       const payload={...restored,schemaVersion:DATA_SCHEMA_VERSION,version:DATA_SCHEMA_VERSION,updatedAt:Date.now()};restorePayload=payload;
-      try{oldRaw=localStorage.getItem(activeStorageKey);localStorage.setItem(activeStorageKey,JSON.stringify(payload));localPrewrite=true;}
+      try{oldRaw=localStorage.getItem(activeStorageKey);localStorage.setItem(activeStorageKey,JSON.stringify(payload));lastPersistedRaw=localStorage.getItem(activeStorageKey);localPrewrite=true;}
       catch(storageError){console.error('Could not prepare local cache before cloud restore:',storageError);throw new Error('Не удалось подготовить дневник на этом устройстве. Освободи место и попробуй снова.');}
       cloudSaveAttempted=true;const {data:result,error:saveError}=await cloudClient.rpc('save_setlog_state',{p_payload:payload,p_expected_revision:Number(current.revision)||0});
       if(saveError){
-        if(localPrewrite){try{if(oldRaw===null)localStorage.removeItem(activeStorageKey);else localStorage.setItem(activeStorageKey,oldRaw);}catch(e){console.error('Could not revert local cache after cloud restore conflict:',e);}}
+        if(localPrewrite){try{if(oldRaw===null)localStorage.removeItem(activeStorageKey);else localStorage.setItem(activeStorageKey,oldRaw);lastPersistedRaw=localStorage.getItem(activeStorageKey);}catch(e){console.error('Could not revert local cache after cloud restore conflict:',e);}}
         localPrewrite=false;cloudSaveAttempted=false;
         if(/revision_conflict|revision conflict/i.test(String(saveError.message||saveError)))throw new Error('Дневник уже изменился на другом устройстве. Обнови список копий и попробуй ещё раз.');
         console.error('Cloud restore failed:',saveError);throw new Error('Не удалось восстановить облачную копию. Текущая версия не заменена.');
       }
       cloudSaveConfirmed=true;
+      lastPersistedRaw=localStorage.getItem(activeStorageKey);
       data=normalizeData(payload);activeProgramId=data.activeProgramId;activeWorkout=data.activeWorkoutId||getWorkouts(activeProgramId)[0]?.id||'';
       cloudRevision=Number((Array.isArray(result)?result[0]:result)?.revision)||Number(current.revision)+1;cloudUserId=userId;cloudReady=true;cloudPaused=false;pendingCloudChoice=null;
       writeCloudMeta(userId,cloudRevision,data.updatedAt,(Array.isArray(result)?result[0]:result)?.updated_at||new Date().toISOString());
@@ -1706,7 +1740,7 @@
       $('#cloudHistoryDialog').close();renderAfterStorageScopeChange();renderHistory();renderProgress();await updateBackupStatus();
       setStorageStatus('Дневник восстановлен и сохранён в облаке.','saved');setCloudMessage('Дневник восстановлен. Предыдущая копия сохранена отдельно.','saved');notify('Дневник восстановлен из сохранённой копии.');
     }catch(error){
-      if(localPrewrite&&!cloudSaveConfirmed){try{if(oldRaw===null)localStorage.removeItem(activeStorageKey);else localStorage.setItem(activeStorageKey,oldRaw);}catch(rollbackError){console.error('Could not restore local cache after interrupted cloud restore:',rollbackError);}localPrewrite=false;}
+      if(localPrewrite&&!cloudSaveConfirmed){try{if(oldRaw===null)localStorage.removeItem(activeStorageKey);else localStorage.setItem(activeStorageKey,oldRaw);lastPersistedRaw=localStorage.getItem(activeStorageKey);}catch(rollbackError){console.error('Could not restore local cache after interrupted cloud restore:',rollbackError);}localPrewrite=false;}
       console.error('Cloud diary restore failed:',error);
       if(cloudSaveAttempted&&!cloudSaveConfirmed){cloudReady=false;cloudPaused=true;setCloudMessage('Не удалось подтвердить результат восстановления. Подключись к интернету и перезагрузи приложение, чтобы проверить состояние дневника.','warning');status.textContent='Результат пока не подтверждён. Обнови страницу с интернетом перед продолжением.';}
       else status.textContent=error.message||'Не удалось восстановить копию. Текущие данные сохранены.';
@@ -1739,6 +1773,9 @@
     const cfg=window.SETLOG_SUPABASE_CONFIG;
     cloudClient=window.supabase.createClient(cfg.url.trim(),cfg.anonKey.trim(),{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
     cloudClient.auth.onAuthStateChange((event,session)=>{
+      const previousUser=cloudSession?.user?.id||null;
+      const nextUser=session?.user?.id||null;
+      if(previousUser!==nextUser){cloudSessionGeneration++;clearTimeout(cloudSyncTimer);clearTimeout(cloudRetryTimer);cloudSyncRequested=false;}
       cloudSession=session||null;updateCloudUI();
       if(event==='PASSWORD_RECOVERY'){
         cloudRecoveryMode=true;updateCloudUI('Открой письмо восстановления и задай новый пароль.','pending');
@@ -1854,6 +1891,7 @@
   $('#authSignInBtn').addEventListener('click',()=>submitAuthAction('signin'));$('#authSignUpBtn').addEventListener('click',()=>submitAuthAction('signup'));$('#authResetBtn').addEventListener('click',()=>submitAuthAction('reset'));$('#authForm').addEventListener('submit',e=>{e.preventDefault();if(cloudRecoveryMode)saveRecoveredPassword();else submitAuthAction('signin');});$('#authSaveNewPasswordBtn').addEventListener('click',saveRecoveredPassword);$('#authBackToSignInBtn').addEventListener('click',leavePasswordRecoveryMode);
   $('#signOutBtn').addEventListener('click',async()=>{if(!cloudClient)return;if(!confirm('Выйти из аккаунта? Облачный дневник останется в безопасности. На этом устройстве останется отдельная локальная копия.'))return;const {error}=await cloudClient.auth.signOut();if(error){console.error('SetLog sign out failed:',error);notify('Не удалось выйти из аккаунта. Попробуй ещё раз.');}else notify('Ты вышел из аккаунта.');});
   $('#cloudSyncNowBtn').addEventListener('click',async()=>{if(!cloudClient||!cloudSession)return;await syncCloudState();});$('#cloudReloadBtn').addEventListener('click',reloadCloudData);$('#cloudUploadLocalBtn').addEventListener('click',()=>uploadLocalDataToCloud(false));$('#useCloudDataBtn').addEventListener('click',chooseCloudData);$('#useLocalDataBtn').addEventListener('click',chooseLocalDataForCloud);$('#cloudHistoryBtn').addEventListener('click',fillCloudHistoryDialog);$('#restoreCloudHistoryBtn').addEventListener('click',restoreCloudHistoryVersion);$('#cloudHistorySelect').addEventListener('change',()=>$('#restoreCloudHistoryBtn').disabled=!$('#cloudHistorySelect').value);
+  window.addEventListener('storage',event=>{if(event.key===activeStorageKey&&event.newValue!==lastPersistedRaw){staleTabBlocked=true;clearTimeout(cloudSyncTimer);clearTimeout(cloudRetryTimer);setStorageStatus('Дневник обновлён в другой вкладке. Перезагрузи страницу перед продолжением.','error');}});
   window.addEventListener('offline',()=>{if(cloudSession){setStorageStatus('Нет интернета · изменения сохранены на устройстве','pending');setCloudMessage('Нет интернета. Изменения сохранены на устройстве и автоматически отправятся, когда связь восстановится.','pending');}});
   window.addEventListener('online',()=>{clearTimeout(cloudRetryTimer);cloudRetryTimer=null;cloudRetryDelay=5000;if(cloudSession&&cloudReady&&!cloudPaused){setCloudMessage('Связь восстановлена. Сохраняем изменения в облаке…','pending');scheduleCloudSync(250);}else if(cloudSession&&!cloudReady){handleCloudSession(cloudSession).catch(error=>console.error('Cloud reconnection failed:',error));}else if(!cloudClient){setStorageStatus('Связь восстановлена · подключаем облако…','pending');initializeSupabaseCloud().catch(error=>{console.error('Cloud reconnect failed:',error);setCloudMessage('Не удалось подключиться к облаку. Дневник сохранён на устройстве; попробуй ещё раз.','warning');});}});
   initializeApp().then(initializeSupabaseCloud).catch(error=>{console.error('SetLog initialization failed',error);updateCloudUI('Не удалось инициализировать приложение. Локальные данные не очищены.','error');});
