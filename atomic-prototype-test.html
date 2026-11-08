@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>СЕТ — проверка атомарного хранения</title>
+<link rel="stylesheet" href="./style.css">
+<style>main{max-width:620px;margin:0 auto;padding:32px 18px}.audit-card{padding:20px;margin:16px 0;border:1px solid #46553a;border-radius:16px;background:#1d201b}.audit-card h2{font-size:19px}.audit-small{color:#a4ae99}.audit-good{color:#c8f169}button{cursor:pointer;background:#c8f169;border:0;border-radius:10px;padding:12px 20px;color:#182010;font-weight:700}</style></head>
+<body><main><span class="eyebrow">СЕТ · ЛАБОРАТОРИЯ</span><h1>Атомарное сохранение<span class="lime-dot">.</span></h1><p class="subhead">Тестовая технология. Основной дневник и Supabase не используются.</p>
+<section class="audit-card"><h2>Что мы проверяем</h2><p class="audit-small">Если две вкладки почти одновременно пытаются сохранить изменения в одну и ту же версию, только первая операция может пройти. Вторая получит сообщение о конфликте.</p><button id="testBtn">Протестировать две записи</button><pre id="result" style="white-space:pre-wrap;line-height:1.6"></pre></section>
+<p class="audit-small">Все записи в отдельной экспериментальной IndexedDB setlog-atomic-prototype-v1. Настоящие тренировки не затрагиваются.</p></main>
+<script src="./atomic-storage-prototype.js"></script>
+<script>
+document.querySelector('#testBtn').addEventListener('click',async()=>{
+ const api=window.SetlogAtomicStorage,scope='demo-'+Date.now(),raw=id=>JSON.stringify({schemaVersion:8,history:[{id,entries:[]}],programs:[{id:'demo',workouts:[]}]});
+ const started=await api.initialize(scope,raw('old'));
+ const results=await Promise.all([api.commit(scope,started.revision,raw('A')),api.commit(scope,started.revision,raw('B'))]);
+ const saved=await api.read(scope);
+ const works=results.filter(x=>x.ok).length===1&&results.some(x=>x.reason==='conflict');
+ document.querySelector('#result').textContent=(works?'✓ УСПЕШНО':'× ОШИБКА')+'\nЗапись А: '+JSON.stringify(results[0])+'\nЗапись Б: '+JSON.stringify(results[1])+'\nПоследняя версия: '+saved.revision;
+});
+</script></body></html>
