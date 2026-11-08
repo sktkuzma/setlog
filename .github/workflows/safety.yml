@@ -42,6 +42,9 @@ jobs:
           node tests/progress-v2.test.cjs
           SETLOG_ATOMIC_URL=http://127.0.0.1:18779/ node tests/atomic-integration.test.cjs
           SETLOG_ATOMIC_URL=http://127.0.0.1:18779/ node tests/atomic-idb-first.test.cjs
+          SETLOG_STAGE3_URL=http://127.0.0.1:18779/ node tests/atomic-actions.test.cjs
+          SETLOG_STAGE3_URL=http://127.0.0.1:18779/ node tests/atomic-scoped-migration.test.cjs
+          SETLOG_STAGE3_OFFLINE_URL=http://localhost:18779/ node tests/atomic-offline.test.cjs
           SETLOG_OFFLINE_URL=http://localhost:18779/ node tests/progress-v2-offline.test.cjs
       - name: Source and asset integrity
         run: |

@@ -1217,15 +1217,16 @@
       }catch(e){notify('Не удалось открыть эту резервную копию. Текущие данные оставлены без изменений.');}
     };reader.onerror=()=>notify('Не удалось прочитать выбранный файл.');reader.readAsText(file);
   }
-  function addCustomExercise(){
+  async function addCustomExercise(){return runDurableAction(async()=>{
     const name=$('#customExerciseName').value.trim();if(!name)return;const wk=getWorkout();if(!wk)return;
     const catalogId=`catalog-custom-${uid()}`;const key=draftKey();const oldDrafts=data.drafts[key]?JSON.parse(JSON.stringify(data.drafts[key])):null;
     const catalog=normalizeCatalogItem({id:catalogId,name,muscle:$('#customExerciseMuscle').value.trim()||'Своя группа',defaultTarget:$('#customExerciseTarget').value.trim()||'По плану',defaultSets:3,custom:true,imageUrl:'',imageData:'',videoUrl:''});
     data.exerciseCatalog.push(catalog);
     const ex={id:`placement-${uid()}`,catalogId,target:catalog.defaultTarget,sets:3,alt:''};wk.exercises.push(ex);
     data.drafts[key] ||= {};data.drafts[key][ex.id]=defaultDraft({...catalog,...ex});
-    if(!persist({snapshot:true,label:'Добавлено своё упражнение'})){wk.exercises.pop();data.exerciseCatalog=data.exerciseCatalog.filter(item=>item.id!==catalogId);if(oldDrafts)data.drafts[key]=oldDrafts;else delete data.drafts[key];return;}
+    if(!await persistDurably({snapshot:true,label:'Добавлено своё упражнение'})){wk.exercises.pop();data.exerciseCatalog=data.exerciseCatalog.filter(item=>item.id!==catalogId);if(oldDrafts)data.drafts[key]=oldDrafts;else delete data.drafts[key];return;}
     $('#addExerciseDialog').close();$('#addExerciseForm').reset();renderTraining();openExerciseEditor(ex.id);notify('Упражнение добавлено в библиотеку и программу.');
+    });
   }
   function renderExerciseLibraryGroupOptions(){
     const select=$('#exerciseLibraryGroupFilter');if(!select)return;
@@ -1237,7 +1238,7 @@
     select.innerHTML=`<option value="">Все группы · ${catalog.length}</option>`+groups.map(group=>`<option value="${safe(group)}">${safe(group)} · ${counts.get(group)}</option>`).join('');
     select.value=groups.includes(current)?current:'';
   }
-  function addLibraryExercise(){
+  async function addLibraryExercise(){return runDurableAction(async()=>{
     const catalogId=$('#exerciseLibrarySelect').value;const available=getAvailableExerciseLibrary().find(item=>item.id===catalogId);const wk=getWorkout();
     if(!available||!wk)return notify('Сначала выбери упражнение из библиотеки.');
     let catalog=data.exerciseCatalog.find(item=>item.id===catalogId);let catalogWasAdded=false;let oldCatalog=null;
@@ -1260,8 +1261,9 @@
     const key=draftKey();const oldDrafts=data.drafts[key]?JSON.parse(JSON.stringify(data.drafts[key])):null;
     const placement={id:`placement-${uid()}`,catalogId:catalog.id,target:catalog.defaultTarget||'По плану',sets:clampSets(catalog.defaultSets),alt:''};
     wk.exercises.push(placement);data.drafts[key] ||= {};data.drafts[key][placement.id]=defaultDraft({...catalog,...placement});
-    if(!persist({snapshot:true,label:`Добавлено в программу: ${catalog.name}`})){wk.exercises.pop();if(catalogWasAdded)data.exerciseCatalog=data.exerciseCatalog.filter(item=>item.id!==catalogId);else if(oldCatalog){const index=data.exerciseCatalog.findIndex(item=>item.id===catalogId);if(index>=0)data.exerciseCatalog[index]=oldCatalog;}if(oldDrafts)data.drafts[key]=oldDrafts;else delete data.drafts[key];return;}
+    if(!await persistDurably({snapshot:true,label:`Добавлено в программу: ${catalog.name}`})){wk.exercises.pop();if(catalogWasAdded)data.exerciseCatalog=data.exerciseCatalog.filter(item=>item.id!==catalogId);else if(oldCatalog){const index=data.exerciseCatalog.findIndex(item=>item.id===catalogId);if(index>=0)data.exerciseCatalog[index]=oldCatalog;}if(oldDrafts)data.drafts[key]=oldDrafts;else delete data.drafts[key];return;}
     $('#addExerciseDialog').close();renderTraining();renderProgress();notify(`«${catalog.name}» добавлено в программу.`);
+    });
   }
   function renderExerciseLibraryOptions(filter){
     const select=$('#exerciseLibrarySelect');if(!select)return;const previous=select.value;
@@ -1342,7 +1344,7 @@
     const detail=$('#exerciseDetailDialog');if(detail?.open)detail.close();currentDetailExerciseId=null;
     renderTraining();switchView('training');notify('Доработка отменена. Текущий черновик восстановлен.');
   }
-  function applyHistoryEdit(){
+  async function applyHistoryEdit(){return runDurableAction(async()=>{
     const ctx=historyEditContext;if(!ctx)return;
     try{
       if(staleTabBlocked||localStorage.getItem(historyEditStorageKey())!==historyEditLastRaw){
@@ -1372,7 +1374,7 @@
     if(!entries.length){notify('Нельзя сохранить пустую тренировку. Заполни хотя бы один подход.');return;}
     const updatedSession={...current,entries,editedAt:Date.now()};
     data.history[index]=updatedSession;
-    if(!persist({snapshot:true,label:'Изменена историческая тренировка'})){data.history[index]=current;return;}
+    if(!await persistDurably({snapshot:true,label:'Изменена историческая тренировка'})){data.history[index]=current;return;}
     const returnState=ctx.returnState||{};if(!clearHistoryEditContext())return;
     if(data.programs.some(item=>item.id===returnState.programId))activeProgramId=returnState.programId;
     if(getWorkouts(activeProgramId).some(item=>item.id===returnState.workoutId))activeWorkout=returnState.workoutId;
@@ -1380,15 +1382,30 @@
     const detail=$('#exerciseDetailDialog');if(detail?.open)detail.close();currentDetailExerciseId=null;
     renderTraining();renderHistory();renderProgress();switchView('training');
     notify('История обновлена. Текущий незавершённый черновик восстановлен.');
+    });
   }
-  function deleteSession(id){if(!confirm('Удалить эту тренировку из истории?'))return;const old=data.history;data.history=data.history.filter(s=>s.id!==id);if(!persist({snapshot:true,label:'Удалена запись истории'})){data.history=old;return;}renderHistory();renderProgress();renderTraining();notify('Запись удалена.');}
-  function deleteExercise(id){if(!confirm('Убрать упражнение из этой программы? История и запись в общей библиотеке сохранятся.'))return;const wk=getWorkout();if(!wk)return;const oldExercises=wk.exercises.slice();const oldDrafts=JSON.parse(JSON.stringify(data.drafts));wk.exercises=wk.exercises.filter(e=>e.id!==id);for(const [key,d] of Object.entries(data.drafts)){const parts=key.split('::');if(parts[1]===activeProgramId&&parts[2]===activeWorkout&&d)delete d[id];}if(!persist({snapshot:true,label:'Упражнение убрано из программы'})){wk.exercises=oldExercises;data.drafts=oldDrafts;return;}renderTraining();renderProgress();notify('Упражнение убрано из программы; история сохранена.');}
-  function moveExercise(id,delta){const wk=getWorkout();if(!wk)return;const idx=wk.exercises.findIndex(e=>e.id===id);const next=idx+delta;if(idx<0||next<0||next>=wk.exercises.length)return;[wk.exercises[idx],wk.exercises[next]]=[wk.exercises[next],wk.exercises[idx]];if(!persist({snapshot:true,label:'Изменён порядок упражнений'})){[wk.exercises[idx],wk.exercises[next]]=[wk.exercises[next],wk.exercises[idx]];return;}renderTraining();}
-  function moveWorkout(delta){const p=currentProgram();const idx=p.workouts.findIndex(w=>w.id===activeWorkout);const next=idx+delta;if(idx<0||next<0||next>=p.workouts.length)return;[p.workouts[idx],p.workouts[next]]=[p.workouts[next],p.workouts[idx]];if(!persist({snapshot:true,label:'Изменён порядок тренировочных дней'})){[p.workouts[idx],p.workouts[next]]=[p.workouts[next],p.workouts[idx]];return;}renderTraining();refreshProgramDialogControls();}
-  function moveProgram(delta){const idx=data.programs.findIndex(p=>p.id===activeProgramId);const next=idx+delta;if(idx<0||next<0||next>=data.programs.length)return;[data.programs[idx],data.programs[next]]=[data.programs[next],data.programs[idx]];if(!persist({snapshot:true,label:'Изменён порядок программ'})){[data.programs[idx],data.programs[next]]=[data.programs[next],data.programs[idx]];return;}renderProgramSelector();refreshProgramDialogControls();}
+  async function persistDurably(options={}){
+    if(!persist(options))return false;
+    return await confirmDurableAtomicWrite();
+  }
+  async function runDurableAction(operation){
+    if(typeof atomicLab==='undefined'||!atomicLab)return operation();
+    if(atomicLab.uiMutationPending){
+      notify('Предыдущее изменение ещё сохраняется. Дождись подтверждения.');
+      return false;
+    }
+    atomicLab.uiMutationPending=true;
+    try{return await operation();}
+    finally{atomicLab.uiMutationPending=false;}
+  }
+  async function deleteSession(id){return runDurableAction(async()=>{if(!confirm('Удалить эту тренировку из истории?'))return;const old=data.history;data.history=data.history.filter(s=>s.id!==id);if(!await persistDurably({snapshot:true,label:'Удалена запись истории'})){data.history=old;return;}renderHistory();renderProgress();renderTraining();notify('Запись удалена.');});}
+  async function deleteExercise(id){return runDurableAction(async()=>{if(!confirm('Убрать упражнение из этой программы? История и запись в общей библиотеке сохранятся.'))return;const wk=getWorkout();if(!wk)return;const oldExercises=wk.exercises.slice();const oldDrafts=JSON.parse(JSON.stringify(data.drafts));wk.exercises=wk.exercises.filter(e=>e.id!==id);for(const [key,d] of Object.entries(data.drafts)){const parts=key.split('::');if(parts[1]===activeProgramId&&parts[2]===activeWorkout&&d)delete d[id];}if(!await persistDurably({snapshot:true,label:'Упражнение убрано из программы'})){wk.exercises=oldExercises;data.drafts=oldDrafts;return;}renderTraining();renderProgress();notify('Упражнение убрано из программы; история сохранена.');});}
+  async function moveExercise(id,delta){return runDurableAction(async()=>{const wk=getWorkout();if(!wk)return;const idx=wk.exercises.findIndex(e=>e.id===id);const next=idx+delta;if(idx<0||next<0||next>=wk.exercises.length)return;[wk.exercises[idx],wk.exercises[next]]=[wk.exercises[next],wk.exercises[idx]];if(!await persistDurably({snapshot:true,label:'Изменён порядок упражнений'})){[wk.exercises[idx],wk.exercises[next]]=[wk.exercises[next],wk.exercises[idx]];return;}renderTraining();});}
+  async function moveWorkout(delta){return runDurableAction(async()=>{const p=currentProgram();const idx=p.workouts.findIndex(w=>w.id===activeWorkout);const next=idx+delta;if(idx<0||next<0||next>=p.workouts.length)return;[p.workouts[idx],p.workouts[next]]=[p.workouts[next],p.workouts[idx]];if(!await persistDurably({snapshot:true,label:'Изменён порядок тренировочных дней'})){[p.workouts[idx],p.workouts[next]]=[p.workouts[next],p.workouts[idx]];return;}renderTraining();refreshProgramDialogControls();});}
+  async function moveProgram(delta){return runDurableAction(async()=>{const idx=data.programs.findIndex(p=>p.id===activeProgramId);const next=idx+delta;if(idx<0||next<0||next>=data.programs.length)return;[data.programs[idx],data.programs[next]]=[data.programs[next],data.programs[idx]];if(!await persistDurably({snapshot:true,label:'Изменён порядок программ'})){[data.programs[idx],data.programs[next]]=[data.programs[next],data.programs[idx]];return;}renderProgramSelector();refreshProgramDialogControls();});}
   function updateDraftFromInput(input){const id=input.dataset.exercise;const field=input.dataset.field;const dr=ensureDraft()[id];if(!dr)return;if((field==='weight'||field==='reps')&&input.dataset.setIndex!==undefined){const idx=Number(input.dataset.setIndex);if(!dr.sets[idx])dr.sets[idx]={weight:'',reps:''};dr.sets[idx][field]=input.value;}else dr[field]=input.value;const card=$(`[data-exercise-card="${CSS.escape(id)}"]`);if(card)card.classList.toggle('has-data',hasDraftData(dr));const row=input.closest('.detail-set-row');if(row){const set=dr.sets[Number(input.dataset.setIndex)]||{};row.classList.toggle('has-input',num(set.weight)!==null||String(set.reps||'').trim()!=='');}if(historyEditContext)persistHistoryEditContext();else persist();updateFilledCount();}
-  function switchWorkout(id){if(!getWorkouts().some(w=>w.id===id))return;const old=activeWorkout;activeWorkout=id;if(!persist()){activeWorkout=old;return;}renderTraining();}
-  function switchProgram(id){if(!data.programs.some(p=>p.id===id))return;const oldProgram=activeProgramId,oldWorkout=activeWorkout;activeProgramId=id;activeWorkout=(getWorkouts(id)[0]||{}).id||'';if(!persist()){activeProgramId=oldProgram;activeWorkout=oldWorkout;return;}renderTraining();}
+  async function switchWorkout(id){return runDurableAction(async()=>{if(!getWorkouts().some(w=>w.id===id))return;const old=activeWorkout;activeWorkout=id;if(!await persistDurably()){activeWorkout=old;return;}renderTraining();});}
+  async function switchProgram(id){return runDurableAction(async()=>{if(!data.programs.some(p=>p.id===id))return;const oldProgram=activeProgramId,oldWorkout=activeWorkout;activeProgramId=id;activeWorkout=(getWorkouts(id)[0]||{}).id||'';if(!await persistDurably()){activeProgramId=oldProgram;activeWorkout=oldWorkout;return;}renderTraining();});}
   function refreshProgramDialogControls(){
     const p=currentProgram(),idx=data.programs.findIndex(x=>x.id===activeProgramId),widx=(p?.workouts||[]).findIndex(w=>w.id===activeWorkout);
     const up=$('#moveWorkoutEarlierBtn'),down=$('#moveWorkoutLaterBtn'),pup=$('#moveProgramEarlierBtn'),pdown=$('#moveProgramLaterBtn');
@@ -1396,14 +1413,14 @@
     if(pup)pup.disabled=idx<=0;if(pdown)pdown.disabled=idx<0||idx>=data.programs.length-1;
   }
   function openProgramDialog(){const p=currentProgram();$('#renameProgramName').value=p?.name||'';$('#newProgramName').value='';$('#newProgramTemplate').value='copy';$('#renameWorkoutName').value=getWorkout()?.name||'';$('#deleteProgramBtn').disabled=data.programs.length<=1;refreshProgramDialogControls();$('#programDialog').showModal();}
-  function createProgram(){const name=$('#newProgramName').value.trim();if(!name){notify('Введи название новой программы.');return;}const oldProgram=activeProgramId,oldWorkout=activeWorkout;const id=`program-${uid()}`;let workouts=[];if($('#newProgramTemplate').value==='copy'){workouts=getWorkouts().map(w=>({id:`workout-${uid()}`,name:w.name,desc:w.desc||'',exercises:w.exercises.map(e=>({...e,id:`placement-${uid()}`}))}));}else workouts=[{id:`workout-${uid()}`,name:'Тренировка 1',desc:'',exercises:[]}];const p={id,name,workouts};data.programs.push(p);activeProgramId=id;activeWorkout=workouts[0]?.id||'';if(!persist({snapshot:true,label:`Создана программа: ${name}`})){data.programs=data.programs.filter(item=>item.id!==id);activeProgramId=oldProgram;activeWorkout=oldWorkout;return;}$('#programDialog').close();renderTraining();renderProgress();notify('Новая программа создана.');}
-  function renameProgram(){const name=$('#renameProgramName').value.trim();if(!name)return notify('Название не должно быть пустым.');const oldName=currentProgram().name;currentProgram().name=name;if(!persist({snapshot:true,label:'Переименована программа'})){currentProgram().name=oldName;return;}renderTraining();if(activeView==='history')renderHistory();$('#programDialog').close();notify('Название программы изменено.');}
-  function deleteProgram(){if(data.programs.length<=1)return notify('Нельзя удалить единственную программу.');const p=currentProgram();if(!confirm(`Удалить программу «${p.name}»? История тренировок и общая библиотека упражнений останутся.`))return;const oldPrograms=data.programs,oldProgramId=activeProgramId,oldWorkoutId=activeWorkout;data.programs=data.programs.filter(x=>x.id!==activeProgramId);activeProgramId=data.programs[0].id;activeWorkout=(getWorkouts()[0]||{}).id||'';if(!persist({snapshot:true,label:`Удалена программа: ${p.name}`})){data.programs=oldPrograms;activeProgramId=oldProgramId;activeWorkout=oldWorkoutId;return;}$('#programDialog').close();renderTraining();renderProgress();notify('Программа удалена; история и библиотека сохранены.');}
-  function addWorkoutDay(){const p=currentProgram();const oldWorkout=activeWorkout;const name=`Тренировка ${p.workouts.length+1}`;const w={id:`workout-${uid()}`,name,desc:'',exercises:[]};p.workouts.push(w);activeWorkout=w.id;if(!persist({snapshot:true,label:'Добавлен тренировочный день'})){p.workouts.pop();activeWorkout=oldWorkout;return;}$('#programDialog').close();renderTraining();notify('Добавлен новый день. Теперь добавь в него упражнения.');}
-  function renameWorkout(){const name=$('#renameWorkoutName').value.trim();if(!name)return notify('Название дня не должно быть пустым.');const w=getWorkout();if(!w)return;const oldName=w.name;w.name=name;if(!persist({snapshot:true,label:'Переименован тренировочный день'})){w.name=oldName;return;}renderTraining();$('#programDialog').close();notify('Название дня изменено.');}
+  async function createProgram(){return runDurableAction(async()=>{const name=$('#newProgramName').value.trim();if(!name){notify('Введи название новой программы.');return;}const oldProgram=activeProgramId,oldWorkout=activeWorkout;const id=`program-${uid()}`;let workouts=[];if($('#newProgramTemplate').value==='copy'){workouts=getWorkouts().map(w=>({id:`workout-${uid()}`,name:w.name,desc:w.desc||'',exercises:w.exercises.map(e=>({...e,id:`placement-${uid()}`}))}));}else workouts=[{id:`workout-${uid()}`,name:'Тренировка 1',desc:'',exercises:[]}];const p={id,name,workouts};data.programs.push(p);activeProgramId=id;activeWorkout=workouts[0]?.id||'';if(!await persistDurably({snapshot:true,label:`Создана программа: ${name}`})){data.programs=data.programs.filter(item=>item.id!==id);activeProgramId=oldProgram;activeWorkout=oldWorkout;return;}$('#programDialog').close();renderTraining();renderProgress();notify('Новая программа создана.');});}
+  async function renameProgram(){return runDurableAction(async()=>{const name=$('#renameProgramName').value.trim();if(!name)return notify('Название не должно быть пустым.');const oldName=currentProgram().name;currentProgram().name=name;if(!await persistDurably({snapshot:true,label:'Переименована программа'})){currentProgram().name=oldName;return;}renderTraining();if(activeView==='history')renderHistory();$('#programDialog').close();notify('Название программы изменено.');});}
+  async function deleteProgram(){return runDurableAction(async()=>{if(data.programs.length<=1)return notify('Нельзя удалить единственную программу.');const p=currentProgram();if(!confirm(`Удалить программу «${p.name}»? История тренировок и общая библиотека упражнений останутся.`))return;const oldPrograms=data.programs,oldProgramId=activeProgramId,oldWorkoutId=activeWorkout;data.programs=data.programs.filter(x=>x.id!==activeProgramId);activeProgramId=data.programs[0].id;activeWorkout=(getWorkouts()[0]||{}).id||'';if(!await persistDurably({snapshot:true,label:`Удалена программа: ${p.name}`})){data.programs=oldPrograms;activeProgramId=oldProgramId;activeWorkout=oldWorkoutId;return;}$('#programDialog').close();renderTraining();renderProgress();notify('Программа удалена; история и библиотека сохранены.');});}
+  async function addWorkoutDay(){return runDurableAction(async()=>{const p=currentProgram();const oldWorkout=activeWorkout;const name=`Тренировка ${p.workouts.length+1}`;const w={id:`workout-${uid()}`,name,desc:'',exercises:[]};p.workouts.push(w);activeWorkout=w.id;if(!await persistDurably({snapshot:true,label:'Добавлен тренировочный день'})){p.workouts.pop();activeWorkout=oldWorkout;return;}$('#programDialog').close();renderTraining();notify('Добавлен новый день. Теперь добавь в него упражнения.');});}
+  async function renameWorkout(){return runDurableAction(async()=>{const name=$('#renameWorkoutName').value.trim();if(!name)return notify('Название дня не должно быть пустым.');const w=getWorkout();if(!w)return;const oldName=w.name;w.name=name;if(!await persistDurably({snapshot:true,label:'Переименован тренировочный день'})){w.name=oldName;return;}renderTraining();$('#programDialog').close();notify('Название дня изменено.');});}
   function openExerciseEditor(id){const ex=getExercises().find(e=>e.id===id);if(!ex)return;editingExerciseId=id;pendingImageData=null;$('#editExerciseName').value=ex.name||'';$('#editExerciseMuscle').value=ex.muscle||'';$('#editExerciseTarget').value=ex.target||'';$('#editExerciseSets').value=String(ex.sets||3);$('#editExerciseAlt').value=ex.alt||'';$('#editExerciseAltVideoUrl').value=ex.altVideoUrl||'';$('#editExerciseImageUrl').value=ex.imageUrl||'';$('#editExerciseVideoUrl').value=ex.videoUrl||'';$('#editExerciseYoutubeUrl').value=ex.youtubeUrl||'';$('#editExerciseImageFile').value='';$('#removeExerciseImage').checked=false;$('#editExerciseReplacementSearch').value='';renderReplacementGroupOptions();renderReplacementOptions();const src=ex.imageData||validImageLink(ex.imageUrl);$('#exerciseImagePreview').src=src||'';$('#exerciseImagePreview').classList.toggle('hidden',!src);$('#exerciseImagePlaceholder').classList.toggle('hidden',!!src);$('#exerciseDialog').showModal();}
   function compressImageFile(file){return new Promise((resolve,reject)=>{if(!file||!file.type.startsWith('image/'))return reject(new Error('Выбери файл изображения.'));const reader=new FileReader();reader.onerror=()=>reject(new Error('Не удалось прочитать картинку.'));reader.onload=()=>{const image=new Image();image.onerror=()=>reject(new Error('Файл не удалось открыть как изображение.'));image.onload=()=>{const max=640,scale=Math.min(1,max/Math.max(image.width,image.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.width*scale));canvas.height=Math.max(1,Math.round(image.height*scale));const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',0.72));};image.src=reader.result;};reader.readAsDataURL(file);});}
-  async function saveExerciseEdit(){
+  async function saveExerciseEdit(){return runDurableAction(async()=>{
     const instance=getWorkout()?.exercises.find(e=>e.id===editingExerciseId);const ex=getExercises().find(e=>e.id===editingExerciseId);if(!ex||!instance)return;
     const name=$('#editExerciseName').value.trim();if(!name)return notify('Введи название упражнения.');
     const imageUrl=$('#editExerciseImageUrl').value.trim();const videoUrl=$('#editExerciseVideoUrl').value.trim();const youtubeUrl=$('#editExerciseYoutubeUrl').value.trim();const altVideoUrl=$('#editExerciseAltVideoUrl').value.trim();
@@ -1419,8 +1436,9 @@
     const oldCatalog={...catalog},oldInstance={...instance};
     catalog.name=name;catalog.muscle=$('#editExerciseMuscle').value.trim()||'Своя группа';catalog.imageUrl=finalImageUrl;catalog.imageData=imageData;catalog.videoUrl=videoUrl;catalog.youtubeUrl=youtubeUrl;catalog.updatedAt=Date.now();
     instance.target=$('#editExerciseTarget').value.trim()||'По плану';instance.sets=clampSets($('#editExerciseSets').value);instance.alt=$('#editExerciseAlt').value.trim();instance.altVideoUrl=altVideoUrl;
-    if(!persist({snapshot:true,label:`Изменено упражнение: ${name}`})){Object.assign(catalog,oldCatalog);Object.assign(instance,oldInstance);return;}
+    if(!await persistDurably({snapshot:true,label:`Изменено упражнение: ${name}`})){Object.assign(catalog,oldCatalog);Object.assign(instance,oldInstance);return;}
     $('#exerciseDialog').close();renderTraining();renderProgress();renderExerciseLibraryOptions($('#exerciseLibrarySearch')?.value||'');notify('Карточка упражнения обновлена в общей библиотеке; подходы и повторы текущей программы сохранены.');
+    });
   }
   function renderReplacementGroupOptions(){
     const select=$('#editExerciseReplacementGroup');if(!select)return;
@@ -1446,7 +1464,7 @@
     $('#applyExerciseReplacementBtn').disabled=!select.value;
     if(!items.length)select.innerHTML='<option value="">Нет подходящих упражнений</option>';
   }
-  function replaceExerciseWithLibrary(){
+  async function replaceExerciseWithLibrary(){return runDurableAction(async()=>{
     const selectedId=$('#editExerciseReplacementSelect').value;
     const candidate=getAvailableExerciseLibrary().find(item=>item.id===selectedId);
     const workout=getWorkout();const index=workout?.exercises.findIndex(item=>item.id===editingExerciseId)??-1;
@@ -1469,15 +1487,15 @@
     data.archivedPlacements.push({id:`replaced-${uid()}`,programId:activeProgramId,workoutId:activeWorkout,archivedAt:Date.now(),originalPlacement:JSON.parse(JSON.stringify(oldPlacement)),originalExerciseSnapshot:{catalogId:oldCatalog.id,name:oldCatalog.name,muscle:oldCatalog.muscle,imageUrl:oldCatalog.imageUrl||'',imageData:oldCatalog.imageData||'',videoUrl:oldCatalog.videoUrl||''},replacedByPlacementId:newPlacement.id,replacedByCatalogId:candidate.id,replacedByName:candidate.name});
     workout.exercises.splice(index,1,newPlacement);
     data.drafts[draftKeyNow] ||= {};data.drafts[draftKeyNow][newPlacement.id]=defaultDraft({...candidate,...newPlacement});
-    if(!persist({snapshot:true,label:`Упражнение заменено на: ${candidate.name}`})){
+    if(!await persistDurably({snapshot:true,label:`Упражнение заменено на: ${candidate.name}`})){
       workout.exercises=oldExercises;data.archivedPlacements.length=oldArchiveLength;
       if(oldCatalogIndex<0)data.exerciseCatalog=data.exerciseCatalog.filter(item=>item.id!==candidate.id);else if(oldCatalogCopy)data.exerciseCatalog[oldCatalogIndex]=oldCatalogCopy;
       if(beforeDraft)data.drafts[draftKeyNow]=beforeDraft;else delete data.drafts[draftKeyNow];
       return;
     }
     $('#exerciseDialog').close();renderTraining();renderProgress();notify(`Заменено на «${candidate.name}». Прогресс исходного упражнения остался в истории.`);
+    });
   }
-
   async function fillSnapshotDialog(){const snapshots=await listSafetySnapshots();const select=$('#snapshotSelect');select.innerHTML=snapshots.map(item=>`<option value="${safe(item.id)}">${safe(new Date(item.createdAt).toLocaleString('ru-RU'))} — ${safe(item.label)}</option>`).join('');$('#snapshotEmpty')?.classList.toggle('hidden',snapshots.length>0);$('#restoreSelectedSnapshotBtn').disabled=snapshots.length===0;await updateBackupStatus();}
   async function restoreSelectedSnapshot(){
     const ownerScope=activeStorageKey,expectedRaw=lastPersistedRaw,generation=cloudSessionGeneration;const selected=$('#snapshotSelect').value;if(!selected)return;const list=await listSafetySnapshots();const snap=list.find(item=>item.id===selected&&item.ownerScope===currentSnapshotOwner());if(!snap)return notify('Сохранённая копия этого дневника не найдена.');
@@ -1487,7 +1505,7 @@
       notify('Дневник изменился во время восстановления. Сохранённая копия не применена.');return;
     }
     try{const parsed=JSON.parse(snap.payload);const restored=normalizeData(parsed);data=restored;activeProgramId=restored.activeProgramId;activeWorkout=restored.activeWorkoutId||getWorkouts(activeProgramId)[0]?.id||'';storageWriteBlocked=false;storageReadFailure=null;
-      const ok=persist({snapshot:true,label:'После восстановления копии'});if(!ok)throw new Error('Не удалось сохранить восстановленные данные.');
+      const ok=await persistDurably({snapshot:true,label:'После восстановления копии'});if(!ok)throw new Error('Не удалось сохранить восстановленные данные.');
       $('#snapshotDialog').close();renderTraining();renderHistory();renderProgress();notify('Копия восстановлена.');
     }catch(error){data=oldData;activeProgramId=oldProgram;activeWorkout=oldWorkout;notify('Не удалось восстановить сохранённую копию. Текущие данные оставлены без изменений.');}
   }
