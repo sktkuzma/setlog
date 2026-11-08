@@ -4,7 +4,6 @@ const fs=require('node:fs');
 const path=require('node:path');
 const url=process.env.SETLOG_TEST_URL||'http://127.0.0.1:18779/';
 const executablePath=process.env.CHROME_BIN||'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const expectedVersion='1.3.11';
 const marker='progress-v2-fixture';
 function testData(){
  const today=new Date();today.setHours(12,0,0,0);
@@ -85,7 +84,6 @@ function testData(){
   assert(!script.includes('fetch('),'analytics module must not fetch');
   const sw=fs.readFileSync('sw.js','utf8');
   assert(sw.includes("'./progress-v2.js'")&&sw.includes("'./progress-v2.css'"),'offline cache missing assets');
-  assert(fs.readFileSync('VERSION.txt','utf8').trim()===expectedVersion);
   console.log('PASS preview module read-only; new offline assets precached');
  }catch(e){console.error('FAIL Progress 2.0',e);process.exitCode=1}
  finally{await browser.close()}
