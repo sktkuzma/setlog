@@ -32,6 +32,7 @@ jobs:
           version = pathlib.Path('VERSION.txt').read_text(encoding='utf-8').strip()
           tracked = [os.fsdecode(value) for value in subprocess.check_output(['git', 'ls-files', '-z']).split(b'\0') if value]
           update = ['app.js', 'sw.js', 'index.html', 'README.md', 'VERSION.txt', f'CHANGELOG_v{version}.md']
+          update += [name for name in ('progress-v2.js', 'progress-v2.css') if pathlib.Path(name).is_file()]
           for name, paths in [(f'SetLog-v{version}-full-restore.zip', tracked), (f'SetLog-v{version}-update-only.zip', update)]:
               with zipfile.ZipFile(name, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
                   for path in paths:
@@ -46,7 +47,32 @@ jobs:
           SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           if gh release view "v${SETLOG_VERSION}" >/dev/null 2>&1; then
-            echo "Release v${SETLOG_VERSION} already exists; not replacing its assets."
+            echo "Release v${SETLOG_VERSION} already exists; verifying update ZIP completeness."
+            mkdir -p /tmp/setlog-existing-release
+            if gh release download "v${SETLOG_VERSION}" --pattern "SetLog-v${SETLOG_VERSION}-update-only.zip" --dir /tmp/setlog-existing-release; then
+              if python3 - "/tmp/setlog-existing-release/SetLog-v${SETLOG_VERSION}-update-only.zip" <<'PY'
+          import pathlib, sys, zipfile
+          required = {name for name in ('progress-v2.js','progress-v2.css') if pathlib.Path(name).is_file()}
+          try:
+              with zipfile.ZipFile(sys.argv[1]) as archive:
+                  found = set(archive.namelist())
+              missing = required - found
+              if missing: print('Missing update-only files:', sorted(missing))
+              sys.exit(1 if missing else 0)
+          except Exception as error:
+              print('Update ZIP verification failed:', error)
+              sys.exit(1)
+          PY
+              then
+                echo "Existing update-only archive includes all required new modules."
+              else
+                echo "Repairing incomplete update-only archive; keeping full-restore ZIP and tag intact."
+                gh release upload "v${SETLOG_VERSION}" "SetLog-v${SETLOG_VERSION}-update-only.zip" --clobber
+              fi
+            else
+              echo "Update-only ZIP missing; attaching corrected archive."
+              gh release upload "v${SETLOG_VERSION}" "SetLog-v${SETLOG_VERSION}-update-only.zip" --clobber
+            fi
             exit 0
           fi
           gh release create "v${SETLOG_VERSION}" \
