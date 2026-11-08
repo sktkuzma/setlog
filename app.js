@@ -13,6 +13,7 @@
   const atomicLab=atomicLabRequested?new window.SetlogAtomicLab():null;
   if(atomicLab)window.__setlogAtomicLab=atomicLab;
   function showAtomicLabBlocked(message){
+    if(document.getElementById('atomicLabBlocked'))return;
     const wrap=document.createElement('div');
     wrap.id='atomicLabBlocked';
     wrap.style.cssText='position:fixed;inset:0;z-index:9999;background:#10150ffa;display:flex;align-items:center;justify-content:center;padding:24px;color:#e8f0df';
@@ -573,26 +574,34 @@
       const onDisk=localStorage.getItem(activeStorageKey);
       if(onDisk!==lastPersistedRaw){staleTabBlocked=true;clearTimeout(cloudSyncTimer);clearTimeout(cloudRetryTimer);setStorageStatus('Дневник изменён в другой вкладке. Обнови страницу, чтобы не потерять изменения.','error');notify('В другой вкладке появились изменения. Сохранение остановлено — обнови эту вкладку.');return false;}
       const nextRaw=JSON.stringify(data);
+      if(typeof atomicLab!=='undefined'&&atomicLab){
+        // Transactional laboratory path. IDB is committed first. localStorage mirrors only on tx completion.
+        const committedScope=activeStorageKey;
+        const confirmed=atomicLab.queuePrimary(committedScope,nextRaw);
+        setStorageStatus('Сохраняем в транзакционной базе…','pending');
+        confirmed.then(ack=>{
+          if(activeStorageKey!==committedScope)return;
+          lastPersistedRaw=ack.payload;
+          if(!staleTabBlocked){
+            setStorageStatus('Подтверждено транзакционной базой · хранится на устройстве','saved');
+            if(options.snapshot)void saveSafetySnapshot(options.label||'Транзакционно сохранено',ack.payload);
+            else scheduleSafetySnapshot();
+          }
+        }).catch(error=>{
+          if(activeStorageKey!==committedScope)return;
+          staleTabBlocked=true;
+          clearTimeout(cloudSyncTimer);clearTimeout(cloudRetryTimer);
+          setStorageStatus('Транзакция не подтверждена. Запись остановлена.','error');
+          notify('Не удалось подтвердить запись в транзакционной базе. Данные сохранены в доступных копиях.');
+          console.error('Atomic lab commit failed:',error);
+          showAtomicLabBlocked('Транзакционная запись прервана. Обе доступные копии можно скачать и сравнить.');
+        });
+        // Legacy callers use boolean persist(). Only explicit critical actions await confirmation.
+        return true;
+      }
       localStorage.setItem(activeStorageKey,nextRaw);
       lastPersistedRaw=nextRaw;
-      if(typeof atomicLab!=='undefined'&&atomicLab){
-        const journalScope=activeStorageKey;
-        atomicLab.queueDiary(journalScope,onDisk,nextRaw)
-          .then(()=>{
-            if(activeStorageKey===journalScope&&lastPersistedRaw===nextRaw&&!staleTabBlocked)
-              setStorageStatus('Сохранено на устройстве и в транзакционной копии','saved');
-          })
-          .catch(error=>{
-            if(activeStorageKey!==journalScope)return;
-            staleTabBlocked=true;
-            clearTimeout(cloudSyncTimer);clearTimeout(cloudRetryTimer);
-            setStorageStatus('Не удалось записать защитную копию. Дальнейшее сохранение приостановлено.','error');
-            notify('Ошибка транзакционной копии. Локальный дневник сохранён; не закрывай страницу без резервной копии.');
-            console.error('SetLog atomic lab journal failed:',error);
-          });
-      }
       if(cloudSession&&!navigator.onLine){setStorageStatus('Сохранено на устройстве · ждёт отправки','pending');setCloudMessage('Нет интернета. Изменения сохранены на устройстве и отправятся автоматически после восстановления связи.','pending');}else if(!cloudSession||!cloudReady) setStorageStatus('Сохранено на этом устройстве.','saved');
-      if(typeof atomicLab!=='undefined'&&atomicLab)setStorageStatus('Сохранено локально · подтверждаем транзакционную копию','pending');
       if(options.snapshot) saveSafetySnapshot(options.label||'Сохранённая копия'); else scheduleSafetySnapshot();
       if((typeof atomicLab==='undefined'||!atomicLab)&&!cloudApplying) scheduleCloudSync();
       return true;
@@ -743,23 +752,47 @@
     const e1rm=e1rmCandidates.length?Math.max(...e1rmCandidates):null;
     return {exerciseId:ex.catalogId||ex.id,exerciseCatalogId:ex.catalogId||ex.id,placementExerciseId:ex.id,exerciseName:ex.name,muscle:ex.muscle||'',target:ex.target||'',weight,sets:setResults.length,reps,setResults,rir:d.rir===''||d.rir===undefined?null:Number(d.rir),notes:(d.notes||'').trim(),e1rm:e1rm?Math.round(e1rm*10)/10:null,volume:Math.round(volume*10)/10};
   }
-  function saveWorkoutDraft(){
+  async function confirmDurableAtomicWrite(){
+    if(!atomicLab)return true;
+    try{
+      const ack=await atomicLab.flush();
+      if(!atomicLab.ready||atomicLab.blocked||!ack||ack.payload!==lastPersistedRaw)
+        throw new Error('No durable acknowledgment matching the current local copy');
+      return true;
+    }catch(error){
+      setStorageStatus('Сохранение остановлено — проверь резервные копии.','error');
+      notify('Невозможно подтвердить сохранение. Тестовый дневник заблокирован до проверки копий.');
+      console.error('Atomic lab durability confirmation failed:',error);
+      return false;
+    }
+  }
+  async function saveWorkoutDraft(){
     if(historyEditContext){if(persistHistoryEditContext())notify('Черновик доработки сохранён локально. Историческая запись пока не изменена.');return;}
     ensureDraft();if(!persist({snapshot:false}))return;
+    if(!await confirmDurableAtomicWrite())return;
     notify('Черновик сохранён. Тренировка остаётся открытой и не добавляется в историю.');
   }
-  function finishWorkout(){
+  async function finishWorkout(){
     if(historyEditContext){applyHistoryEdit();return;}
     const draft=ensureDraft();const entries=[];
     for(const ex of getExercises()){const entry=entryFromDraft(ex,draft[ex.id]||{});if(entry)entries.push(entry);}
     if(!entries.length){notify('Сначала внеси вес или повторы хотя бы в одно упражнение.');return;}
     if(!confirm(`Закончить тренировку и сохранить в историю ${entries.length} ${plural(entries.length,'упражнение','упражнения','упражнений')}? После завершения начнётся пустой черновик.`))return;
+    const finishButton=$('#finishWorkoutBtn');
+    if(atomicLab&&finishButton.disabled)return;
+    if(atomicLab)finishButton.disabled=true;
+    try{
     const wk=getWorkout();const p=currentProgram();const key=draftKey();const oldDraft=JSON.parse(JSON.stringify(data.drafts[key]||{}));
     const session={id:uid(),date:currentDate(),programId:activeProgramId,programName:p.name,workout:activeWorkout,workoutName:wk?.name||'Тренировка',savedAt:Date.now(),entries};
     data.history.push(session);delete data.drafts[key];
-    if(!persist({snapshot:true,label:'Завершена тренировка'})){data.history=data.history.filter(item=>item.id!==session.id);data.drafts[key]=oldDraft;return;}
+    if(!persist({snapshot:true,label:'Завершена тренировка'})||!await confirmDurableAtomicWrite()){
+      data.history=data.history.filter(item=>item.id!==session.id);data.drafts[key]=oldDraft;return;
+    }
     const detailDialog=$('#exerciseDetailDialog');if(detailDialog?.open)detailDialog.close();currentDetailExerciseId=null;
     renderTraining();renderHistory();renderProgress();notify(`Тренировка завершена. В историю добавлено ${entries.length} ${plural(entries.length,'упражнение','упражнения','упражнений')}.`);
+    }finally{
+      if(atomicLab)finishButton.disabled=false;
+    }
   }
   function renderSettings(){
     const container=$('#settingsProgramsList');if(!container)return;
@@ -1766,7 +1799,22 @@
     if(!navigator.onLine){setStorageStatus('Сохранено на устройстве · ждёт отправки','pending');setCloudMessage('Нет интернета. Изменения отправятся автоматически после восстановления связи.','pending');return;}
     cloudSyncInFlight=true;cloudSyncRequested=false;
     const userId=cloudSession.user.id;const generation=cloudSessionGeneration;const expectedRevision=cloudRevision;
-    const payload=JSON.parse(JSON.stringify(data));payload.schemaVersion=DATA_SCHEMA_VERSION;payload.version=DATA_SCHEMA_VERSION;
+    let payload;
+    if(typeof atomicLab!=='undefined'&&atomicLab){
+      try{
+        const scopeAtStart=activeStorageKey;
+        const envelope=await atomicLab.verifiedCloudPayload(scopeAtStart,lastPersistedRaw);
+        if(!sessionCurrent(generation,userId)||scopeAtStart!==activeStorageKey)return;
+        payload=envelope.payload;
+      }catch(error){
+        cloudSyncInFlight=false;
+        cloudPaused=true;
+        setCloudMessage('Локальная транзакция ещё не подтверждена. Отправка в облако остановлена.','error');
+        console.error('Cloud upload blocked by durable storage gate:',error);
+        return;
+      }
+    }else payload=JSON.parse(JSON.stringify(data));
+    payload.schemaVersion=DATA_SCHEMA_VERSION;payload.version=DATA_SCHEMA_VERSION;
     try{
       const {data:result,error}=await cloudClient.rpc('save_setlog_state',{p_payload:payload,p_expected_revision:expectedRevision});
       if(!sessionCurrent(generation,userId)||staleTabBlocked)return;
@@ -2073,6 +2121,14 @@
   window.addEventListener('storage',event=>{if(event.key===activeStorageKey&&event.newValue!==lastPersistedRaw){staleTabBlocked=true;clearTimeout(cloudSyncTimer);clearTimeout(cloudRetryTimer);setStorageStatus('Дневник обновлён в другой вкладке. Перезагрузи страницу перед продолжением.','error');}});
   window.addEventListener('offline',()=>{if(cloudSession){setStorageStatus('Нет интернета · изменения сохранены на устройстве','pending');setCloudMessage('Нет интернета. Изменения сохранены на устройстве и автоматически отправятся, когда связь восстановится.','pending');}});
   window.addEventListener('online',()=>{clearTimeout(cloudRetryTimer);cloudRetryTimer=null;cloudRetryDelay=5000;if(cloudSession&&cloudReady&&!cloudPaused){setCloudMessage('Связь восстановлена. Сохраняем изменения в облаке…','pending');scheduleCloudSync(250);}else if(cloudSession&&!cloudReady){handleCloudSession(cloudSession).catch(error=>console.error('Cloud reconnection failed:',error));}else if(!cloudClient){setStorageStatus('Связь восстановлена · подключаем облако…','pending');initializeSupabaseCloud().catch(error=>{console.error('Cloud reconnect failed:',error);setCloudMessage('Не удалось подключиться к облаку. Дневник сохранён на устройстве; попробуй ещё раз.','warning');});}});
+  if(atomicLab){
+    window.addEventListener('beforeunload',event=>{
+      if(atomicLab.hasPending()){
+        event.preventDefault();
+        event.returnValue='';
+      }
+    });
+  }
   async function bootSetLog(){
     if(typeof atomicLab!=='undefined'&&atomicLab){
       let raw;
@@ -2085,6 +2141,10 @@
       banner.style.cssText='max-width:720px;margin:8px auto 0;padding:9px 16px;border:1px solid #556d3d;border-radius:10px;background:#2b3820;color:#d8efb8;font:11px Manrope,system-ui,sans-serif;text-align:center';
       banner.textContent='СЕТ · ЛАБОРАТОРИЯ ХРАНЕНИЯ · только тестовые данные · Supabase отключён';
       document.querySelector('.topbar')?.after(banner);
+      // Test accounts are deliberately unavailable; do not use production Supabase from this page.
+      for(const name of ['accountBtn','settingsAccountBtn','cloudSyncNowBtn','cloudUploadLocalBtn','cloudReloadBtn','importBtn','importFile']){
+        const element=document.getElementById(name);if(element){element.hidden=true;element.disabled=true;element.style.display='none';}
+      }
       window.addEventListener('pagehide',()=>atomicLab.close(),{once:true});
     }
     await initializeApp();

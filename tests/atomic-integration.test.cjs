@@ -77,7 +77,7 @@ const pExec=(page,src)=>page.evaluate(src);
   assert.equal(afterInput.diary.drafts[Object.keys(afterInput.diary.drafts).find(x=>x.includes('w-2'))]['place-bench-2'].sets[0].weight,'82.5');
   assert.equal(afterInput.copy.payload,JSON.stringify(afterInput.diary),'entered working set must be journaled');
   a.on('dialog',async dlg=>dlg.accept());
-  await a.locator('#finishWorkoutBtn').click();
+  await a.evaluate(()=>{const btn=document.getElementById('finishWorkoutBtn');btn.click();btn.click();});
   await a.waitForFunction(()=>JSON.parse(localStorage.getItem('setlog-pwa-v1')).history.length===2);
   await a.evaluate(()=>window.__setlogAtomicLab.flush());
   const finished=await pExec(a,async()=>({

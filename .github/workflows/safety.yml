@@ -18,6 +18,8 @@ jobs:
         run: |
           node --check app.js
           node --check sw.js
+          node --check storage-lab-bridge.js
+          node --check atomic-storage-prototype.js
       - name: Public README and version metadata
         run: node tests/version.test.cjs
       - name: Safety regression tests
@@ -39,6 +41,7 @@ jobs:
           node tests/browser-recovery.cjs
           node tests/progress-v2.test.cjs
           SETLOG_ATOMIC_URL=http://127.0.0.1:18779/ node tests/atomic-integration.test.cjs
+          SETLOG_ATOMIC_URL=http://127.0.0.1:18779/ node tests/atomic-idb-first.test.cjs
           SETLOG_OFFLINE_URL=http://localhost:18779/ node tests/progress-v2-offline.test.cjs
       - name: Source and asset integrity
         run: |
