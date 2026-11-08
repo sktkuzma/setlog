@@ -35,6 +35,8 @@ jobs:
           node tests/browser-smoke.cjs
           node tests/browser-history.cjs
           node tests/browser-recovery.cjs
+          node tests/progress-v2.test.cjs
+          SETLOG_OFFLINE_URL=http://localhost:18779/ node tests/progress-v2-offline.test.cjs
       - name: Source and asset integrity
         run: |
           git diff --exit-code -- style.css

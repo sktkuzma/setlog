@@ -1,0 +1,22 @@
+/* СЕТ Progress 2.0 · analytics UI extensions only. */
+/* Local-only СЕТ Progress 2.0 prototype: overlays original typography/palette. */
+.preview-controls{display:grid;grid-template-columns:1.35fr 1fr;gap:9px;margin:0 0 14px}
+.preview-controls label{font:9px 'DM Mono',monospace;letter-spacing:.08em;color:var(--muted)}
+.preview-controls select{width:100%;height:43px;margin-top:7px;padding:8px 10px;background:var(--panel);border:1px solid var(--line);border-radius:9px;color:var(--text);font:12px Manrope,sans-serif;min-width:0}
+.preview-panel{margin-top:13px;padding:17px 14px;background:var(--panel);border:1px solid var(--line);border-radius:15px}
+.preview-heading h3{font-size:17px;letter-spacing:-.03em;margin:5px 0 14px}
+.preview-muted{font-size:11px;color:var(--muted);padding:8px 0}
+.preview-compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.preview-stat{background:#171a15;border:1px solid #343c2c;padding:12px;border-radius:9px;min-width:0}
+.preview-stat span{display:block;font:9px 'DM Mono',monospace;letter-spacing:.07em;color:var(--muted)}
+.preview-stat strong{display:block;margin-top:7px;color:var(--text);font-size:18px;line-height:1.3;overflow-wrap:anywhere}
+.preview-stat small{display:block;margin-top:4px;font-size:10px;color:var(--muted)}
+.preview-delta{font:11px 'DM Mono',monospace;margin-top:10px;padding:11px 12px;background:rgba(200,241,105,.05);border:1px solid #475e39;border-radius:9px;color:var(--lime)}
+.preview-record-grid,.preview-rep-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.preview-record-grid .preview-stat strong{font-size:14px;color:var(--lime)}
+.preview-rep-grid{margin-top:8px}
+.preview-rep-grid .preview-stat strong{font-size:14px}
+.preview-notes{font-size:11px;line-height:1.7;color:#a5ad9b;margin:18px 2px 8px}
+@media(max-width:380px){.preview-controls select{font-size:11px}.preview-record-grid .preview-stat strong{font-size:12px}.preview-rep-grid .preview-stat strong{font-size:12px}.preview-panel{padding:13px 10px}.preview-stat{padding:10px 8px}}
+
+/* Keep the demo indicator out of the analytics viewport. */
