@@ -38,6 +38,7 @@ jobs:
           node tests/browser-history.cjs
           node tests/browser-recovery.cjs
           node tests/progress-v2.test.cjs
+          SETLOG_ATOMIC_URL=http://127.0.0.1:18779/ node tests/atomic-integration.test.cjs
           SETLOG_OFFLINE_URL=http://localhost:18779/ node tests/progress-v2-offline.test.cjs
       - name: Source and asset integrity
         run: |
