@@ -39,6 +39,20 @@
     }
     backupButton('Локальная копия','setlog-lab-local-backup.json',()=>localStorage.getItem(activeStorageKey));
     backupButton('Транзакционная копия','setlog-lab-atomic-backup.json',async()=> (await window.SetlogAtomicStorage.read(activeStorageKey))?.payload);
+    const historyEditRaw=localStorage.getItem(historyEditStorageKey());
+    if(historyEditRaw!==null){
+      backupButton('Черновик истории','setlog-lab-history-edit.json',()=>localStorage.getItem(historyEditStorageKey()));
+    }
+    // A failed compatibility mirror may be missing the most recent history edit.
+    // Offer the durable edit draft separately; never silently overwrite the local copy.
+    if(typeof atomicLab!=='undefined'&&atomicLab&&window.SetlogAtomicStorage?.read){
+      void window.SetlogAtomicStorage.read(activeStorageKey).then(item=>{
+        if(item?.historyEditRaw!==null&&item?.historyEditRaw!==undefined){
+          backupButton('Транзакционный черновик истории','setlog-lab-durable-history-edit.json',
+            async()=> (await window.SetlogAtomicStorage.read(activeStorageKey))?.historyEditRaw);
+        }
+      }).catch(error=>console.warn('Unable to inspect durable edit backup',error));
+    }
     panel.append(title,explanation,foot,actions);wrap.append(panel);document.body.append(wrap);
   }
   const DEFAULT_PROGRAM_ID = 'program-main';
@@ -427,6 +441,22 @@
 
     if(!historyEditContext)return false;
     if(staleTabBlocked)return false;
+    if(typeof atomicLab!=='undefined'&&atomicLab){
+      const raw=JSON.stringify(historyEditContext);
+      setStorageStatus('Сохраняем черновик истории в транзакционной базе…','pending');
+      return atomicLab.queueHistoryEdit(activeStorageKey,raw).then(ack=>{
+        historyEditLastRaw=ack.historyEditRaw;
+        if(!atomicLab.blocked)setStorageStatus('Черновик истории подтверждён транзакцией','saved');
+        return true;
+      }).catch(error=>{
+        staleTabBlocked=true;
+        console.error('Atomic history-edit save failed:',error);
+        setStorageStatus('Не удалось сохранить черновик истории. Запись остановлена.','error');
+        showAtomicLabBlocked('Ошибка транзакционной записи черновика истории. Доступные копии не перезаписаны.');
+        if(showError)notify('Черновик истории не сохранён. Не закрывай страницу без резервной копии.');
+        return false;
+      });
+    }
     try{
       const key=historyEditStorageKey(),stored=localStorage.getItem(key);
       if(stored!==historyEditLastRaw){
@@ -441,6 +471,16 @@
     catch(error){console.error('Could not save history-edit draft:',error);if(showError)notify('Не удалось сохранить черновик доработки истории. Историческая запись не изменена. Освободи место и попробуй снова.');return false;}
   }
   function clearHistoryEditContext(){
+    if(typeof atomicLab!=='undefined'&&atomicLab){
+      if(!atomicLab.ready||!atomicLab.writer||atomicLab.blocked)return Promise.resolve(false);
+      return atomicLab.queueHistoryEdit(activeStorageKey,null).then(()=>{
+        historyEditLastRaw=null;historyEditContext=null;return true;
+      }).catch(error=>{
+        staleTabBlocked=true;console.error('Atomic history-edit clear failed:',error);
+        showAtomicLabBlocked('Не удалось безопасно очистить черновик истории.');
+        return false;
+      });
+    }
     if(typeof atomicLab!=='undefined'&&atomicLab&&(!atomicLab.ready||!atomicLab.writer||atomicLab.blocked))return false;
 
     try{
@@ -577,7 +617,7 @@
       if(typeof atomicLab!=='undefined'&&atomicLab){
         // Transactional laboratory path. IDB is committed first. localStorage mirrors only on tx completion.
         const committedScope=activeStorageKey;
-        const confirmed=atomicLab.queuePrimary(committedScope,nextRaw);
+        const confirmed=atomicLab.queuePrimary(committedScope,nextRaw,{clearHistoryEdit:options.clearHistoryEdit===true});
         setStorageStatus('Сохраняем в транзакционной базе…','pending');
         confirmed.then(ack=>{
           if(activeStorageKey!==committedScope)return;
@@ -767,7 +807,7 @@
     }
   }
   async function saveWorkoutDraft(){
-    if(historyEditContext){if(persistHistoryEditContext())notify('Черновик доработки сохранён локально. Историческая запись пока не изменена.');return;}
+    if(historyEditContext){if(await persistHistoryEditContext())notify('Черновик доработки подтверждён. Историческая запись пока не изменена.');return;}
     ensureDraft();if(!persist({snapshot:false}))return;
     if(!await confirmDurableAtomicWrite())return;
     notify('Черновик сохранён. Тренировка остаётся открытой и не добавляется в историю.');
@@ -1202,7 +1242,8 @@
   }
   function importData(file){
     const ownerScope=activeStorageKey,expectedRaw=lastPersistedRaw,generation=cloudSessionGeneration;
-    const reader=new FileReader();reader.onload=async()=>{
+    if(atomicLab&&historyEditContext){notify('Сначала заверши или отмени доработку истории, затем импортируй дневник.');return;}
+    const reader=new FileReader();reader.onload=async()=>runDurableAction(async()=>{
       try{
         const imported=JSON.parse(reader.result);if(!isRestorableDiary(imported))throw new Error('bad');
         if(!confirm(`Восстановление заменит текущий дневник данными из выбранного файла. В копии ${imported.history.length} тренировок. Текущий дневник сначала будет сохранён отдельно. Продолжить?`))return;
@@ -1212,10 +1253,10 @@
           notify('Дневник изменился во время импорта. Файл не применён; обнови страницу и попробуй снова.');return;
         }
         data=normalizeData(imported);activeProgramId=data.activeProgramId;activeWorkout=(getWorkouts(activeProgramId).find(w=>w.id===data.activeWorkoutId)||getWorkouts(activeProgramId)[0]||{}).id||'';storageWriteBlocked=false;storageReadFailure=null;
-        if(!persist({snapshot:true,label:'После восстановления из файла'})){data=oldData;activeProgramId=oldProgram;activeWorkout=oldWorkout;storageWriteBlocked=oldBlocked;return;}
+        if(!await persistDurably({snapshot:true,label:'После восстановления из файла'})){data=oldData;activeProgramId=oldProgram;activeWorkout=oldWorkout;storageWriteBlocked=oldBlocked;return;}
         renderTraining();renderHistory();renderProgress();notify('Данные импортированы и сохранены.');
       }catch(e){notify('Не удалось открыть эту резервную копию. Текущие данные оставлены без изменений.');}
-    };reader.onerror=()=>notify('Не удалось прочитать выбранный файл.');reader.readAsText(file);
+    });reader.onerror=()=>notify('Не удалось прочитать выбранный файл.');reader.readAsText(file);
   }
   async function addCustomExercise(){return runDurableAction(async()=>{
     const name=$('#customExerciseName').value.trim();if(!name)return;const wk=getWorkout();if(!wk)return;
@@ -1321,30 +1362,36 @@
       exercises,draft,startedAt:Date.now()
     };
   }
-  function beginHistoryEdit(sessionId){
+  async function beginHistoryEdit(sessionId){return runDurableAction(async()=>{
     if(historyEditContext)return notify('Сначала закончи или отмени текущую доработку истории.');
     if(historyEditLastRaw)return notify('На устройстве есть черновик истории, который не удалось открыть. Он не перезаписан. Сначала сохрани резервную копию данных и восстанови черновик.');
     const session=data.history.find(item=>item.id===sessionId);if(!session)return notify('Не удалось найти эту запись истории. Обнови список и попробуй ещё раз.');
     if(!Array.isArray(session.entries)||!session.entries.length)return notify('В этой записи нет упражнений для доработки.');
-    ensureDraft();if(!persist({snapshot:false}))return;
+    ensureDraft();if(!await persistDurably({snapshot:false}))return;
     const context=buildHistoryEditContext(session);
     historyEditContext=context;
-    if(!persistHistoryEditContext()){historyEditContext=null;return;}
+    if(!await persistHistoryEditContext()){historyEditContext=null;return;}
     const detail=$('#exerciseDetailDialog');if(detail?.open)detail.close();currentDetailExerciseId=null;
     $('#workoutDate').value=context.date;switchView('training');renderTraining();
     notify('Открыта доработка истории. Текущий черновик тренировки сохранён отдельно.');
+    });
   }
-  function cancelHistoryEdit(){
+  async function cancelHistoryEdit(){return runDurableAction(async()=>{
     if(!historyEditContext)return;
     if(!confirm('Отменить доработку? Историческая запись останется без изменений, а текущий черновик вернётся на экран.'))return;
-    const returnState=historyEditContext.returnState||{};if(!clearHistoryEditContext())return;
+    const returnState=historyEditContext.returnState||{};if(!await clearHistoryEditContext())return;
     if(data.programs.some(item=>item.id===returnState.programId))activeProgramId=returnState.programId;
     if(getWorkouts(activeProgramId).some(item=>item.id===returnState.workoutId))activeWorkout=returnState.workoutId;
     $('#workoutDate').value=returnState.date||todayISO();$('#todayLabel').textContent=dateFmt($('#workoutDate').value).toUpperCase();
     const detail=$('#exerciseDetailDialog');if(detail?.open)detail.close();currentDetailExerciseId=null;
     renderTraining();switchView('training');notify('Доработка отменена. Текущий черновик восстановлен.');
+    });
   }
   async function applyHistoryEdit(){return runDurableAction(async()=>{
+    if(atomicLab){
+      try{await atomicLab.flush();}
+      catch(error){notify('Последние изменения черновика истории не сохранены. Доработка не применена.');return;}
+    }
     const ctx=historyEditContext;if(!ctx)return;
     try{
       if(staleTabBlocked||localStorage.getItem(historyEditStorageKey())!==historyEditLastRaw){
@@ -1374,8 +1421,8 @@
     if(!entries.length){notify('Нельзя сохранить пустую тренировку. Заполни хотя бы один подход.');return;}
     const updatedSession={...current,entries,editedAt:Date.now()};
     data.history[index]=updatedSession;
-    if(!await persistDurably({snapshot:true,label:'Изменена историческая тренировка'})){data.history[index]=current;return;}
-    const returnState=ctx.returnState||{};if(!clearHistoryEditContext())return;
+    if(!await persistDurably({snapshot:true,label:'Изменена историческая тренировка',clearHistoryEdit:!!atomicLab})){data.history[index]=current;return;}
+    const returnState=ctx.returnState||{};if(atomicLab){historyEditLastRaw=null;historyEditContext=null;}else if(!clearHistoryEditContext())return;
     if(data.programs.some(item=>item.id===returnState.programId))activeProgramId=returnState.programId;
     if(getWorkouts(activeProgramId).some(item=>item.id===returnState.workoutId))activeWorkout=returnState.workoutId;
     $('#workoutDate').value=returnState.date||todayISO();$('#todayLabel').textContent=dateFmt($('#workoutDate').value).toUpperCase();
@@ -1497,7 +1544,7 @@
     });
   }
   async function fillSnapshotDialog(){const snapshots=await listSafetySnapshots();const select=$('#snapshotSelect');select.innerHTML=snapshots.map(item=>`<option value="${safe(item.id)}">${safe(new Date(item.createdAt).toLocaleString('ru-RU'))} — ${safe(item.label)}</option>`).join('');$('#snapshotEmpty')?.classList.toggle('hidden',snapshots.length>0);$('#restoreSelectedSnapshotBtn').disabled=snapshots.length===0;await updateBackupStatus();}
-  async function restoreSelectedSnapshot(){
+  async function restoreSelectedSnapshot(){return runDurableAction(async()=>{
     const ownerScope=activeStorageKey,expectedRaw=lastPersistedRaw,generation=cloudSessionGeneration;const selected=$('#snapshotSelect').value;if(!selected)return;const list=await listSafetySnapshots();const snap=list.find(item=>item.id===selected&&item.ownerScope===currentSnapshotOwner());if(!snap)return notify('Сохранённая копия этого дневника не найдена.');
     if(!isRestorableDiary((()=>{try{return JSON.parse(snap.payload);}catch(error){return null;}})()))return notify('Резервная копия повреждена. Текущий дневник не изменён.');if(!confirm(`Вернуть дневник к состоянию от ${new Date(snap.createdAt).toLocaleString('ru-RU')} («${snap.label}»)? Текущая копия тоже будет сохранена.`))return;
     const oldData=data,oldProgram=activeProgramId,oldWorkout=activeWorkout;const currentCopySaved=await saveSafetySnapshot('Перед восстановлением копии');if(!currentCopySaved){notify('Не удалось сохранить текущую копию. Восстановление отменено; освободи место и попробуй снова.');return;}
@@ -1508,6 +1555,7 @@
       const ok=await persistDurably({snapshot:true,label:'После восстановления копии'});if(!ok)throw new Error('Не удалось сохранить восстановленные данные.');
       $('#snapshotDialog').close();renderTraining();renderHistory();renderProgress();notify('Копия восстановлена.');
     }catch(error){data=oldData;activeProgramId=oldProgram;activeWorkout=oldWorkout;notify('Не удалось восстановить сохранённую копию. Текущие данные оставлены без изменений.');}
+    });
   }
   // Supabase cloud storage: one revisioned JSON document per authenticated account.
   const CLOUD_META_PREFIX = 'setlog-cloud-meta-v1:';

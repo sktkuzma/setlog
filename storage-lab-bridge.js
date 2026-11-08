@@ -20,6 +20,8 @@
       this._release=null;
       this.scope=null;
       this.mirrorRaw=null;
+      this.editMirrorRaw=null;
+      this.editKey=null;
       this._lockPromise=null;
     }
 
@@ -44,6 +46,9 @@
       try{
         this.scope=scope;
         this.mirrorRaw=raw??null;
+        this.editKey=scope+':history-edit-v1';
+        this.editMirrorRaw=root.localStorage.getItem(this.editKey);
+        if(this.editMirrorRaw!==null)api.validateEdit(this.editMirrorRaw);
         const current=await api.read(scope);
         if(raw!==null&&raw!==undefined){
           api.parsePayload(raw);
@@ -56,8 +61,24 @@
           this.blocked=true;
           return {ok:false,reason:'missing-local',message:'Локальная копия отсутствует, но транзакционная осталась. Восстановление только вручную.'};
         }
+        let confirmed=await api.read(scope);
+        if(confirmed){
+          if(!Object.prototype.hasOwnProperty.call(confirmed,'historyEditRaw')){
+            const migrated=await api.migrateEdit(scope,confirmed.revision,confirmed.payload,this.editMirrorRaw);
+            if(!migrated.ok)throw new Error('History edit migration conflict');
+            confirmed=await api.read(scope);
+          }
+          if((confirmed.historyEditRaw??null)!==this.editMirrorRaw){
+            this.blocked=true;
+            return {ok:false,reason:'history-edit-diverged',
+              message:'Черновик редактирования истории отличается от транзакционной копии. Автоматическое восстановление заблокировано.'};
+          }
+        }else if(this.editMirrorRaw!==null){
+          this.blocked=true;
+          return {ok:false,reason:'orphan-history-edit',message:'Есть черновик доработки истории, но нет дневника. Автоматическая миграция остановлена.'};
+        }
         this.ready=true;
-        return {ok:true,revision:current?.revision||0};
+        return {ok:true,revision:confirmed?.revision||0};
       }catch(error){
         this.blocked=true;
         this.error=error;
@@ -65,7 +86,7 @@
       }
     }
 
-    queuePrimary(scope,nextRaw){
+    queuePrimary(scope,nextRaw,options={}){
       if(!this.ready||!this.writer||this.blocked||scope!==this.scope)
         return Promise.reject(new Error('Transactional writer unavailable'));
       api.parsePayload(nextRaw);
@@ -96,7 +117,14 @@
         }
         if(current.payload!==this.mirrorRaw)
           throw new Error('Durable and compatibility copies diverged');
-        const saved=await api.commit(scope,current.revision,nextRaw);
+        const clearEdit=options.clearHistoryEdit===true;
+        if(clearEdit&&root.localStorage.getItem(this.editKey)!==this.editMirrorRaw)
+          throw new Error('History-edit mirror changed before finishing edited session');
+        if((current.historyEditRaw??null)!==this.editMirrorRaw)
+          throw new Error('History-edit copy diverged before committing diary');
+        const saved=clearEdit
+          ?await api.commitWithEdit(scope,current.revision,nextRaw,this.editMirrorRaw,null)
+          :await api.commit(scope,current.revision,nextRaw);
         if(!saved.ok)throw new Error('Transactional commit rejected: '+saved.reason);
 
         // IDB transaction.oncomplete happened before this line.
@@ -104,6 +132,12 @@
           throw new Error('Legacy localStorage changed during committed transaction');
         root.localStorage.setItem(scope,nextRaw);
         this.mirrorRaw=nextRaw;
+        if(clearEdit){
+          if(root.localStorage.getItem(this.editKey)!==this.editMirrorRaw)
+            throw new Error('History-edit mirror modified after durable commit');
+          root.localStorage.removeItem(this.editKey);
+          this.editMirrorRaw=null;
+        }
         return {revision:saved.revision,payload:nextRaw};
       });
       this.pending=operation.then(
@@ -116,6 +150,39 @@
           throw error;
         }
       );
+      return this.pending;
+    }
+
+    queueHistoryEdit(scope,raw){
+      if(!this.ready||!this.writer||this.blocked||scope!==this.scope)
+        return Promise.reject(new Error('History-edit writer unavailable'));
+      api.validateEdit(raw);
+      this.pendingCount+=1;
+      const operation=this.pending.then(async()=>{
+        if(!this.writer||this.blocked||scope!==this.scope)
+          throw new Error('History-edit writer lost its account lock');
+        if(root.localStorage.getItem(this.editKey)!==this.editMirrorRaw)
+          throw new Error('History-edit localStorage changed in another tab');
+        const stored=await api.read(scope);
+        if(!stored||stored.payload!==this.mirrorRaw||
+          (stored.historyEditRaw??null)!==this.editMirrorRaw)
+          throw new Error('History edit or diary copy diverged');
+        if(raw===this.editMirrorRaw)return {revision:stored.revision,historyEditRaw:raw};
+        const written=await api.commitEdit(scope,stored.revision,this.editMirrorRaw,raw);
+        if(!written.ok)throw new Error('History edit transaction rejected: '+written.reason);
+        if(root.localStorage.getItem(this.editKey)!==this.editMirrorRaw)
+          throw new Error('History-edit mirror changed during the transaction');
+        if(raw===null)root.localStorage.removeItem(this.editKey);
+        else root.localStorage.setItem(this.editKey,raw);
+        this.editMirrorRaw=raw;
+        return {revision:written.revision,historyEditRaw:raw};
+      });
+      this.pending=operation.then(value=>{this.pendingCount-=1;return value},
+        error=>{
+          this.pendingCount-=1;this.blocked=true;this.error=error;
+          if(typeof this.onJournalError==='function')this.onJournalError(error,scope);
+          throw error;
+        });
       return this.pending;
     }
 

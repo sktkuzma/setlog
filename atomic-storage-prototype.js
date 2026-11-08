@@ -32,8 +32,30 @@
     if(!Array.isArray(parsed.history)||!Array.isArray(parsed.programs))throw new Error('Invalid diary schema');
     return parsed;
   }
-  function record(scope,revision,payload){
-    return {scope,revision,payload,updatedAt:Date.now()};
+  function record(scope,revision,payload,historyEditRaw=null){
+    return {scope,revision,payload,historyEditRaw,updatedAt:Date.now()};
+  }
+  function editValue(current){return current?.historyEditRaw??null}
+  function validateEdit(raw){
+    if(raw===null)return null;
+    if(typeof raw!=='string')throw new Error('Invalid history edit raw');
+    const ctx=JSON.parse(raw);
+    if(!ctx||typeof ctx!=='object'||Array.isArray(ctx)||!ctx.sessionId||
+      !ctx.originalSession||!Array.isArray(ctx.exercises)||!ctx.draft||
+      typeof ctx.draft!=='object'||Array.isArray(ctx.draft))
+      throw new Error('Invalid history edit context');
+    return ctx;
+  }
+  function keepPrior(revisions,scope,nextRevision,previous){
+    revisions.put({id:scope+'::'+nextRevision,scope,revision:nextRevision,
+      previousRevision:previous.revision,previousPayload:previous.payload,
+      previousHistoryEditRaw:editValue(previous),createdAt:Date.now()});
+    const history=revisions.getAll();
+    history.onsuccess=()=>{
+      const relevant=(history.result||[]).filter(item=>item.scope===scope)
+        .sort((a,b)=>b.revision-a.revision);
+      for(const stale of relevant.slice(MAX_REVISIONS))revisions.delete(stale.id);
+    };
   }
   function txn(db,scope,action){
     return new Promise((resolve,reject)=>{
@@ -78,17 +100,48 @@
       if(!current)return {ok:false,reason:'missing',revision:null};
       if(current.revision!==expectedRevision)
         return {ok:false,reason:'conflict',revision:current.revision};
-      const next=record(scope,current.revision+1,newRaw);
-      // Keep a rollback copy in the *same* durable transaction.
-      revisions.put({id:scope+'::'+next.revision,scope,revision:next.revision,
-        previousRevision:current.revision,previousPayload:current.payload,createdAt:Date.now()});
+      const next=record(scope,current.revision+1,newRaw,editValue(current));
+      keepPrior(revisions,scope,next.revision,current);
       diaries.put(next);
-      const history=revisions.getAll();
-      history.onsuccess=()=>{
-        const relevant=(history.result||[]).filter(item=>item.scope===scope)
-          .sort((a,b)=>b.revision-a.revision);
-        for(const stale of relevant.slice(MAX_REVISIONS))revisions.delete(stale.id);
-      };
+      return {ok:true,revision:next.revision};
+    }));
+  }
+  // An edit draft and its diary share one IndexedDB record and one revision.
+  // Legacy records from prior lab versions had no historyEditRaw property.
+  async function migrateEdit(scope,expectedRevision,expectedPayload,editRaw,dbName=NAME){
+    assertScope(scope);validateEdit(editRaw);
+    return withDB(dbName,db=>txn(db,scope,({diaries,revisions},current)=>{
+      if(!current||current.revision!==expectedRevision||current.payload!==expectedPayload)
+        return {ok:false,reason:'conflict'};
+      if(Object.prototype.hasOwnProperty.call(current,'historyEditRaw'))
+        return {ok:editValue(current)===editRaw,reason:editValue(current)===editRaw?null:'conflict',revision:current.revision};
+      const next=record(scope,current.revision+1,current.payload,editRaw);
+      keepPrior(revisions,scope,next.revision,current);
+      diaries.put(next);
+      return {ok:true,revision:next.revision};
+    }));
+  }
+  async function commitEdit(scope,expectedRevision,expectedEditRaw,nextEditRaw,dbName=NAME){
+    assertScope(scope);validateEdit(expectedEditRaw);validateEdit(nextEditRaw);
+    if(!Number.isSafeInteger(expectedRevision)||expectedRevision<1)throw new Error('Invalid revision');
+    return withDB(dbName,db=>txn(db,scope,({diaries,revisions},current)=>{
+      if(!current||current.revision!==expectedRevision||editValue(current)!==expectedEditRaw)
+        return {ok:false,reason:'conflict'};
+      const next=record(scope,current.revision+1,current.payload,nextEditRaw);
+      keepPrior(revisions,scope,next.revision,current);
+      diaries.put(next);
+      return {ok:true,revision:next.revision};
+    }));
+  }
+  async function commitWithEdit(scope,expectedRevision,nextDiaryRaw,expectedEditRaw,nextEditRaw,dbName=NAME){
+    assertScope(scope);parsePayload(nextDiaryRaw);validateEdit(expectedEditRaw);validateEdit(nextEditRaw);
+    if(!Number.isSafeInteger(expectedRevision)||expectedRevision<1)throw new Error('Invalid revision');
+    return withDB(dbName,db=>txn(db,scope,({diaries,revisions},current)=>{
+      if(!current||current.revision!==expectedRevision||editValue(current)!==expectedEditRaw)
+        return {ok:false,reason:'conflict'};
+      const next=record(scope,current.revision+1,nextDiaryRaw,nextEditRaw);
+      keepPrior(revisions,scope,next.revision,current);
+      diaries.put(next);
       return {ok:true,revision:next.revision};
     }));
   }
@@ -114,21 +167,17 @@
         if(!back||back.scope!==scope)return;
         try{
           parsePayload(back.previousPayload);
-          const next=record(scope,current.revision+1,back.previousPayload);
-          revisions.put({id:scope+'::'+next.revision,scope,revision:next.revision,
-            previousRevision:current.revision,previousPayload:current.payload,createdAt:Date.now()});
+          const edit=Object.prototype.hasOwnProperty.call(back,'previousHistoryEditRaw')
+            ?back.previousHistoryEditRaw:editValue(current);
+          validateEdit(edit);
+          const next=record(scope,current.revision+1,back.previousPayload,edit);
+          keepPrior(revisions,scope,next.revision,current);
           diaries.put(next);
-          const history=revisions.getAll();
-          history.onsuccess=()=>{
-            const relevant=(history.result||[]).filter(item=>item.scope===scope)
-              .sort((a,b)=>b.revision-a.revision);
-            for(const stale of relevant.slice(MAX_REVISIONS))revisions.delete(stale.id);
-          };
           Object.assign(result,{ok:true,revision:next.revision,reason:null});
         }catch(e){result.reason='invalid-backup'}
       };
       return result;
     }));
   }
-  return {open,read,initialize,commit,listRollback,restorePrevious,parsePayload,NAME};
+  return {open,read,initialize,commit,migrateEdit,commitEdit,commitWithEdit,listRollback,restorePrevious,parsePayload,validateEdit,NAME};
 });
