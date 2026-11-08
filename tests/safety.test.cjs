@@ -29,7 +29,7 @@ async function test(name,fn){try{await fn();console.log('PASS',name);pass++}catc
   const code=chunk('  async function syncCloudState(){','  async function chooseCloudData(){');
   let respond;
   const pending=new Promise(resolve=>{respond=resolve});
-  let ctx={cloudClient:{rpc:()=>pending},cloudSession:{user:{id:'user-A'}},cloudReady:true,cloudPaused:false,cloudSyncInFlight:false,cloudSyncRequested:false,
+  let ctx={cloudClient:{rpc:()=>pending},cloudSession:{user:{id:'user-A'}},cloudReady:true,cloudPaused:false,cloudSyncInFlight:false,cloudSyncAttemptId:0,cloudSyncRequested:false,
     cloudSessionGeneration:0,cloudRevision:1,cloudUserId:'user-A',navigator:{onLine:true},data:{history:[],updatedAt:1},
     DATA_SCHEMA_VERSION:8,cloudRetryTimer:null,cloudRetryDelay:5000,cloudSyncTimer:null,
     clearTimeout:()=>{},setStorageStatus:()=>{},setCloudMessage:()=>{},writeCloudMeta:()=>{},removeLegacyGuestCopyAfterCloudReady:()=>{},localStorage:{setItem:()=>{}},

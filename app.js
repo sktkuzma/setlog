@@ -11,6 +11,10 @@
   // The production app does not enable this path.
   const atomicLabRequested=new URLSearchParams(location.search).get('atomicLab')==='1'&&typeof window.SetlogAtomicLab==='function';
   const atomicLab=atomicLabRequested?new window.SetlogAtomicLab():null;
+  // Cloud protocol tests are only available inside this isolated lab AND with a
+  // test transport injected by the automated browser. No live Supabase SDK.
+  const atomicCloudLabRequested=!!(atomicLab&&new URLSearchParams(location.search).get('atomicCloudLab')==='1');
+
   if(atomicLab)window.__setlogAtomicLab=atomicLab;
   function showAtomicLabBlocked(message){
     if(document.getElementById('atomicLabBlocked'))return;
@@ -625,6 +629,9 @@
           if(!staleTabBlocked){
             setStorageStatus('Подтверждено транзакционной базой · хранится на устройстве','saved');
             if(options.snapshot)void saveSafetySnapshot(options.label||'Транзакционно сохранено',ack.payload);
+            if(atomicCloudLabRequested&&cloudSession&&cloudReady&&!cloudPaused&&!cloudApplying)
+              scheduleCloudSync(80);
+
             else scheduleSafetySnapshot();
           }
         }).catch(error=>{
@@ -1575,6 +1582,7 @@
   let cloudRetryTimer = null;
   let cloudRetryDelay = 5000;
   let cloudSyncInFlight = false;
+  let cloudSyncAttemptId = 0;
   let cloudSyncRequested = false;
   let cloudHandlingPromise = null;
   let cloudHandlingUserId = '';
@@ -1714,7 +1722,7 @@
     try{
       cloudApplying=true;
       data=normalizeData(payload);activeProgramId=data.activeProgramId;activeWorkout=data.activeWorkoutId||getWorkouts(activeProgramId)[0]?.id||'';
-      if(!persist({snapshot:false,label})){throw new Error('Не удалось записать данные из облака на устройство.');}
+      if(!await persistDurably({snapshot:false,label})){throw new Error('Не удалось подтвердить локальную транзакцию после загрузки облака.');}
       cloudRevision=Number(row?.revision)||0;cloudUserId=cloudSession.user.id;cloudReady=true;cloudPaused=false;pendingCloudChoice=null;
       writeCloudMeta(cloudUserId,cloudRevision,data.updatedAt,row?.updated_at||null);
       try{localStorage.setItem(LOCAL_OWNER_KEY,String(cloudUserId));}catch(e){}
@@ -1859,21 +1867,47 @@
     setStorageStatus('Сохраняем изменения в облаке…','pending');
     cloudSyncTimer=setTimeout(()=>syncCloudState(),delay);
   }
+  function sameCloudJSON(a,b){
+    if(a===b)return true;
+    if(a===null||b===null||typeof a!==typeof b||typeof a!=='object')return false;
+    if(Array.isArray(a)!==Array.isArray(b))return false;
+    if(Array.isArray(a))return a.length===b.length&&a.every((v,i)=>sameCloudJSON(v,b[i]));
+    const keysA=Object.keys(a),keysB=Object.keys(b);
+    if(keysA.length!==keysB.length)return false;
+    return keysA.every(k=>Object.prototype.hasOwnProperty.call(b,k)&&sameCloudJSON(a[k],b[k]));
+  }
+  function acknowledgeCloudState(userId,revision,updatedAt,payload,uploadedRaw){
+    cloudRevision=Number(revision)||0;cloudUserId=userId;cloudReady=true;cloudPaused=false;
+    writeCloudMeta(userId,cloudRevision,payload.updatedAt,updatedAt||new Date().toISOString());
+    try{localStorage.setItem(LOCAL_OWNER_KEY,String(userId));}catch(e){}
+    removeLegacyGuestCopyAfterCloudReady(userId);
+    if(typeof atomicLab!=='undefined'&&atomicLab&&uploadedRaw!==lastPersistedRaw){
+      setStorageStatus('Новая локальная транзакция ожидает отправки','pending');
+      setCloudMessage('Первая версия сохранена в облаке. Следующую отправляем…','pending');
+      cloudSyncRequested=true;
+    }else{
+      setStorageStatus('Все изменения сохранены в облаке.','saved');
+      setCloudMessage('Дневник синхронизирован. Все изменения сохранены в облаке.','saved');
+    }
+  }
   async function syncCloudState(){
     if(!cloudClient||!cloudSession||!cloudReady||cloudPaused)return;
     if(cloudSyncInFlight){cloudSyncRequested=true;return;}
     if(!navigator.onLine){setStorageStatus('Сохранено на устройстве · ждёт отправки','pending');setCloudMessage('Нет интернета. Изменения отправятся автоматически после восстановления связи.','pending');return;}
     cloudSyncInFlight=true;cloudSyncRequested=false;
+    const syncAttemptId=++cloudSyncAttemptId;
     const userId=cloudSession.user.id;const generation=cloudSessionGeneration;const expectedRevision=cloudRevision;
-    let payload;
+    let payload,uploadedRaw=null;
     if(typeof atomicLab!=='undefined'&&atomicLab){
       try{
         const scopeAtStart=activeStorageKey;
-        const envelope=await atomicLab.verifiedCloudPayload(scopeAtStart,lastPersistedRaw);
-        if(!sessionCurrent(generation,userId)||scopeAtStart!==activeStorageKey)return;
+        uploadedRaw=lastPersistedRaw;
+        const envelope=await atomicLab.verifiedCloudPayload(scopeAtStart,uploadedRaw);
+        if(!sessionCurrent(generation,userId)||scopeAtStart!==activeStorageKey){if(syncAttemptId===cloudSyncAttemptId)cloudSyncInFlight=false;return;}
         payload=envelope.payload;
       }catch(error){
-        cloudSyncInFlight=false;
+        if(syncAttemptId===cloudSyncAttemptId)cloudSyncInFlight=false;
+        if(!sessionCurrent(generation,userId))return;
         cloudPaused=true;
         setCloudMessage('Локальная транзакция ещё не подтверждена. Отправка в облако остановлена.','error');
         console.error('Cloud upload blocked by durable storage gate:',error);
@@ -1889,7 +1923,12 @@
         if(/revision_conflict|revision conflict|not_authenticated/i.test(message)){
           const row=await fetchCloudRow(userId).catch(()=>null);
           if(!sessionCurrent(generation,userId)||staleTabBlocked)return;
-          if(row)showCloudChoice(row,'revision-conflict');
+          if(row&&sameCloudJSON(row.payload,payload)){
+            // A lost HTTP response can look like a conflict on retry even
+            // though the exact same JSON was already committed by this device.
+            acknowledgeCloudState(userId,Number(row.revision)||expectedRevision+1,row.updated_at,payload,uploadedRaw);
+            clearTimeout(cloudRetryTimer);cloudRetryTimer=null;cloudRetryDelay=5000;
+          }else if(row)showCloudChoice(row,'revision-conflict');
           else{cloudReady=false;cloudPaused=true;setCloudMessage('Дневник изменился на другом устройстве. Текущие данные сохранены; открой список сохранений и выбери нужную копию.','warning');}
           setStorageStatus('Изменения сохранены на устройстве. Выбери копию для синхронизации.','error');
         }else{
@@ -1901,20 +1940,17 @@
       }
       clearTimeout(cloudRetryTimer);cloudRetryTimer=null;cloudRetryDelay=5000;
       const row=Array.isArray(result)?result[0]:result;
-      cloudRevision=Number(row?.revision)||expectedRevision+1;cloudUserId=userId;cloudReady=true;cloudPaused=false;
-      writeCloudMeta(userId,cloudRevision,payload.updatedAt,row?.updated_at||new Date().toISOString());
-      try{localStorage.setItem(LOCAL_OWNER_KEY,String(userId));}catch(e){}
-      removeLegacyGuestCopyAfterCloudReady(userId);
-      setStorageStatus('Все изменения сохранены в облаке.','saved');
-      setCloudMessage('Дневник синхронизирован. Все изменения сохранены в облаке.','saved');
+      acknowledgeCloudState(userId,Number(row?.revision)||expectedRevision+1,row?.updated_at,payload,uploadedRaw);
     }catch(error){
       if(!sessionCurrent(generation,userId)||staleTabBlocked)return;
       setStorageStatus('Изменения сохранены на устройстве, ждём связи с облаком.','error');
       setCloudMessage('Не удалось связаться с облаком. Данные на устройстве сохранены; попробуем снова автоматически.','error');console.error('SetLog cloud sync failed:', error);
       scheduleCloudRetry();
     }finally{
-      cloudSyncInFlight=false;
-      if(cloudSyncRequested&&!cloudPaused) scheduleCloudSync(150);
+      if(syncAttemptId===cloudSyncAttemptId){
+        cloudSyncInFlight=false;
+        if(cloudSyncRequested&&!cloudPaused)scheduleCloudSync(150);
+      }
     }
   }
   async function chooseCloudData(){
@@ -2027,6 +2063,53 @@
     finally{btn.disabled=!$('#cloudHistorySelect').value;}
   }
 
+  if(typeof atomicCloudLabRequested!=='undefined'&&atomicCloudLabRequested){
+    window.__setlogCloudLab={
+      connect(userId,revision=0){
+        if(!atomicLab.ready||!atomicLab.writer||atomicLab.blocked)
+          throw new Error('Laboratory transaction writer is not ready');
+        if(typeof window.__setlogCloudLabTransport!=='function')
+          throw new Error('No isolated test cloud transport available');
+        cloudSessionGeneration++;cloudSyncAttemptId++;
+        clearTimeout(cloudSyncTimer);clearTimeout(cloudRetryTimer);
+        cloudSyncRequested=false;cloudSyncInFlight=false;
+        cloudSession={user:{id:String(userId),email:'test@invalid.example'}};
+        cloudUserId=String(userId);cloudRevision=Number(revision)||0;
+        cloudReady=true;cloudPaused=false;pendingCloudChoice=null;
+        const transport=window.__setlogCloudLabTransport;
+        cloudClient={
+          rpc:(method,args)=>transport({kind:'rpc',method,args}),
+          from:table=>({
+            select:()=>({
+              eq:(key,value)=>({
+                maybeSingle:()=>transport({kind:'read',table,key,value})
+              })
+            })
+          })
+        };
+        return this.state();
+      },
+      async sync(){return syncCloudState()},
+      async useCloud(){return chooseCloudData()},
+      async useLocal(){return chooseLocalDataForCloud()},
+      disconnect(){
+        cloudSessionGeneration++;cloudSyncAttemptId++;cloudSyncInFlight=false;
+        clearTimeout(cloudSyncTimer);clearTimeout(cloudRetryTimer);
+        cloudSyncRequested=false;
+        cloudSession=null;cloudClient=null;cloudReady=false;cloudPaused=false;
+        cloudRevision=0;cloudUserId='';pendingCloudChoice=null;
+      },
+      state(){
+        return {revision:cloudRevision,user:cloudSession?.user?.id||null,
+          ready:cloudReady,paused:cloudPaused,syncInFlight:cloudSyncInFlight,
+          pendingChoice:pendingCloudChoice?.reason||null,scope:activeStorageKey,
+          generation:cloudSessionGeneration,
+          accountStatus:$('#cloudAccountStatus')?.textContent||'',
+          storageStatus:$('#storageStatusText')?.textContent||''};
+      }
+    };
+  }
+
   function ensureSupabaseSdk(){
     if(window.supabase&&typeof window.supabase.createClient==='function')return Promise.resolve();
     if(cloudSdkLoadPromise)return cloudSdkLoadPromise;
@@ -2053,7 +2136,7 @@
     cloudClient.auth.onAuthStateChange((event,session)=>{
       const previousUser=cloudSession?.user?.id||null;
       const nextUser=session?.user?.id||null;
-      if(previousUser!==nextUser){cloudSessionGeneration++;clearTimeout(cloudSyncTimer);clearTimeout(cloudRetryTimer);cloudSyncRequested=false;}
+      if(previousUser!==nextUser){cloudSessionGeneration++;cloudSyncAttemptId++;cloudSyncInFlight=false;clearTimeout(cloudSyncTimer);clearTimeout(cloudRetryTimer);cloudSyncRequested=false;}
       cloudSession=session||null;updateCloudUI();
       if(event==='PASSWORD_RECOVERY'){
         cloudRecoveryMode=true;updateCloudUI('Открой письмо восстановления и задай новый пароль.','pending');

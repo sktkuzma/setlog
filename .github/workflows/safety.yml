@@ -48,6 +48,7 @@ jobs:
           SETLOG_STAGE4_URL=http://127.0.0.1:18779/ node tests/atomic-history-edit.test.cjs
           SETLOG_STAGE4_URL=http://127.0.0.1:18779/ node tests/atomic-edit-migration.test.cjs
           SETLOG_STAGE4_URL=http://127.0.0.1:18779/ node tests/atomic-import-restore.test.cjs
+          SETLOG_STAGE5_URL=http://127.0.0.1:18779/ node tests/atomic-cloud-multidevice.test.cjs
           SETLOG_OFFLINE_URL=http://localhost:18779/ node tests/progress-v2-offline.test.cjs
       - name: Source and asset integrity
         run: |
