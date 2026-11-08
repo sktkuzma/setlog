@@ -24,6 +24,8 @@ jobs:
         run: |
           node tests/safety.test.cjs
           node tests/cloud-restore-safety.test.cjs
+      - name: Exercise library integrity (single canonical catalog)
+        run: node tests/catalog-integrity.test.cjs
       - name: Legacy snapshot isolation tests
         run: node tests/legacy-snapshots.test.cjs
       - name: Browser tests for multi-tab safety and PNG/PDF (free GitHub runner)
